@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "blender-tissue-cartography"
+  site-url: "https://nikolas-claussen.github.io/blender-tissue-cartography"
+  description: "Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender"
+  repo-branch: main
+  repo-url: "https://github.com/nikolas-claussen/blender-tissue-cartography"
