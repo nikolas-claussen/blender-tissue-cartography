@@ -149,3 +149,12 @@ checklink/cookies.txt
 
 # Quarto
 .quarto
+
+# data files associated with tissue cartography
+*.tif
+*.tiff
+*.h5
+*.png
+*.blend
+*.obj
+
