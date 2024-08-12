@@ -148,8 +148,8 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
     if isinstance(image, str):
         image = tcio.adjust_axis_order(tcio.imread(image))
     if isinstance(mesh, str):
-        mesh = read_obj(mesh)
-    matched_mesh_data =  match_vertex_info(**mesh)
+        mesh = tcio.read_obj(mesh)
+    matched_mesh_data =  tcio.match_vertex_info(**mesh)
     u, v = 2*[np.linspace(0,1, uv_grid_steps),]
     U, V = np.meshgrid(u, v)
     interpolated_3d_positions = interpolate_3d_to_uv(matched_mesh_data["texture_vertices"],

@@ -13,6 +13,7 @@ import h5py
 from typing import Iterable
 import tifffile
 import json
+import os
 
 # %% ../nbs/01_io.ipynb 5
 def adjust_axis_order(image, channel_axis=None):
