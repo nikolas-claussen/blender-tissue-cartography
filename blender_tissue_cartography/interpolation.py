@@ -10,7 +10,7 @@ from skimage import transform
 from scipy import interpolate
 from . import io as tcio
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 26
+# %% ../nbs/02_cartographic_interpolation.ipynb 25
 def interpolate_3d_to_uv(matched_texture_vertices, matched_vertices_or_normals, uv_grid_steps=256):
     """
     Interpolate 3d mesh coordinates or mesh normals onto UV square.
@@ -37,11 +37,15 @@ def interpolate_3d_to_uv(matched_texture_vertices, matched_vertices_or_normals, 
     matched_texture_vertices %= 1
     u, v = 2*[np.linspace(0,1, uv_grid_steps),]
     U, V = np.meshgrid(u, v)
-    interpolated_3d = np.stack([interpolate.griddata(matched_texture_vertices, x, (U, V))
+    interpolated_3d = np.stack([interpolate.griddata(matched_texture_vertices, x, (U, V), method='linear')
                                 for x in matched_vertices_or_normals.T], axis=-1)
-    return interpolated_3d
+    nan_mask = np.isnan(np.stack([interpolate.griddata(matched_texture_vertices, x, (U, V), method='nearest')
+                                  for x in matched_vertices_or_normals.T], axis=-1))
+    interpolated_3d[nan_mask] = np.nan
+    
+    return interpolated_3d[::-1]
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 27
+# %% ../nbs/02_cartographic_interpolation.ipynb 26
 def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resolution):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
@@ -71,7 +75,7 @@ def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resoluti
     
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 28
+# %% ../nbs/02_cartographic_interpolation.ipynb 31
 def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_positions, interpolated_normals,
                                                  normal_offsets, resolution):
     """ 
@@ -110,7 +114,7 @@ def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_position
                                   for o in normal_offsets], axis=1)
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 38
+# %% ../nbs/02_cartographic_interpolation.ipynb 37
 def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,), uv_grid_steps=256):
     """
     Create multilayer cartographic projections of image using mesh.
