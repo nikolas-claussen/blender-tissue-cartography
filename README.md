@@ -55,3 +55,10 @@ the instructions.
 
 To see how things work, it’s best to start with a fully-worked out
 example (see the different `example_` folders).
+
+Here’s a screenshot to give you an idea of the work flow for the example
+*Drosophila* dataset: Volumetric data in ImageJ, jupyter computational
+notebook to run the `blender-tissue-cartography` module, and blender
+project with extracted mesh and texture:
+
+![image.png](index_files/figure-commonmark/cell-5-1-image.png)
