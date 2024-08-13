@@ -9,6 +9,7 @@ import numpy as np
 from skimage import transform
 from scipy import interpolate
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 from . import io as tcio
 
 # %% ../nbs/02_cartographic_interpolation.ipynb 28
@@ -81,10 +82,10 @@ def interpolate_3d_to_uv(matched_texture_vertices, matched_vertices_or_normals, 
     U, V = np.meshgrid(u, v)
     interpolated_3d = np.stack([interpolate.griddata(matched_texture_vertices, x, (U, V), method='linear')
                                 for x in matched_vertices_or_normals.T], axis=-1)
+    interpolated_3d = interpolated_3d[::-1] # stupid axis convention issue!!
     if uv_mask is not None:
         interpolated_3d[~uv_mask,:] = np.nan
-    
-    return interpolated_3d[::-1]
+    return interpolated_3d
 
 # %% ../nbs/02_cartographic_interpolation.ipynb 34
 def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resolution, uv_mask=None):
