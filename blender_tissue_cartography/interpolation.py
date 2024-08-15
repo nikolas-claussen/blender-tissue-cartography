@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from . import io as tcio
 
 # %% ../nbs/02_cartographic_interpolation.ipynb 28
-def get_uv_layout_mask_mask(mesh, uv_grid_step=256):
+def get_uv_layout_mask_mask(mesh, uv_grid_steps=256):
     """
     Get a layout mask of the UV square: 1 where the UV square is covered by the unwrapped mesh, 0 outside.
     
@@ -34,7 +34,7 @@ def get_uv_layout_mask_mask(mesh, uv_grid_step=256):
     valid_faces = [[v[1] for v in fc] for fc in mesh["faces"] if not np.isnan(list(tcio.flatten(fc))).any()]
     polygons = mpl.collections.PatchCollection([mpl.patches.Polygon([mesh["texture_vertices"][v] for v in fc])
                                                 for fc in valid_faces], color="black")
-    fig = plt.figure(figsize=(1,1), dpi=uv_grid_step, frameon=False)
+    fig = plt.figure(figsize=(1,1), dpi=uv_grid_steps, frameon=False)
     ax = plt.gca()
     ax.add_collection(polygons)
     ax.set_xlim([0,1])

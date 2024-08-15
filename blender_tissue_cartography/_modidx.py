@@ -42,4 +42,12 @@ d = { 'settings': { 'branch': 'main',
                                                'blender_tissue_cartography.io.str_to_int_or_nan': ( 'io.html#str_to_int_or_nan',
                                                                                                     'blender_tissue_cartography/io.py'),
                                                'blender_tissue_cartography.io.write_obj': ( 'io.html#write_obj',
-                                                                                            'blender_tissue_cartography/io.py')}}}
+                                                                                            'blender_tissue_cartography/io.py')},
+            'blender_tissue_cartography.registration': { 'blender_tissue_cartography.registration.align_by_centroid_and_interia': ( 'registration.html#align_by_centroid_and_interia',
+                                                                                                                                    'blender_tissue_cartography/registration.py'),
+                                                         'blender_tissue_cartography.registration.get_inertia': ( 'registration.html#get_inertia',
+                                                                                                                  'blender_tissue_cartography/registration.py'),
+                                                         'blender_tissue_cartography.registration.obj_facelist_to_trilist': ( 'registration.html#obj_facelist_to_trilist',
+                                                                                                                              'blender_tissue_cartography/registration.py'),
+                                                         'blender_tissue_cartography.registration.package_affine_transformation': ( 'registration.html#package_affine_transformation',
+                                                                                                                                    'blender_tissue_cartography/registration.py')}}}
