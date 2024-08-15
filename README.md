@@ -74,6 +74,7 @@ computational notebook to run the `blender-tissue-cartography` module
   - [PyMCubes](https://github.com/pmneila/PyMCubes) Marching cubes.
   - [PyMeshLab](https://pymeshlab.readthedocs.io/en/latest/index.html)
     Python interface to MeshLab.
+  - [trimesh](https://trimesh.org/) for working with triangular meshes
 - [Ilastik](https://www.ilastik.org/) Image classification and
   segmentation,
 - [Meshlab](https://www.meshlab.net/) GUI and python library with
@@ -85,7 +86,6 @@ computational notebook to run the `blender-tissue-cartography` module
 - Python libraries:
   - [Morphsnakes](https://github.com/pmneila/morphsnakes) “Inflating
     balloon” segmentation
-  - [trimesh](https://trimesh.org/) for working with triangular meshes
   - [nbdev](https://nbdev.fast.ai/tutorials/tutorial.html) for
     notebook-based development, if you want to add your own code
 - Blender plugins:
