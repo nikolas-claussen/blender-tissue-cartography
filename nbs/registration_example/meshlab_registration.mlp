@@ -1,0 +1,18 @@
+<!DOCTYPE MeshLabDocument>
+<MeshLabProject>
+ <MeshGroup>
+  <MLMesh label="Drosophila_reference.obj" visible="1" filename="Drosophila_reference.obj" idInFile="-1">
+   <MLMatrix44>
+-1.02428 0.0296831 -0.0682289 90.604 -0.027475 -1.02605 -0.0339193 288.979 -0.0691476 -0.0320048 1.02414 87.9125 0 0 0 1 
+</MLMatrix44>
+   <RenderingOption pointColor="252 233 79 255" boxColor="234 234 234 255" wireColor="64 64 64 255" solidColor="192 192 192 255" wireWidth="1" pointSize="3">100001000000000000000100000001010100010010100000000100111010000111001001</RenderingOption>
+  </MLMesh>
+  <MLMesh label="Drosophila_CAAX-mCherry_mesh_remeshed.obj" visible="1" filename="Drosophila_CAAX-mCherry_mesh_remeshed.obj" idInFile="-1">
+   <MLMatrix44>
+0.99999 0.00419509 0.0017912 2.38117 -0.00420523 0.999975 0.00569236 -0.0465165 -0.00176727 -0.00569984 0.999982 -2.7741 0 0 0 1 
+</MLMatrix44>
+   <RenderingOption pointColor="252 233 79 255" boxColor="234 234 234 255" wireColor="64 64 64 255" solidColor="192 192 192 255" wireWidth="1" pointSize="3">100001000000000000000100000001010100000010100000000100111010000111001001</RenderingOption>
+  </MLMesh>
+ </MeshGroup>
+ <RasterGroup/>
+</MeshLabProject>
