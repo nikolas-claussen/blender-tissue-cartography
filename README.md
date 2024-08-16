@@ -30,16 +30,14 @@
     Zip”, or clone the github repository).
 
 4.  Create a `conda` environment with all python dependencies and
-    install the
-    `blender. Open a command window in the`blender-tissue-cartography`directory and type:     -`conda
-    env create -n blender-tissue-cartography -f environment.yml`-`conda
-    activate blender-tissue-cartography`-`pip install -e ‘.\[dev\]’
+    install the `blender-tissue-cartography` module. Open a command
+    window in the `blender-tissue-cartography` directory and type:
 
-5.  Install the `blender-tissue-cartography` python module. From within
-    the `blender-tissue-cartography` directory, run
-    `pip install -e '.[dev]'`
+    - `conda env create -n blender-tissue-cartography -f environment.yml`
+    - `conda activate blender-tissue-cartography`
+    - \`pip install -e ‘.\[dev\]’
 
-6.  (Optional) Install the Blender plugin
+5.  (Optional) Install the Blender plugin
     [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) for
     rendering volumetric `.tif` files in blender
 
