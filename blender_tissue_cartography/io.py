@@ -97,10 +97,10 @@ def unique(sequence):
     seen = set()
     return [x for x in sequence if not (x in seen or seen.add(x))]
 
-def index_else_nan(arr, ind):
-    """Return arr[ind] if not np.isnan(ind), else npnan*np.ones(arr.shape[1:])"""
+def index_else_nan(arr, ind, target_shape=None):
+    """Return arr[ind] if not np.isnan(ind), else np.nan*np.ones(arr.shape[1:])"""
     if np.isnan(ind):
-        target_shape = arr.shape[1:] if len(arr).shape > 1 else (1,)
+        target_shape = (arr.shape[1:] if len(arr.shape) > 1 else (1,)) if target_shape is None else target_shape
         return np.nan*np.ones(target_shape)
     return arr[ind]
 
@@ -242,16 +242,15 @@ class ObjMesh:
         -------
         None
         """
-        assert not require_texture_normals or not self.only_vertices, "method requires normal/texture information"
         if self.only_vertices:
             unique_v_vt_n_pairs = {v: (np.nan, np.nan) for v in flatten(self.faces)}
         else:
             unique_v_vt_n_pairs = {v[0]: (v[1], v[2]) for v in flatten(self.faces, max_depth=1)}
-        print(unique_v_vt_n_pairs)
         matched_vertices = np.copy(self.vertices)
-        matched_texture_vertices = np.array([index_else_nan(self.texture_vertices, unique_v_vt_n_pairs[key][0])
+        matched_texture_vertices = np.array([index_else_nan(self.texture_vertices, unique_v_vt_n_pairs[key][0],
+                                                            target_shape=(2,))
                                     for key in range(self.vertices.shape[0])])
-        matched_normals = np.array([index_else_nan(self.normals, unique_v_vt_n_pairs[key][1])
+        matched_normals = np.array([index_else_nan(self.normals, unique_v_vt_n_pairs[key][1], target_shape=(3,))
                                     for key in range(self.vertices.shape[0])])
 
         if require_texture_normals:
