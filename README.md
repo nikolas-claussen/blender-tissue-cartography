@@ -5,8 +5,15 @@
 
 ## Work in progress!
 
-Currently supports single recordings, support for registration of
-multiple recordings (e.g. frames of a movie) coming soon.
+- Tools for individual recordings are in a reasonably complete state.
+- Support for multiple recordings (e.g. frames of a movie with a dynamic
+  surface or multiple images of similarly-shaped structures) is in
+  progress
+  - Done: automated affine registration, manual wrapping
+  - To do: automated wrapping.
+- Goal: have stuff like `open3d` and `pymeshlab` be as modular a
+  component as possible. don’t make them the main data structure. make
+  conversion tools to/from `open3d` and `pymeshlab`
 
 ## Installation
 
@@ -74,7 +81,6 @@ computational notebook to run the `blender-tissue-cartography` module
   - [PyMCubes](https://github.com/pmneila/PyMCubes) Marching cubes.
   - [PyMeshLab](https://pymeshlab.readthedocs.io/en/latest/index.html)
     Python interface to MeshLab.
-  - [trimesh](https://trimesh.org/) for working with triangular meshes
 - [Ilastik](https://www.ilastik.org/) Image classification and
   segmentation,
 - [Meshlab](https://www.meshlab.net/) GUI and python library with
@@ -88,6 +94,7 @@ computational notebook to run the `blender-tissue-cartography` module
     balloon” segmentation
   - [nbdev](https://nbdev.fast.ai/tutorials/tutorial.html) for
     notebook-based development, if you want to add your own code
+  - [trimesh](https://trimesh.org/) for working with triangular meshes
 - Blender plugins:
   - [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) for
     rendering volumetric `.tif` files in blender
