@@ -12,7 +12,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from . import io as tcio
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 28
+# %% ../nbs/02_cartographic_interpolation.ipynb 27
 def get_uv_layout_mask_mask(mesh, uv_grid_steps=256):
     """
     Get a layout mask of the UV square: 1 where the UV square is covered by the unwrapped mesh, 0 outside.
@@ -21,8 +21,8 @@ def get_uv_layout_mask_mask(mesh, uv_grid_steps=256):
     
     Parameters
     ----------
-    mesh : dict
-        Mesh, as dict with entries "vertices", "texture_vertices", "normals", and "faces"
+    mesh : tcio.ObjMesh
+        Mesh with texture_vertices
     uv_grid_steps : int, default 256
         Size of UV grid. Determines resolution of result.
     
@@ -31,8 +31,9 @@ def get_uv_layout_mask_mask(mesh, uv_grid_steps=256):
     uv_mask : np.array of shape (uv_grid_steps, uv_grid_steps)
         Mask of the part of the UV square covered by the unwrapped mesh
     """
-    valid_faces = [[v[1] for v in fc] for fc in mesh["faces"] if not np.isnan(list(tcio.flatten(fc))).any()]
-    polygons = mpl.collections.PatchCollection([mpl.patches.Polygon([mesh["texture_vertices"][v] for v in fc])
+    assert mesh.texture_vertices is not None, "mesh must have texture vertices"
+    valid_faces = [[v[1] for v in fc] for fc in mesh.faces if not np.isnan(list(tcio.flatten(fc))).any()]
+    polygons = mpl.collections.PatchCollection([mpl.patches.Polygon([mesh.texture_vertices[v] for v in fc])
                                                 for fc in valid_faces], color="black")
     fig = plt.figure(figsize=(1,1), dpi=uv_grid_steps, frameon=False)
     ax = plt.gca()
@@ -49,7 +50,7 @@ def get_uv_layout_mask_mask(mesh, uv_grid_steps=256):
     
     return uv_mask.astype(bool)
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 33
+# %% ../nbs/02_cartographic_interpolation.ipynb 32
 def interpolate_3d_to_uv(matched_texture_vertices, matched_vertices_or_normals, uv_mask=None, uv_grid_steps=256):
     """
     Interpolate 3d mesh coordinates or mesh normals onto UV square.
@@ -87,7 +88,7 @@ def interpolate_3d_to_uv(matched_texture_vertices, matched_vertices_or_normals, 
         interpolated_3d[~uv_mask,:] = np.nan
     return interpolated_3d
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 34
+# %% ../nbs/02_cartographic_interpolation.ipynb 33
 def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resolution, uv_mask=None):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
@@ -124,7 +125,7 @@ def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resoluti
     
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 37
+# %% ../nbs/02_cartographic_interpolation.ipynb 36
 def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_positions, interpolated_normals,
                                                  normal_offsets, resolution, uv_mask=None):
     """ 
@@ -167,7 +168,7 @@ def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_position
                                   for o in normal_offsets], axis=1)
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 43
+# %% ../nbs/02_cartographic_interpolation.ipynb 42
 def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,), uv_grid_steps=256,
                                     uv_mask='auto'):
     """
@@ -183,9 +184,8 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
     ----------
     image : str or 4d np.array
         Image, either as path to file, or as array. If array, axis 0  is assumed to be the channel axis
-    mesh : str or dict
-        Mesh, either as path to file, or as dict with entries "vertices", "texture_vertices", "normals",
-        and "faces"
+    mesh : str or tcio.ObjMesh
+        Mesh, either as path to file, or as ObjMesh object.
     resolution : np.array of shape (3,)
         Image resolution in pixels/micron for the three spatial axes
     normal_offsets : np.array of float, optional
@@ -212,17 +212,17 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
     if isinstance(image, str):
         image = tcio.adjust_axis_order(tcio.imread(image))
     if isinstance(mesh, str):
-        mesh = tcio.read_obj(mesh)
+        mesh = tcio.ObjMesh.read_obj(mesh)
     if uv_mask == "auto":
-        uv_mask = get_uv_layout_mask_mask(mesh, uv_grid_step=uv_grid_steps)
-    matched_mesh_data =  tcio.match_vertex_info(**mesh)
+        uv_mask = get_uv_layout_mask_mask(mesh, uv_grid_steps=uv_grid_steps)
+    mesh.match_vertex_info()
     u, v = 2*[np.linspace(0,1, uv_grid_steps),]
     U, V = np.meshgrid(u, v)
-    interpolated_3d_positions = interpolate_3d_to_uv(matched_mesh_data["texture_vertices"],
-                                                     matched_mesh_data["vertices"],
+    interpolated_3d_positions = interpolate_3d_to_uv(mesh.matched_texture_vertices,
+                                                     mesh.matched_vertices,
                                                      uv_grid_steps=uv_grid_steps, uv_mask=uv_mask)
-    interpolated_normals = interpolate_3d_to_uv(matched_mesh_data["texture_vertices"],
-                                                matched_mesh_data["normals"],
+    interpolated_normals = interpolate_3d_to_uv(mesh.matched_texture_vertices,
+                                                mesh.matched_normals,
                                                 uv_grid_steps=uv_grid_steps, uv_mask=uv_mask)
     interpolated_data = interpolate_volumetric_data_to_uv_multilayer(image,
                                                                      interpolated_3d_positions,
