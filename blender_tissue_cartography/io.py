@@ -225,33 +225,47 @@ class ObjMesh:
                 f.writelines(flines)
         return None
  
-    def match_vertex_info(self, require_texture_normals=True):
+    def match_vertex_info(self, use_vertex_normals=True, require_texture_normals=True):
         """
         Match up 3d vertex coordinates / texture coordinates / normals based on face connectivity.
         
         Sets attributes matched_vertices, matched_texture_vertices, matched_normals.
+        The resulting arrays will _not_ match the face indices, since there can be more texture vertices
+        than vertices, and will have a shape given by the number of unique vertex/texture vertex/normal
+        pairs (note: this is much lower than the number of faces, which is numerically favorable)
         
         Parameters
         ----------
+        use_vertex_normals : bool, default True
+            Use vertex normals for normal info instead of face normals. Will result in arrays
+            of size O(n_vertices). Else, you get an arra of size O(n_triangles).
         require_texture_normals : bool, default True
-            If True, discard vertices for which texture or normal info does not exist. In this
-            case, the resulting array will _not_ match the face indices! If False,
-            attributes that do not exist for a given vertex, are set to np.nan.
+            If True, discard vertices for which texture or normal info does not exist. 
+            If False, attributes that do not exist for a given vertex are set to np.nan.
             
         Returns
         -------
         None
         """
-        if self.only_vertices:
-            unique_v_vt_n_pairs = {v: (np.nan, np.nan) for v in flatten(self.faces)}
+        assert not self.only_vertices, """Method requires texture or normal information"""
+        if not use_vertex_normals:
+            unique_v_vt_n_pairs = unique([tuple(x) for x in flatten(self.faces, max_depth=1)])
+            matched_vertices = np.array([index_else_nan(self.normals, pair[0], target_shape=(3,))
+                                         for pair in unique_v_vt_n_pairs])
+            matched_texture_vertices = np.array([index_else_nan(self.texture_vertices, pair[1], target_shape=(2,))
+                                                 for pair in unique_v_vt_n_pairs])
+            matched_normals = np.array([index_else_nan(self.normals, pair[2], target_shape=(3,))
+                                        for pair in unique_v_vt_n_pairs])
         else:
-            unique_v_vt_n_pairs = {v[0]: (v[1], v[2]) for v in flatten(self.faces, max_depth=1)}
-        matched_vertices = np.copy(self.vertices)
-        matched_texture_vertices = np.array([index_else_nan(self.texture_vertices, unique_v_vt_n_pairs[key][0],
-                                                            target_shape=(2,))
-                                    for key in range(self.vertices.shape[0])])
-        matched_normals = np.array([index_else_nan(self.normals, unique_v_vt_n_pairs[key][1], target_shape=(3,))
-                                    for key in range(self.vertices.shape[0])])
+            unique_v_vt_pairs = unique([tuple(x[:2]) for x in flatten(self.faces, max_depth=1)])
+            matched_vertices = np.array([index_else_nan(self.normals, pair[0], target_shape=(3,))
+                                         for pair in unique_v_vt_pairs])
+            matched_texture_vertices = np.array([index_else_nan(self.texture_vertices, pair[1], target_shape=(2,))
+                                                 for pair in unique_v_vt_pairs])
+            normals = self.vertex_normals
+            matched_normals = np.array([index_else_nan(normals, pair[0], target_shape=(3,))
+                                        for pair in unique_v_vt_pairs])
+
 
         if require_texture_normals:
             mask = ~np.isnan(matched_texture_vertices).any(axis=1) & ~np.isnan(matched_normals).any(axis=1)
@@ -265,12 +279,45 @@ class ObjMesh:
         
     @property
     def tris(self):
-        """Get all triangles in mesh as a numpy array."""
+        """Get all triangles in mesh as a numpy array. Entries are vertex indices."""
         if self.only_vertices:
             return np.array([fc for fc in self.faces if len(fc)==3])
         else:
             return np.array([[v[0] for v in fc] for fc in self.faces if len(fc)==3])
         return None
+    
+    @property
+    def texture_tris(self):
+        """Get all texture triangles in mesh as a numpy array. Entries are texture_vertex indices."""
+        if self.only_vertices:
+            return np.array([np.nan for fc in self.faces if len(fc)==3])
+        else:
+            return np.array([[v[1] for v in fc] for fc in self.faces if len(fc)==3])
+        return None
+    
+    @property
+    def vertex_normals(self):
+        """Get array of vertex normals. If multiple normals per vertex are stored, the last one is returned"""
+        if self.only_vertices:
+            return np.nan*np.ones_like(self.vertices)
+        v_n_pairs = {v: np.nan for v in range(self.vertices.shape[0])}
+        for v, _, n in flatten(self.faces, max_depth=1):
+            v_n_pairs[v] = n
+        return np.array([index_else_nan(self.normals, v_n_pairs[key], target_shape=(3,))
+                         for key in range(self.vertices.shape[0])])
+
+    @property
+    def vertex_textures(self):
+        """Get array of vertex texture coordinates. If multiple textures per vertex are stored,
+        the last one is returned"""
+        if self.only_vertices:
+            return np.nan*np.ones_like(self.vertices)
+        v_vt_pairs = {v: np.nan for v in range(self.vertices.shape[0])}
+        for v, vt, _ in flatten(self.faces, max_depth=1):
+            v_vt_pairs[v] = vt
+        return np.array([index_else_nan(self.texture_vertices, v_vt_pairs[key], target_shape=(2,))
+                         for key in range(self.vertices.shape[0])])
+
     
     def apply_affine_to_mesh(self, trafo, update_matched_data=True):
         """
@@ -308,7 +355,7 @@ class ObjMesh:
             newmesh.match_vertex_info()
         return newmesh
 
-# %% ../nbs/01_io.ipynb 28
+# %% ../nbs/01_io.ipynb 35
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -334,7 +381,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01_io.ipynb 30
+# %% ../nbs/01_io.ipynb 37
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file
