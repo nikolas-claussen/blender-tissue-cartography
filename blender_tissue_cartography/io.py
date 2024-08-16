@@ -95,7 +95,7 @@ def pad_list(lst, length=3, fill_value=np.nan):
 # %% ../nbs/01_io.ipynb 16
 class ObjMesh:
     """
-    Simple class for reading, holding, transforming, and saving polygonal meshes in the .obj format.
+    Simple class for reading, holding, transforming, and saving 3d polygonal meshes in the .obj format.
     See https://en.wikipedia.org/wiki/Wavefront_.obj_file.
     Attributes
         - vertices = [(x_0, y_0, z_0), ... ]
@@ -228,7 +228,7 @@ class ObjMesh:
         self.matched_texture_vertices = np.stack([self.texture_vertices[ix[1]] for ix in unique_v_vt_n_pairs])
         self.matched_normals = np.stack([self.normals[ix[2]] for ix in unique_v_vt_n_pairs])
     
-    def apply_affine_to_mesh(self, trafo):
+    def apply_affine_to_mesh(self, trafo, update_matched_data=True):
         """
         Apply affine transformation to mesh.
         
@@ -239,6 +239,8 @@ class ObjMesh:
         ----------
         trafo : np.array of shape (4,4) or (3,3)
             Transformation matrix. If (4,4), it is interpreted as affine transformation.
+        update_matched_data : bool, default True
+            Update matched data
 
         Returns
         -------
@@ -258,6 +260,8 @@ class ObjMesh:
             newmesh.normals = (normals_transformed.T / np.linalg.norm(normals_transformed, axis=-1)).T
         if np.linalg.det(trafo_matrix) < 0:
             newmesh.faces = [fc[::-1] for fc in self.faces]
+        if update_matched_data and not self.only_vertices:
+            newmesh.match_vertex_info()
         return newmesh
 
 # %% ../nbs/01_io.ipynb 25
