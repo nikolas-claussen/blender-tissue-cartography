@@ -246,8 +246,8 @@ class ObjMesh:
         if self.only_vertices:
             unique_v_vt_n_pairs = {v: (np.nan, np.nan) for v in flatten(self.faces)}
         else:
-            unique_v_vt_n_pairs = {v[0]: (v[0], v[1]) for v in flatten(self.faces, max_depth=1)}
-
+            unique_v_vt_n_pairs = {v[0]: (v[1], v[2]) for v in flatten(self.faces, max_depth=1)}
+        print(unique_v_vt_n_pairs)
         matched_vertices = np.copy(self.vertices)
         matched_texture_vertices = np.array([index_else_nan(self.texture_vertices, unique_v_vt_n_pairs[key][0])
                                     for key in range(self.vertices.shape[0])])
@@ -309,7 +309,7 @@ class ObjMesh:
             newmesh.match_vertex_info()
         return newmesh
 
-# %% ../nbs/01_io.ipynb 29
+# %% ../nbs/01_io.ipynb 28
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -335,7 +335,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01_io.ipynb 31
+# %% ../nbs/01_io.ipynb 30
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file
