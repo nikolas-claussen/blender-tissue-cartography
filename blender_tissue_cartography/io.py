@@ -318,7 +318,6 @@ class ObjMesh:
         return np.array([index_else_nan(self.texture_vertices, v_vt_pairs[key], target_shape=(2,))
                          for key in range(self.vertices.shape[0])])
 
-    
     def apply_affine_to_mesh(self, trafo, update_matched_data=True):
         """
         Apply affine transformation to mesh.
@@ -355,7 +354,7 @@ class ObjMesh:
             newmesh.match_vertex_info()
         return newmesh
 
-# %% ../nbs/01_io.ipynb 35
+# %% ../nbs/01_io.ipynb 32
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -381,7 +380,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01_io.ipynb 37
+# %% ../nbs/01_io.ipynb 34
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file
