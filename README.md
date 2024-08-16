@@ -29,15 +29,14 @@
 3.  Download and unpack `blender-tissue-cartography` (“Code -\> Download
     Zip”, or clone the github repository).
 
-4.  Create a `conda` environment with all python dependencies. Open a
-    command window in the `blender-tissue-cartography` folder and type:
-
-    - `conda env create -n blender-tissue-cartography -f environment.yml`
-    - `conda activate blender-tissue-cartography`
-    - `pip install bpy PyMCubes morphsnakes pymeshlab rtree`
+4.  Create a `conda` environment with all python dependencies and
+    install the
+    `blender. Open a command window in the`blender-tissue-cartography`directory and type:     -`conda
+    env create -n blender-tissue-cartography -f environment.yml`-`conda
+    activate blender-tissue-cartography`-`pip install -e ‘.\[dev\]’
 
 5.  Install the `blender-tissue-cartography` python module. From within
-    the `blender-tissue-cartography` directory, run the command
+    the `blender-tissue-cartography` directory, run
     `pip install -e '.[dev]'`
 
 6.  (Optional) Install the Blender plugin
