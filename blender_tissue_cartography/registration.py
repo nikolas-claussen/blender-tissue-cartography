@@ -199,7 +199,8 @@ def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, scale=T
     point cloud b. Will only produce reasonable results if the
     initial transformation is roughly correct. Initial transformation can be
     found by applying Procrustes' analysis to a suitable set of landmark
-    points (often picked manually).
+    points (often picked manually), or by inertia+centroid based alignment,
+    implemented in align_by_centroid_and_intertia.
 
     Parameters
     ----------
