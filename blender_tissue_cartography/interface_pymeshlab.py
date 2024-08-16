@@ -57,13 +57,16 @@ def convert_from_pymeshlab(mesh: pymeshlab.pmeshlab.Mesh) -> pymeshlab.Mesh:
     return tcio.ObjMesh(vertices=vertices, faces=faces, normals=normals)
 
 # %% ../nbs/01b_interface_pymeshlab.ipynb 15
-def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=True) -> tcio.ObjMesh:
+def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=True,
+                           texture_vertex_decimals=10) -> tcio.ObjMesh:
     """
     Convert pymeshlab mesh to ObjMesh.
     
     Texture vertices can be reconstructed from face attribute face_tex_vertex_{0/1/2} or from
     vertex attribute vertex_tex_coord_matrix. Reconstruction from face texture can accomodate
     multiple texture coordinates per vertex (e.g. for UV maps with seams).
+    
+    Texture vertices are rounded to texture_vertex_decimals decimals
     """
     vertices = mesh.vertex_matrix()
     normals = mesh.vertex_normal_matrix()
@@ -78,7 +81,7 @@ def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=
     # reconstruct texture vertices - big pain.
     texture_vertices = np.vstack([mesh.face_custom_point_attribute_matrix(f"face_tex_vertex_{i}")[:,:2]
                               for i in [0,1,2]])
-    texture_vertices = np.round(texture_vertices, decimals=10)
+    texture_vertices = np.round(texture_vertices, decimals=texture_vertex_decimals)
     texture_vertices_unique, inverse_index = np.unique(texture_vertices, axis=0, return_inverse=True)
     
     n_faces = mesh.face_matrix().shape[0]
