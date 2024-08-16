@@ -35,7 +35,7 @@
 
     - `conda env create -n blender-tissue-cartography -f environment.yml`
     - `conda activate blender-tissue-cartography`
-    - \`pip install -e ‘.\[dev\]’
+    - `pip install -e '.[dev]`
 
 5.  (Optional) Install the Blender plugin
     [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) for
