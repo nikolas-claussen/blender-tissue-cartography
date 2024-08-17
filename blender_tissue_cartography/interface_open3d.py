@@ -40,11 +40,11 @@ def convert_to_open3d(mesh: tcio.ObjMesh, add_texture_info=None) -> o3d.t.geomet
     mesh_o3d.triangle.indices = o3d.core.Tensor(mesh.tris, dtype_i)
     mesh_o3d.vertex.positions = o3d.core.Tensor(mesh.vertices, dtype_f)
     if add_texture_info:
-        mesh_o3d.triangle.texture_uvs = o3d.core.Tensor(np.stack([[tcio.index_else_nan(
-            mesh.texture_vertices, v, target_shape=(2,)) for v in tri] for tri in mesh.texture_tris]), dtype_f)
+        mesh_o3d.triangle.texture_uvs = o3d.core.Tensor(tcio.index_else_nan(mesh.texture_vertices,
+                                                                            mesh.texture_tris), dtype_f)
     return mesh_o3d
 
-# %% ../nbs/01c_interface_open3d.ipynb 29
+# %% ../nbs/01c_interface_open3d.ipynb 16
 def convert_from_open3d(mesh: o3d.t.geometry.TriangleMesh, reconstruct_texture_from_faces=None,
                         texture_vertex_decimals=10) -> tcio.ObjMesh:
     """
