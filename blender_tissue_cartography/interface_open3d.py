@@ -70,7 +70,7 @@ def convert_from_open3d(mesh: o3d.t.geometry.TriangleMesh, reconstruct_texture_f
     if isinstance(mesh, o3d.geometry.TriangleMesh): # legacy ...
         vertices = np.asarray(mesh.vertices)
         mesh.compute_vertex_normals()
-        normals = np.asarray(mesh_legacy.vertex_normals)
+        normals = np.asarray(mesh.vertex_normals)
         normals = (normals.T / np.linalg.norm(normals, axis=-1)).T
         face_matrix = np.asarray(mesh.triangles)
         if reconstruct_texture_from_faces is None:
@@ -78,7 +78,7 @@ def convert_from_open3d(mesh: o3d.t.geometry.TriangleMesh, reconstruct_texture_f
         if not reconstruct_texture_from_faces:
             faces = [[3*[v,] for v in f] for f in face_matrix]
             return tcio.ObjMesh(vertices=vertices, faces=faces, normals=normals)
-        texture_vertices = np.asarray(mesh_legacy.triangle_uvs).reshape(-1,3,2).reshape(-1, 2, order='F')
+        texture_vertices = np.asarray(mesh.triangle_uvs).reshape(-1,3,2).reshape(-1, 2, order='F')
         texture_vertices = np.round(texture_vertices, decimals=texture_vertex_decimals)
         texture_vertices_unique, inverse_index = np.unique(texture_vertices, axis=0, return_inverse=True)
 
