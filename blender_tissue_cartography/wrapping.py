@@ -7,7 +7,8 @@ __all__ = []
 from . import io as tcio
 from . import interpolation as tcinterp
 from . import registration as tcreg
-from importlib import reload
+from . import interface_open3d as into3d
+from . import interface_pymeshlab as intmsl
 
 # %% ../nbs/04b_wrapping.ipynb 2
 import numpy as np
@@ -17,4 +18,5 @@ import os
 import matplotlib.pyplot as plt
 import mcubes
 import pymeshlab
+import open3d as o3d
 from copy import deepcopy
