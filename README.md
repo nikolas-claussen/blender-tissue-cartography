@@ -6,14 +6,15 @@
 ## Work in progress!
 
 - Tools for individual recordings are in a reasonably complete state.
+- Python mesh operations (remeshing, smoothing, etc) can be carried out
+  in `pymeshlab` or `open3d`. User-friendly interfaces for both are
+  provided. Core functionality is independent of both `pymeshlab` or
+  `open3d`.
 - Support for multiple recordings (e.g. frames of a movie with a dynamic
   surface or multiple images of similarly-shaped structures) is in
   progress
   - Done: automated affine registration, manual wrapping
-  - To do: automated wrapping.
-- Goal: have stuff like `open3d` and `pymeshlab` be as modular a
-  component as possible. don’t make them the main data structure. make
-  conversion tools to/from `open3d` and `pymeshlab`
+  - In progress: automated wrapping using `open3d`
 
 ## Installation
 
@@ -76,8 +77,7 @@ computational notebook to run the `blender-tissue-cartography` module
   - [tifffile](https://github.com/cgohlke/tifffile/) for reading/writing
     of `.tif` files, including metadata.
   - [PyMCubes](https://github.com/pmneila/PyMCubes) Marching cubes.
-  - [PyMeshLab](https://pymeshlab.readthedocs.io/en/latest/index.html)
-    Python interface to MeshLab.
+  - [Open3d](https://www.open3d.org) 3d geometry library.
 - [Ilastik](https://www.ilastik.org/) Image classification and
   segmentation,
 - [Meshlab](https://www.meshlab.net/) GUI and python library with
@@ -87,6 +87,8 @@ computational notebook to run the `blender-tissue-cartography` module
 ### Optional
 
 - Python libraries:
+  - [PyMeshLab](https://pymeshlab.readthedocs.io/en/latest/index.html)
+    Python interface to MeshLab.
   - [Morphsnakes](https://github.com/pmneila/morphsnakes) “Inflating
     balloon” segmentation
   - [nbdev](https://nbdev.fast.ai/tutorials/tutorial.html) for
