@@ -1,6 +1,8 @@
 name: blender-tissue-cartography
 channels:
   - defaults
+  - fastai
+  - conda-forge
 dependencies:
   - python=3.11
   - matplotlib
