@@ -1,7 +1,6 @@
-name: blender-tissue-cartography
+name: blender_tissue_cartography
 channels:
   - defaults
-  - fastai
   - conda-forge
 dependencies:
   - python=3.11
@@ -13,11 +12,8 @@ dependencies:
   - jupyter
   - ca-certificates
   - openssl
-  - nbdev
   - certifi
   - nb_conda_kernels
   - tqdm
   - pip:
       - pymcubes
-      - pymeshlab
-      - open3d

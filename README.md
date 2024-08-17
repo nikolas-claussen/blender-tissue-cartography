@@ -27,18 +27,33 @@
     [anaconda/miniconda](https://docs.anaconda.com/miniconda/miniconda-install/),
     if you haven’t already.
 
+    - If `conda` is unbearably slow for you, install
+      [mamba](https://mamba.readthedocs.io/en/latest/index.html), a
+      `conda` replacement which is much faster.
+
 3.  Download and unpack `blender-tissue-cartography` (“Code -\> Download
-    Zip”, or clone the github repository).
+    Zip”), or clone the github repository.
 
 4.  Create a `conda` environment with all python dependencies and
-    install the `blender-tissue-cartography` module. Open a command
+    install the `blender_tissue_cartography` module. Open a command
     window in the `blender-tissue-cartography` directory and type:
 
-    - `conda env create -n blender-tissue-cartography -f environment.yml`
-    - `conda activate blender-tissue-cartography`
-    - `pip install -e '.[dev]`
+    - `conda env create -n blender_tissue_cartography -f environment.yml`
+    - `conda activate blender_tissue_cartography`
+    - `pip install -e .`
 
-5.  (Optional) Install the Blender plugin
+5.  (Optional) Install extra python libraries for `pymeshlab` and
+    `open3d` which are required for some advanced functionality
+    (remeshing and smoothing from within python, dynamic surfaces).
+
+    - `pip install pymeshlab` - Note that this package is not available
+      on new ARM Apple computers.
+    - `pip install open3d`
+
+6.  (Optional) If you plan on developing/extending the code, install
+    [nbdev](https://nbdev.fast.ai/)
+
+7.  (Optional) Install the Blender plugin
     [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) for
     rendering volumetric `.tif` files in blender
 
@@ -62,7 +77,7 @@ Here’s a screenshot to give you an idea of the work flow for the example
 computational notebook to run the `blender-tissue-cartography` module
 (left), and blender project with extracted mesh and texture (right):
 
-![title](screenshot_readme.png)
+![image.png](index_files/figure-commonmark/cell-5-1-image.png)
 
 ## Software stack
 
@@ -80,13 +95,15 @@ computational notebook to run the `blender-tissue-cartography` module
   - [Open3d](https://www.open3d.org) 3d geometry library.
 - [Ilastik](https://www.ilastik.org/) Image classification and
   segmentation,
-- [Meshlab](https://www.meshlab.net/) GUI and python library with
-  advanced surface reconstruction tools (required for some workflows).
 - [Blender](https://www.blender.org/) Mesh editing and UV mapping.
 
 ### Optional
 
+- [Meshlab](https://www.meshlab.net/) GUI and python library with
+  advanced surface reconstruction tools (required for some workflows).
+
 - Python libraries:
+
   - [PyMeshLab](https://pymeshlab.readthedocs.io/en/latest/index.html)
     Python interface to MeshLab.
   - [Morphsnakes](https://github.com/pmneila/morphsnakes) “Inflating
@@ -94,8 +111,8 @@ computational notebook to run the `blender-tissue-cartography` module
   - [nbdev](https://nbdev.fast.ai/tutorials/tutorial.html) for
     notebook-based development, if you want to add your own code
   - [trimesh](https://trimesh.org/) for working with triangular meshes
+
 - Blender plugins:
+
   - [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) for
     rendering volumetric `.tif` files in blender
-  - [Uvsquares](https://github.com/Radivarig/UvSquares) For UV maps with
-    uniform distortion
