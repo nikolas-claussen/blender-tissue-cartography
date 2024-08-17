@@ -352,7 +352,7 @@ class ObjMesh:
             newmesh.match_vertex_info()
         return newmesh
 
-# %% ../nbs/01_io.ipynb 30
+# %% ../nbs/01_io.ipynb 33
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -378,7 +378,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01_io.ipynb 32
+# %% ../nbs/01_io.ipynb 35
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file
