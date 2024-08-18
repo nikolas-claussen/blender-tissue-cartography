@@ -26,8 +26,8 @@ def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, res
         plt.quiver(*slice_vertices.T, *slice_normals.T, color="tab:red")
         plt.imshow(slice_image[0], vmax=10000, origin="lower")
     
-    Note: origin="lower" in plt.imshow() is essential!! 
-    
+    Note: `origin="lower"` in plt.imshow() is essential for a correctly oriented plot in python!!
+        
     Parameters
     ----------
     image : 4d np.ndarray of shape (channels, n_x, n_y, n_z)
