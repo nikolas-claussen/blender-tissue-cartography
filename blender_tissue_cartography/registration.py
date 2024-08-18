@@ -28,13 +28,15 @@ def get_inertia(pts, q=0):
     Izz = stats.trim_mean(z*z, q)
     return np.array([[Ixx, Ixy, Ixz], [Ixy,Iyy, Iyz], [Ixz, Iyz, Izz]])
 
-def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False, n_samples=10000):
+def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False, n_samples=10000,
+                                   choose_minimal_rotation=False):
     """
     Align source point cloud to target point cloud using affine transformation.
     
     Align by matching centroids and axes of inertia tensor. Since the inertia tensor is invariant
-    under reflections along its principal axes, all 2^3 reflections are tried and the one leading
-    to best agreement with the target is chosen.
+    under reflections along its principal axes, all 2^3 reflections are tried and (a) the one leading
+    to best agreement with the target or (b) the one corresponding to the least amount of rotation
+    is chosen. This is controlled using the choose_minimal_rotation argument.
     
     Parameters
     ----------
@@ -51,6 +53,9 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
         Whether to allow shear transformation (True) or rotations/scale only (False)
     n_samples : int, optional
         Number of samples of source to use when estimating distances.
+    choose_minimal_rotation : bool, default False
+        Whether to chose the rotation matrix closest to the identity. If False, the rotation matrix
+        (possibly with det=-1) leading to best alignment with the target is chosen.
 
     Returns
     -------
@@ -69,6 +74,10 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
 
     flips = [np.diag([i,j,k]) for i, j, k in itertools.product(*(3*[[-1,1]]))]
     trafo_matrix_candidates = []
+    if not choose_minimal_rotation:
+        tree = spatial.cKDTree(target)
+        samples = source[np.random.randint(low=0, high=source.shape[0], size=min([n_samples, source.shape[0]])),:]
+    distances = []
     for flip in flips:
         if shear:
             trafo_matrix = (source_eig.eigenvectors
@@ -81,13 +90,16 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
             trafo_matrix = source_eig.eigenvectors@flip@target_eig.eigenvectors.T
         trafo_matrix = trafo_matrix.T
         trafo_matrix_candidates.append(trafo_matrix)
-    tree = spatial.cKDTree(target)
-    samples = source[np.random.randint(low=0, high=source.shape[0], size=min([n_samples, source.shape[0]])),:]
-    distances = []
-    for trafo_matrix in trafo_matrix_candidates:
-        trafo_translate = target_centroid - trafo_matrix@source_centroid
-        aligned = samples@trafo_matrix.T + trafo_translate
-        distances.append(stats.trim_mean(tree.query(aligned)[0], q))
+        if not choose_minimal_rotation:
+            trafo_translate = target_centroid - trafo_matrix@source_centroid
+            aligned = samples@trafo_matrix.T + trafo_translate
+            distances.append(stats.trim_mean(tree.query(aligned)[0], q))
+        else:
+            rot_matrix = source_eig.eigenvectors@flip@target_eig.eigenvectors.T
+            if np.linalg.det(rot_matrix) < 1:
+                distances.append(3)
+            else:
+                distances.append(3-np.trace(rot_matrix))
     trafo_matrix = trafo_matrix_candidates[np.argmin(distances)]
     trafo_translate = target_centroid - trafo_matrix@source_centroid
     aligned = source@trafo_matrix.T + trafo_translate

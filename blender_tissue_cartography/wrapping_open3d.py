@@ -5,19 +5,10 @@ __all__ = ['shrinkwrap_o3d']
 
 # %% ../nbs/03b_wrapping_open3d.ipynb 1
 from . import io as tcio
-from . import interpolation as tcinterp
-from . import registration as tcreg
 from . import interface_open3d as into3d
-from . import interface_pymeshlab as intmsl
-
-# %% ../nbs/03b_wrapping_open3d.ipynb 2
 import numpy as np
-from skimage import transform
-from scipy import stats, spatial, linalg
-import os
-import matplotlib.pyplot as plt
-import mcubes
 from copy import deepcopy
+import open3d as o3d
 
 # %% ../nbs/03b_wrapping_open3d.ipynb 29
 def shrinkwrap_o3d(mesh_source, mesh_target, n_iter_smooth_target=1, n_iter_smooth_wrapped=1):
@@ -26,7 +17,8 @@ def shrinkwrap_o3d(mesh_source, mesh_target, n_iter_smooth_target=1, n_iter_smoo
     
     Sets the vertex positions of mesh_source to the closes point on the surface of mesh_target (not necessarily
     a vertex). Optionally, smoothes the target mesh and the wrapped mesh for smoother results using a
-    simple smoothing filter filter (recommended).
+    simple smoothing filter filter (recommended). Gives out a warning if the shrink-wrapping flips
+    any vertex normals, which can indicate problems.
     
     The shrinkwrapped mesh still has the UV maps of the source mesh, and so can be used to compute
     cartographic projections.
@@ -69,4 +61,8 @@ def shrinkwrap_o3d(mesh_source, mesh_target, n_iter_smooth_target=1, n_iter_smoo
         number_of_iterations=n_iter_smooth_wrapped)
     mesh_source_wrapped_filtered_o3d.triangle_uvs = mesh_source_wrapped_o3d.triangle_uvs
     mesh_wrapped = into3d.convert_from_open3d(mesh_source_wrapped_filtered_o3d)
+    # check if any normals were flipped
+    dots = np.einsum("vi,vi->v", mesh_source.vertex_normals, mesh_wrapped.vertex_normals)
+    if np.sum(dots < 0) > 0:
+        warnings.warn(f"Warning: {np.sum(dots<0)} normal(s) flipped during shrink-wrapping")
     return mesh_wrapped
