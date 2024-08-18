@@ -229,7 +229,12 @@ class ObjMesh:
                 f.writelines(nlines)
                 f.writelines(flines)
         return None
-         
+    
+    @property
+    def is_triangular(self):
+        """Checks if mesh has triangular faces only."""
+        return all([len(fc)==3 for fc in self.faces]) 
+        
     @property
     def tris(self):
         """Get all triangles in mesh as a numpy array. Entries are vertex indices."""
@@ -269,25 +274,16 @@ class ObjMesh:
             v_vt_pairs[v] = vt
         return index_else_nan(self.texture_vertices, np.array(v_vt_pairs))
     
-    def match_vertex_info(self, use_vertex_normals=True, require_texture_normals=True):
+    def match_vertex_info(self):
         """
-        Match up 3d vertex coordinates / texture coordinates / normals based on face connectivity.
+        Match up 3d vertex coordinates and normals to texture vertices based on face connectivity.
         
-        Sets attributes matched_vertices, matched_texture_vertices, matched_normals.
-        These attributes can then be used for interpolating volumetric data onto the UV square.
-        The resulting arrays will _not_ match the face indices, since there can be more texture vertices
-        than vertices, and will have a shape given by the number of unique vertex/texture vertex/normal
-        pairs (note: this is much lower than the number of faces, which is numerically favorable)
-        
-        Parameters
-        ----------
-        use_vertex_normals : bool, default True
-            Use vertex normals for normal info instead of face normals. Will result in arrays
-            of size O(n_vertices). Else, you get an arra of size O(n_triangles).
-        require_texture_normals : bool, default True
-            If True, discard vertices for which texture or normal info does not exist. 
-            If False, attributes that do not exist for a given vertex are set to np.nan.
-            
+        Sets attributes matched_vertices and matched_normals, which are the 3d vertices and normals
+        corresponding to each texture vertex. The resulting arrays have the shape
+        (self.texture_vertices.shape[0], 3). For completeness, also sets the attribute 
+        matched_texture_vertices, which is identical to texture_vertices. If normal
+        information does not exist for a given texture vertex, the entry is set to np.nan
+                    
         Returns
         -------
         None
@@ -295,25 +291,13 @@ class ObjMesh:
         
         assert not self.only_vertices and len(self.normals) > 0 and len(self.texture_vertices) > 0, \
             """Method requires texture or normal information"""
-        if not use_vertex_normals:
-            unique_v_vt_n_pairs = np.array(unique([tuple(x) for x in flatten(self.faces, max_depth=1)]))
-            matched_vertices = index_else_nan(self.vertices, unique_v_vt_n_pairs[:,0])
-            matched_texture_vertices = index_else_nan(self.texture_vertices, unique_v_vt_n_pairs[:,1])
-            matched_normals = index_else_nan(self.normals, unique_v_vt_n_pairs[:,2])
-        else:
-            unique_v_vt_pairs = np.array(unique([tuple(x[:2]) for x in flatten(self.faces, max_depth=1)]))
-            matched_vertices = index_else_nan(self.vertices, unique_v_vt_pairs[:,0])
-            matched_texture_vertices = index_else_nan(self.texture_vertices, unique_v_vt_pairs[:,1])
-            normals = self.vertex_normals
-            matched_normals = index_else_nan(normals, unique_v_vt_pairs[:,0])
-        if require_texture_normals:
-            mask = ~np.isnan(matched_texture_vertices).any(axis=1) & ~np.isnan(matched_normals).any(axis=1)
-            matched_vertices = matched_vertices[mask,:]
-            matched_texture_vertices = matched_texture_vertices[mask,:]
-            matched_normals = matched_normals[mask,:]            
-        self.matched_vertices = matched_vertices
-        self.matched_texture_vertices = matched_texture_vertices
-        self.matched_normals = matched_normals
+        texture_vertex_dict = {v[1]: (v[0], v[1]) for v in flatten(self.faces, max_depth=1) if not np.isnan(v[1])}
+        texture_inds = np.arange(self.texture_vertices.shape[0])
+        matched_vertex_inds = np.array([texture_vertex_dict[i][0] for i in texture_inds])
+        matched_normal_inds = np.array([texture_vertex_dict[i][1] for i in texture_inds])
+        self.matched_vertices = self.vertices[matched_vertex_inds]
+        self.matched_texture_vertices = np.copy(self.texture_vertices)
+        self.matched_normals = index_else_nan(self.normals, matched_normal_inds)
         return None
 
     def apply_affine_to_mesh(self, trafo, update_matched_data=True):
@@ -352,7 +336,7 @@ class ObjMesh:
             newmesh.match_vertex_info()
         return newmesh
 
-# %% ../nbs/01a_io.ipynb 33
+# %% ../nbs/01a_io.ipynb 32
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -378,7 +362,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01a_io.ipynb 35
+# %% ../nbs/01a_io.ipynb 34
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file

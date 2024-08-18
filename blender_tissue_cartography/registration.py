@@ -4,18 +4,9 @@
 __all__ = ['package_affine_transformation', 'get_inertia', 'align_by_centroid_and_intertia', 'procrustes', 'icp']
 
 # %% ../nbs/03a_registration.ipynb 1
-from . import io as tcio
-from . import interpolation as tcinterp
-from importlib import reload
-
-# %% ../nbs/03a_registration.ipynb 2
 import numpy as np
-from skimage import transform
 from scipy import stats, spatial, linalg
-import os
-import matplotlib.pyplot as plt
-import mcubes
-from copy import deepcopy
+import itertools
 
 # %% ../nbs/03a_registration.ipynb 19
 def package_affine_transformation(matrix, vector):
@@ -26,7 +17,7 @@ def package_affine_transformation(matrix, vector):
     return matrix_rep
 
 def get_inertia(pts, q=0):
-    """Get inertia tensor of point cloud. q in [0, 1) removes points with outlier coordinates"""
+    """Get inertia tensor of 3d point cloud. q in [0, 1) removes points with outlier coordinates."""
     pts_nomean = pts - stats.trim_mean(pts,q, axis=0)
     x, y, z = pts_nomean.T
     Ixx = stats.trim_mean(x**2, q)
@@ -41,7 +32,7 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
     """
     Align source point cloud to target point cloud using affine transformation.
     
-    Align by matching centroids and axes of intertia tensor. Since the inertia tensor is invariant
+    Align by matching centroids and axes of inertia tensor. Since the inertia tensor is invariant
     under reflections along its principal axes, all 2^3 reflections are tried and the one leading
     to best agreement with the target is chosen.
     
@@ -76,7 +67,7 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
     source_inertia = get_inertia(source, q=q)
     source_eig = np.linalg.eigh(source_inertia)
 
-    flips = list(tcio.flatten([[[np.diag([i,j,k]) for i in [-1,1]] for j in [-1,1]] for k in [-1,1]], max_depth=2))
+    flips = [np.diag([i,j,k]) for i, j, k in itertools.product(*(3*[[-1,1]]))]
     trafo_matrix_candidates = []
     for flip in flips:
         if shear:
@@ -109,7 +100,7 @@ def procrustes(source, target, scale=True):
     Procrustes analysis, a similarity test for two data sets.
 
     Copied from scipy.spatial.procrustes, modified to return the transform
-    as a affine matrix, and return the transformed source data in the original,
+    as an affine matrix, and return the transformed source data in the original,
     non-normalized coordinates.
 
     Each input matrix is a set of points or vectors (the rows of the matrix).
