@@ -4,29 +4,20 @@
 __all__ = ['shrinkwrap_pymeshlab']
 
 # %% ../nbs/03b_wrapping_pymeshlab.ipynb 1
-from . import io as tcio
-from . import interpolation as tcinterp
-from . import registration as tcreg
-from . import interface_open3d as into3d
 from . import interface_pymeshlab as intmsl
-
-# %% ../nbs/03b_wrapping_pymeshlab.ipynb 2
 import numpy as np
-from skimage import transform
-from scipy import stats, spatial, linalg
-import os
-import matplotlib.pyplot as plt
-import mcubes
 from copy import deepcopy
+import warnings
 
-# %% ../nbs/03b_wrapping_pymeshlab.ipynb 16
+# %% ../nbs/03b_wrapping_pymeshlab.ipynb 18
 def shrinkwrap_pymeshlab(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smooth_wrapped=10):
     """
     Shrink-wrap the source mesh onto the target mesh using pymeshlab.
     
     Sets the vertex positions of mesh_source to the closes point on the surface of mesh_target (not necessarily
     a vertex). Optionally, smoothes the target mesh and the wrapped mesh for smoother results using a Taubin
-    filter (recommended).
+    filter (recommended). Gives out a warning if the shrink-wrapping flips any vertex normals, which can
+    indicate problems.
     
     The shrinkwrapped mesh still has the UV maps of the source mesh, and so can be used to compute
     cartographic projections.
@@ -63,4 +54,8 @@ def shrinkwrap_pymeshlab(mesh_source, mesh_target, n_iter_smooth_target=10, n_it
     ms.set_current_mesh(1)
     ms.apply_coord_taubin_smoothing(stepsmoothnum=n_iter_smooth_target)
     mesh_wrapped = intmsl.convert_from_pymeshlab(ms.mesh(1))
+    # check if any normals were flipped
+    dots = np.einsum("vi,vi->v", mesh_source.vertex_normals, mesh_wrapped.vertex_normals)
+    if np.sum(dots < 0) > 0:
+        warnings.warn(f"Warning: {np.sum(dots<0)} normal(s) flipped during shrink-wrapping")
     return mesh_wrapped
