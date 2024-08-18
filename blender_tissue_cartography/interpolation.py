@@ -70,7 +70,7 @@ def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, res
     slice_vertices = slice_vertices.take(indices=[i for i in range(3) if i != slice_axis], axis=1)
     return slice_image, slice_vertices
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 30
+# %% ../nbs/02_cartographic_interpolation.ipynb 31
 def get_uv_layout_mask_mask(mesh, uv_grid_steps=256):
     """
     Get a layout mask of the UV square: 1 where the UV square is covered by the unwrapped mesh, 0 outside.
@@ -108,7 +108,7 @@ def get_uv_layout_mask_mask(mesh, uv_grid_steps=256):
     
     return uv_mask.astype(bool)
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 35
+# %% ../nbs/02_cartographic_interpolation.ipynb 36
 def interpolate_3d_to_uv(matched_texture_vertices, matched_vertices_or_normals, uv_mask=None, uv_grid_steps=256):
     """
     Interpolate 3d mesh coordinates or mesh normals onto UV square.
@@ -146,7 +146,7 @@ def interpolate_3d_to_uv(matched_texture_vertices, matched_vertices_or_normals, 
         interpolated_3d[~uv_mask,:] = np.nan
     return interpolated_3d
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 36
+# %% ../nbs/02_cartographic_interpolation.ipynb 37
 def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resolution, uv_mask=None):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
@@ -183,7 +183,7 @@ def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resoluti
     
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 39
+# %% ../nbs/02_cartographic_interpolation.ipynb 40
 def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_positions, interpolated_normals,
                                                  normal_offsets, resolution, uv_mask=None):
     """ 
@@ -226,7 +226,7 @@ def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_position
                                   for o in normal_offsets], axis=1)
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 45
+# %% ../nbs/02_cartographic_interpolation.ipynb 46
 def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,), uv_grid_steps=256,
                                     uv_mask='auto'):
     """

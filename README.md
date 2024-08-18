@@ -16,8 +16,8 @@
   - Done: automated affine registration + manual “shrink-wrapping” in
     blender to align surfaces from multiple recordings and get
     consistent cartographic projections
-  - In progress: automated shrink-wrapping using `open3d` and
-    `pymeshlab`.
+  - Done: automated shrink-wrapping using `open3d` and `pymeshlab`.
+  - To do: example of pipeline for a whole movie.
 
 ## Installation
 
@@ -90,7 +90,7 @@ the notebook, you will:
 
 Here’s a screenshot to give you an idea of the work flow for the example
 *Drosophila* dataset: Volumetric data in ImageJ (center), jupyter
-computational notebook to run the `blender-tissue-cartography` module
+computational notebook to run the `blender_tissue_cartography` module
 (left), and blender project with extracted mesh and texture (right):
 
 ![image.png](index_files/figure-commonmark/cell-5-1-image.png)
