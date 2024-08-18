@@ -13,8 +13,11 @@
 - Support for multiple recordings (e.g. frames of a movie with a dynamic
   surface or multiple images of similarly-shaped structures) is in
   progress
-  - Done: automated affine registration, manual wrapping
-  - In progress: automated wrapping using `open3d`
+  - Done: automated affine registration + manual “shrink-wrapping” in
+    blender to align surfaces from multiple recordings and get
+    consistent cartographic projections
+  - In progress: automated shrink-wrapping using `open3d` and
+    `pymeshlab`.
 
 ## Installation
 
@@ -31,8 +34,8 @@
       [mamba](https://mamba.readthedocs.io/en/latest/index.html), a
       `conda` replacement which is much faster.
 
-3.  Download and unpack `blender-tissue-cartography` (“Code -\> Download
-    Zip”), or clone the github repository.
+3.  [Clone this github
+    repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
 
 4.  Create a `conda` environment with all python dependencies and
     install the `blender_tissue_cartography` module. Open a command
@@ -57,20 +60,26 @@
     [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) for
     rendering volumetric `.tif` files in blender
 
-## How to use
+## Usage
 
-To start a tissue cartography project, create a folders to hold your
-data and results. Copy your `.tif` microscopy data and one of the
-template jupyter notebooks into the folders, [launch
-jupyter](https://docs.jupyter.org/en/latest/running.html), and follow
-the instructions.
+To see how things work, it’s best to start with some fully-worked out
+examples, which are provided in the `tutorials/` folder. Start by
+[launching jupyter](https://docs.jupyter.org/en/latest/running.html) and
+open `tutorials/02_basics_example.ipynb`. It is recommended you are
+comfortable with running simple python code (you don’t have to do any
+coding yourself), and know the basic user interface of blender (again,
+nothing fancy).
 
-To see how things work, it’s best to start with a fully-worked out
-example - [launch
-jupyter](https://docs.jupyter.org/en/latest/running.html) and open
-`nbs/03_spherical_example.ipynb`. To understand how the software is
-designed, work though the notebooks in the `nbs/` folder in numerical
-order.
+In general, for each tissue cartography project, first create a folder
+to hold your data and results. You run the `blender_tissue_cartography`
+pipeline from a jupyter computational notebook, which can also serve as
+your lab notebook (notes, comments on the data). Use one of the tutorial
+jupyter notebooks as a template with instructions. As you work through
+the notebook, you will: 1. create a segmentation of your 3d data 2.
+convert the segmentation into a mesh of your surface of interest 3. load
+the mesh into blender to map to unwrap it into the plane 4. make a
+cartographic projection of your the 3d data using the unwrapped mesh 5.
+visualize the results in 3d using blender.
 
 Here’s a screenshot to give you an idea of the work flow for the example
 *Drosophila* dataset: Volumetric data in ImageJ (center), jupyter
@@ -92,7 +101,6 @@ computational notebook to run the `blender-tissue-cartography` module
   - [tifffile](https://github.com/cgohlke/tifffile/) for reading/writing
     of `.tif` files, including metadata.
   - [PyMCubes](https://github.com/pmneila/PyMCubes) Marching cubes.
-  - [Open3d](https://www.open3d.org) 3d geometry library.
 - [Ilastik](https://www.ilastik.org/) Image classification and
   segmentation,
 - [Blender](https://www.blender.org/) Mesh editing and UV mapping.
@@ -104,6 +112,7 @@ computational notebook to run the `blender-tissue-cartography` module
 
 - Python libraries:
 
+  - [Open3d](https://www.open3d.org) 3d geometry library.
   - [PyMeshLab](https://pymeshlab.readthedocs.io/en/latest/index.html)
     Python interface to MeshLab.
   - [Morphsnakes](https://github.com/pmneila/morphsnakes) “Inflating
