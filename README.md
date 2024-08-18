@@ -75,11 +75,18 @@ to hold your data and results. You run the `blender_tissue_cartography`
 pipeline from a jupyter computational notebook, which can also serve as
 your lab notebook (notes, comments on the data). Use one of the tutorial
 jupyter notebooks as a template with instructions. As you work through
-the notebook, you will: 1. create a segmentation of your 3d data 2.
-convert the segmentation into a mesh of your surface of interest 3. load
-the mesh into blender to map to unwrap it into the plane 4. make a
-cartographic projection of your the 3d data using the unwrapped mesh 5.
-visualize the results in 3d using blender.
+the notebook, you will:
+
+1.  create a segmentation of your 3d data
+
+2.  convert the segmentation into a mesh of your surface of interest
+
+3.  load the mesh into blender to map to unwrap it into the plane
+
+4.  make a cartographic projection of your the 3d data using the
+    unwrapped mesh
+
+5.  visualize the results in 3d using blender.
 
 Here’s a screenshot to give you an idea of the work flow for the example
 *Drosophila* dataset: Volumetric data in ImageJ (center), jupyter
