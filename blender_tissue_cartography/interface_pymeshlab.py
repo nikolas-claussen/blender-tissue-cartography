@@ -24,38 +24,27 @@ def convert_to_pymeshlab(mesh: tcio.ObjMesh, add_texture_info=None) -> pymeshlab
     ----------
     mesh : tcio.ObjMesh
     add_texture_info : None or bool
-        Whether to add texture info to the pymeshlab.Mesh. If None, texture is added if available
-        for all vertices.
+        Whether to add texture info to the pymeshlab.Mesh. If None, texture is added if
+        available for at least one vertex.
     Returns
     -------
     pymeshlab.Mesh
 
     """
-    add_texture_info = (not np.isnan(mesh.vertex_textures).any()
+    add_texture_info = ((not mesh.only_vertices and len(mesh.texture_vertices) > 0)
                         if add_texture_info is None else add_texture_info)
     if not add_texture_info:
         return pymeshlab.Mesh(vertex_matrix=mesh.vertices, face_matrix=mesh.tris)
     converted = pymeshlab.Mesh(vertex_matrix=mesh.vertices, face_matrix=mesh.tris,
-                               v_tex_coords_matrix=mesh.vertex_textures.astype(np.float64))
+                               v_tex_coords_matrix=mesh.vertex_textures)
+    texture_tris = mesh.texture_tris
     for vertex in [0,1,2]:
-        atttrib = np.pad(tcio.index_else_nan(mesh.texture_vertices, mesh.texture_tris[:,vertex]),
+        atttrib = np.pad(tcio.index_else_nan(mesh.texture_vertices, texture_tris[:,vertex]),
                          ((0,0), (0,1)), constant_values=0)
         converted.add_face_custom_point_attribute(atttrib, f"face_tex_vertex_{vertex}")
     return converted
 
 # %% ../nbs/01b_interface_pymeshlab.ipynb 15
-def convert_from_pymeshlab(mesh: pymeshlab.pmeshlab.Mesh) -> pymeshlab.Mesh:
-    """Convert pymeshlab mesh to ObjMesh."""
-    vertices = mesh.vertex_matrix()
-    faces = [[3*[v,] for v in f] for f in mesh.face_matrix()]
-    normals = pymesh_ref.vertex_normal_matrix()
-    normals = (normals.T / np.linalg.norm(normals, axis=-1)).T
-    if mesh.has_vertex_tex_coord():
-        return tcio.ObjMesh(vertices=vertices, faces=faces, normals=normals,
-                            texture_vertices=mesh.vertex_tex_coord_matrix())
-    return tcio.ObjMesh(vertices=vertices, faces=faces, normals=normals)
-
-# %% ../nbs/01b_interface_pymeshlab.ipynb 16
 def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=True,
                            texture_vertex_decimals=10) -> tcio.ObjMesh:
     """
@@ -79,7 +68,7 @@ def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=
                            texture_vertices=mesh.vertex_tex_coord_matrix())
     # reconstruct texture vertices - big pain.
     texture_vertices = np.vstack([mesh.face_custom_point_attribute_matrix(f"face_tex_vertex_{i}")[:,:2]
-                              for i in [0,1,2]])
+                                  for i in [0,1,2]])
     texture_vertices = np.round(texture_vertices, decimals=texture_vertex_decimals)
     texture_vertices_unique, inverse_index = np.unique(texture_vertices, axis=0, return_inverse=True)
     

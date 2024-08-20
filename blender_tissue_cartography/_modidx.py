@@ -79,7 +79,9 @@ d = { 'settings': { 'branch': 'main',
                                                                                                                                     'blender_tissue_cartography/registration.py'),
                                                          'blender_tissue_cartography.registration.procrustes': ( 'registration.html#procrustes',
                                                                                                                  'blender_tissue_cartography/registration.py')},
+            'blender_tissue_cartography.volumetric': {},
             'blender_tissue_cartography.wrapping_open3d': { 'blender_tissue_cartography.wrapping_open3d.shrinkwrap_o3d': ( 'wrapping_open3d.html#shrinkwrap_o3d',
                                                                                                                            'blender_tissue_cartography/wrapping_open3d.py')},
             'blender_tissue_cartography.wrapping_pymeshlab': { 'blender_tissue_cartography.wrapping_pymeshlab.shrinkwrap_pymeshlab': ( 'wrapping_pymeshlab.html#shrinkwrap_pymeshlab',
-                                                                                                                                       'blender_tissue_cartography/wrapping_pymeshlab.py')}}}
+                                                                                                                                       'blender_tissue_cartography/wrapping_pymeshlab.py')},
+            'blender_tissue_cartography.wrapping_trimesh': {}}}

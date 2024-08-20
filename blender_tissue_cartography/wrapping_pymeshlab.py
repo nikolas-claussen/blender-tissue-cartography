@@ -8,8 +8,9 @@ from . import interface_pymeshlab as intmsl
 import numpy as np
 from copy import deepcopy
 import warnings
+import pymeshlab
 
-# %% ../nbs/03b_wrapping_pymeshlab.ipynb 18
+# %% ../nbs/03b_wrapping_pymeshlab.ipynb 17
 def shrinkwrap_pymeshlab(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smooth_wrapped=10):
     """
     Shrink-wrap the source mesh onto the target mesh using pymeshlab.

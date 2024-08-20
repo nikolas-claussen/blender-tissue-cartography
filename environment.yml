@@ -10,9 +10,6 @@ dependencies:
   - scikit-image
   - h5py
   - jupyter
-  - ca-certificates
-  - openssl
-  - certifi
   - nb_conda_kernels
   - tqdm
   - pip:
