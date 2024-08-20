@@ -80,7 +80,7 @@ To see how things work, it’s best to start with some fully-worked out
 examples, which are provided in the `tutorials/` folder. You can look at
 the notebooks on GitHub without downloading anything.
 
-To run a tutorial on your computer, following the installation
+To run a tutorial on your computer, follow the installation
 instructions and then [launch
 jupyter](https://docs.jupyter.org/en/latest/running.html) and open
 `tutorials/02_basics_example.ipynb`. It is recommended you are
