@@ -319,7 +319,7 @@ class ObjMesh:
         
         assert not self.only_vertices and len(self.normals) > 0 and len(self.texture_vertices) > 0, \
             """Method requires texture or normal information"""
-        texture_vertex_dict = {v[1]: (v[0], v[1]) for v in flatten(self.faces, max_depth=1) if not np.isnan(v[1])}
+        texture_vertex_dict = {v[1]: (v[0], v[2]) for v in flatten(self.faces, max_depth=1) if not np.isnan(v[1])}
         texture_inds = np.arange(self.texture_vertices.shape[0])
         matched_vertex_inds = np.array([texture_vertex_dict[i][0] for i in texture_inds])
         matched_normal_inds = np.array([texture_vertex_dict[i][1] for i in texture_inds])
