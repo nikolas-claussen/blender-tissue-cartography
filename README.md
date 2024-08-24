@@ -58,14 +58,17 @@ for “production” use yet.
     - `conda activate blender_tissue_cartography`
     - `pip install -e .`
 
-5.  (Optional) Install extra python libraries for `pymeshlab` and
-    `open3d` which are required for some advanced functionality
-    (remeshing and smoothing from within python, dynamic surfaces in
-    time-lapse microscopy).
+5.  (Optional) Install extra python libraries for `pymeshlab`,
+    `trimesh`, or `open3d` which are required for some advanced
+    functionality (remeshing and smoothing from within python, dynamic
+    surfaces in time-lapse microscopy).
 
     - `pip install pymeshlab` - Note that this package is not available
       on new ARM Apple computers.
-    - `pip install open3d`
+    - `pip install trimesh[easy]` - Install if `pymeshlab` is not
+      available
+    - `pip install open3d` - Install if neither `pymeshlab` or `trimesh`
+      work for you
 
 6.  (Optional) If you plan on developing/extending the code, install
     [nbdev](https://nbdev.fast.ai/)
@@ -78,10 +81,10 @@ for “production” use yet.
 
 To see how things work, it’s best to start with some fully-worked out
 examples, which are provided in the `tutorials/` folder. You can look at
-the notebooks on GitHub without downloading anything.
+the jupyter notebooks on GitHub without downloading anything.
 
-To run a tutorial on your computer, follow the installation
-instructions and then [launch
+To run a tutorial on your computer, follow the installation instructions
+and then [launch
 jupyter](https://docs.jupyter.org/en/latest/running.html) and open
 `tutorials/02_basics_example.ipynb`. It is recommended you are
 comfortable with running simple python code (you don’t have to do any
