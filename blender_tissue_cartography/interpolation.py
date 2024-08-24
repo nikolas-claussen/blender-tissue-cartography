@@ -12,6 +12,7 @@ from scipy import interpolate
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from . import io as tcio
+import warnings
 
 # %% ../nbs/02_cartographic_interpolation.ipynb 19
 def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, resolution,
@@ -114,19 +115,22 @@ def get_uv_layout_mask_mask(mesh: tcio.ObjMesh, uv_grid_steps=256):
 
 # %% ../nbs/02_cartographic_interpolation.ipynb 35
 def interpolate_3d_to_uv(matched_texture_vertices, matched_vertices_or_normals,
-                         mesh_triangles=None, uv_mask=None, uv_grid_steps=256):
+                         mesh_triangles=None, uv_mask=None, uv_grid_steps=256, map_back=True):
     """
     Interpolate 3d mesh coordinates or mesh normals onto UV square.
     
     Assumes the map $x,y,z \mapsto u,v$ to be invertible. This is not guaranteed - you can create overlapping UV 
-    coordinates in blender. 
+    coordinates in blender.
+    
+    The provided UV coordinates will be mapped back to [0, 1]^2 if map_back is True. Else, coordinates
+    outside [0,1] are ignored.
     
     Parameters
     ----------
     matched_vertices_or_normals : np.array of shape (n_matched, 3)
         Vertex 3d coordinates or normals, matched to UV coordinates
     matched_texture_vertices : np.array of shape (n_matched, 2)
-        Matched texture vertices. Will be mapped back to [0, 1]^2!
+        Matched texture vertices.
     mesh_triangles : np.array of shape (n_matched, 3) or None
         Mesh faces to set up interpolator. Only works if mesh is triangular. If None,
         triangulation for interpolation is constructed automatically.
@@ -137,6 +141,8 @@ def interpolate_3d_to_uv(matched_texture_vertices, matched_vertices_or_normals,
         covered by the unwrapped mesh. If mesh_triangles is provided, masking happens automatically.
     uv_grid_steps : int, default 256
         Size of UV grid. Determines resolution of result.
+    map_back : bool, default True
+        Map back the UV coordinates to [0,1]^2. Else, coordinates outside [0,1] are ignored.
 
     Returns
     -------
@@ -145,22 +151,28 @@ def interpolate_3d_to_uv(matched_texture_vertices, matched_vertices_or_normals,
         correspond to any value are set to np.nan.
         
     """
-    matched_texture_vertices %= 1
+    if map_back:
+        outside = (matched_texture_vertices<0) | (matched_texture_vertices > 1)
+        matched_texture_vertices[outside] = (matched_texture_vertices[outside] % 1)
     u, v = 2*[np.linspace(0,1, uv_grid_steps),]
     U, V = np.meshgrid(u, v)
-    if mesh_triangles is None:
-        interpolated_3d = np.stack([interpolate.griddata(matched_texture_vertices, x, (U, V), method='linear')
-                                    for x in matched_vertices_or_normals.T], axis=-1)
-        interpolated_3d = interpolated_3d[::-1] # stupid axis convention issue!!
-        if uv_mask is not None:
-            interpolated_3d[~uv_mask,:] = np.nan
-    else:
-        triangulation = mpl.tri.Triangulation(*matched_texture_vertices.T, mesh_triangles)
-        interpolators = [mpl.tri.LinearTriInterpolator(triangulation, x) for x in matched_vertices_or_normals.T]
-        interpolated_3d = np.stack([interpolator(U,V) for interpolator in interpolators], axis=-1)[::-1]
+    if mesh_triangles is not None:
+        try:
+            triangulation = mpl.tri.Triangulation(*matched_texture_vertices.T, mesh_triangles)
+            interpolators = [mpl.tri.LinearTriInterpolator(triangulation, x) for x in matched_vertices_or_normals.T]
+            interpolated_3d = np.stack([interpolator(U,V) for interpolator in interpolators], axis=-1)[::-1]
+            return interpolated_3d
+        except RuntimeError:
+            warnings.warn(f"Invalid triangulation - trying alternate interpolation method.\
+            If results look bad, your mesh may be broken", RuntimeWarning)
+    interpolated_3d = np.stack([interpolate.griddata(matched_texture_vertices, x, (U, V), method='linear')
+                                for x in matched_vertices_or_normals.T], axis=-1)
+    interpolated_3d = interpolated_3d[::-1] # stupid axis convention issue!!
+    if uv_mask is not None:
+        interpolated_3d[~uv_mask,:] = np.nan
     return interpolated_3d
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 36
+# %% ../nbs/02_cartographic_interpolation.ipynb 39
 def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resolution, uv_mask=None):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
@@ -197,7 +209,7 @@ def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resoluti
     
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 44
+# %% ../nbs/02_cartographic_interpolation.ipynb 47
 def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_positions, interpolated_normals,
                                                  normal_offsets, resolution, uv_mask=None):
     """ 
@@ -241,9 +253,9 @@ def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_position
                                   for o in normal_offsets], axis=1)
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 50
+# %% ../nbs/02_cartographic_interpolation.ipynb 53
 def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,), uv_grid_steps=256,
-                                    uv_mask='auto'):
+                                    uv_mask='auto', map_back=True):
     """
     Create multilayer cartographic projections of image using mesh.
     
@@ -272,6 +284,8 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
         If None, no masking takes place. No masking may result in spurious results in the part of
         the UV square not covered by the unwrapped mesh. Can be obtained manually from exported
         blender UV layout.
+    map_back : bool, default True
+        Map back the UV coordinates to [0,1]^2. Else, coordinates outside [0,1] are ignored.
     
     Returns
     -------
@@ -289,28 +303,40 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
     mesh.match_vertex_info()
     u, v = 2*[np.linspace(0,1, uv_grid_steps),]
     U, V = np.meshgrid(u, v)
-    if not mesh.is_triangular:
-        if (uv_mask == "auto"):
-            uv_mask = get_uv_layout_mask_mask(mesh, uv_grid_steps=uv_grid_steps)
-        interpolated_3d_positions = interpolate_3d_to_uv(mesh.matched_texture_vertices, mesh.matched_vertices,
-                                                         mesh_triangles=None,
-                                                         uv_grid_steps=uv_grid_steps, uv_mask=uv_mask)
-        interpolated_normals = interpolate_3d_to_uv(mesh.matched_texture_vertices, mesh.matched_normals,
-                                                    mesh_triangles=None,
-                                                    uv_grid_steps=uv_grid_steps, uv_mask=uv_mask)
-        interpolated_data = interpolate_volumetric_data_to_uv_multilayer(image,
-                                                                         interpolated_3d_positions,
-                                                                         interpolated_normals, normal_offsets,
-                                                                         resolution, uv_mask=uv_mask)
-    else:
-        interpolated_3d_positions = interpolate_3d_to_uv(mesh.matched_texture_vertices, mesh.matched_vertices,
-                                                         mesh_triangles=mesh.texture_tris,
-                                                         uv_grid_steps=uv_grid_steps)
-        interpolated_normals = interpolate_3d_to_uv(mesh.matched_texture_vertices, mesh.matched_normals,
-                                                    mesh_triangles=mesh.texture_tris,
-                                                    uv_grid_steps=uv_grid_steps)
-        interpolated_data = interpolate_volumetric_data_to_uv_multilayer(image,
-                                                                         interpolated_3d_positions,
-                                                                         interpolated_normals, normal_offsets,
-                                                                         resolution, uv_mask=None)
+    if mesh.is_triangular:
+        try:
+            with warnings.catch_warnings(record=True) as w: # deal with warning if interpolator fails
+                warnings.simplefilter("always")
+                interpolated_3d_positions = interpolate_3d_to_uv(mesh.matched_texture_vertices,
+                                                                 mesh.matched_vertices,
+                                                                 mesh_triangles=mesh.texture_tris,
+                                                                 uv_grid_steps=uv_grid_steps,
+                                                                 map_back=map_back)
+                interpolated_normals = interpolate_3d_to_uv(mesh.matched_texture_vertices, mesh.matched_normals,
+                                                            mesh_triangles=mesh.texture_tris,
+                                                            uv_grid_steps=uv_grid_steps,
+                                                            map_back=map_back)
+                assert len(w) == 0
+                interpolated_data = interpolate_volumetric_data_to_uv_multilayer(image,
+                                                                                 interpolated_3d_positions,
+                                                                                 interpolated_normals,
+                                                                                 normal_offsets,
+                                                                                 resolution, uv_mask=None)
+                return interpolated_data, interpolated_3d_positions, interpolated_normals 
+        except AssertionError:
+            pass
+    if (uv_mask == "auto"):
+        uv_mask = get_uv_layout_mask_mask(mesh, uv_grid_steps=uv_grid_steps)
+    interpolated_3d_positions = interpolate_3d_to_uv(mesh.matched_texture_vertices, mesh.matched_vertices,
+                                                     mesh_triangles=None,
+                                                     uv_grid_steps=uv_grid_steps, uv_mask=uv_mask,
+                                                     map_back=map_back)
+    interpolated_normals = interpolate_3d_to_uv(mesh.matched_texture_vertices, mesh.matched_normals,
+                                                mesh_triangles=None,
+                                                uv_grid_steps=uv_grid_steps, uv_mask=uv_mask,
+                                                map_back=map_back)
+    interpolated_data = interpolate_volumetric_data_to_uv_multilayer(image,
+                                                                     interpolated_3d_positions,
+                                                                     interpolated_normals, normal_offsets,
+                                                                     resolution, uv_mask=uv_mask)
     return interpolated_data, interpolated_3d_positions, interpolated_normals 
