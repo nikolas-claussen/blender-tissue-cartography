@@ -12,5 +12,6 @@ dependencies:
   - jupyter
   - nb_conda_kernels
   - tqdm
+  - meshio
   - pip:
       - pymcubes

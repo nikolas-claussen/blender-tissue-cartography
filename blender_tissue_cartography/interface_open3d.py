@@ -7,6 +7,7 @@ __all__ = ['convert_to_open3d', 'convert_from_open3d']
 from . import io as tcio
 import numpy as np
 import open3d as o3d
+import warnings
 
 # %% ../nbs/01c_interface_open3d.ipynb 5
 def convert_to_open3d(mesh: tcio.ObjMesh, add_texture_info=None) -> o3d.t.geometry.TriangleMesh:
@@ -23,13 +24,15 @@ def convert_to_open3d(mesh: tcio.ObjMesh, add_texture_info=None) -> o3d.t.geomet
     mesh : tcio.ObjMesh
         Input mesh
     add_texture_info : None or bool
-        Whether to add texture info to the pymeshlab.Mesh. If None, texture is added if available
+        Whether to add texture info. If None, texture is added if available
         for all vertices. If True, missing texture info is set to np.nan
     Returns
     -------
     mesh_o3d: o3d.t.geometry.TriangleMesh
 
     """
+    if not mesh.is_triangular:
+        warnings.warn(f"Warning: mesh not triangular. discarding non-triangular faces")
     add_texture_info = (not np.isnan(mesh.vertex_textures).any()
                         if add_texture_info is None else add_texture_info)
     

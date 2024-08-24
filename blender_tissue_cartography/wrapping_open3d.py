@@ -5,6 +5,7 @@ __all__ = ['shrinkwrap_o3d']
 
 # %% ../nbs/03b_wrapping_open3d.ipynb 1
 from . import io as tcio
+from . import registration as tcreg
 from . import interface_open3d as into3d
 import numpy as np
 from copy import deepcopy
