@@ -14,6 +14,7 @@ import tifffile
 import json
 import os
 from copy import deepcopy
+import meshio
 
 # %% ../nbs/01a_io.ipynb 5
 def adjust_axis_order(image, channel_axis=None):
@@ -184,6 +185,33 @@ class ObjMesh:
             mesh = ObjMesh(vs, fs, texture_vertices=vts, normals=ns, name=name)
         return mesh
     
+    @staticmethod
+    def read_other_formats_without_uv(filename):
+        """
+        Return vertices and faces from an arbitrary mesh file format. file.
+
+        Use meshio to read in mesh files not saved as .obj (e.g. .ply, .stl etc).
+        This function does NOT read in normals or texture coordinates, and should
+        NOT be used for files with texture/normal information, which is not
+        correctly handled by meshio. 
+        
+        See https://github.com/nschloe/meshio.
+        
+        Parameters
+        ----------
+        filename : str
+            filename
+        Returns
+        -------
+        mesh: ObjMesh
+            Only contains face and vertex info.
+        """
+
+        mesh = meshio.read(filename)
+        fs = [list(x) for x in flatten([c.data for c in mesh.cells], max_depth=1)]
+        vs = mesh.points
+        return ObjMesh(vs, fs, texture_vertices=None, normals=None, name=None)
+    
     def write_obj(self, filename,):
         """
         Write mesh to .obj format.
@@ -336,7 +364,7 @@ class ObjMesh:
             newmesh.match_vertex_info()
         return newmesh
 
-# %% ../nbs/01a_io.ipynb 32
+# %% ../nbs/01a_io.ipynb 33
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -362,7 +390,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01a_io.ipynb 34
+# %% ../nbs/01a_io.ipynb 35
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file

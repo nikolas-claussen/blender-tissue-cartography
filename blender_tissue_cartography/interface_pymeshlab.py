@@ -7,6 +7,7 @@ __all__ = ['convert_to_pymeshlab', 'convert_from_pymeshlab']
 from . import io as tcio
 import numpy as np
 import pymeshlab
+import warnings
 
 # %% ../nbs/01b_interface_pymeshlab.ipynb 8
 def convert_to_pymeshlab(mesh: tcio.ObjMesh, add_texture_info=None) -> pymeshlab.Mesh:
@@ -31,6 +32,8 @@ def convert_to_pymeshlab(mesh: tcio.ObjMesh, add_texture_info=None) -> pymeshlab
     pymeshlab.Mesh
 
     """
+    if not mesh.is_triangular:
+        warnings.warn(f"Warning: mesh not triangular. discarding non-triangular faces")
     add_texture_info = ((not mesh.only_vertices and len(mesh.texture_vertices) > 0)
                         if add_texture_info is None else add_texture_info)
     if not add_texture_info:
