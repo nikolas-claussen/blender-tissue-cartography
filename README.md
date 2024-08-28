@@ -58,17 +58,12 @@ for “production” use yet.
     - `conda activate blender_tissue_cartography`
     - `pip install -e .`
 
-5.  (Optional) Install extra python libraries for `pymeshlab`,
-    `trimesh`, or `open3d` which are required for some advanced
-    functionality (remeshing and smoothing from within python, dynamic
-    surfaces in time-lapse microscopy).
+5.  (Optional) Install extra python library for `pymeshlab`, required
+    for some advanced functionality (remeshing and surface
+    reconstruction from within python).
 
     - `pip install pymeshlab` - Note that this package is not available
       on new ARM Apple computers.
-    - `pip install trimesh[easy]` - Install if `pymeshlab` is not
-      available
-    - `pip install open3d` - Install if neither `pymeshlab` or `trimesh`
-      work for you.
 
 6.  (Optional) If you plan on developing/extending the code, install
     [nbdev](https://nbdev.fast.ai/)
@@ -129,6 +124,8 @@ computational notebook to run the `blender_tissue_cartography` module
   - [tifffile](https://github.com/cgohlke/tifffile/) for reading/writing
     of `.tif` files, including metadata.
   - [PyMCubes](https://github.com/pmneila/PyMCubes) Marching cubes.
+  - [libigl](https://libigl.github.io/libigl-python-bindings) Geometry
+    processing.
 - [Ilastik](https://www.ilastik.org/) Image classification and
   segmentation,
 - [Blender](https://www.blender.org/) Mesh editing and UV mapping.
@@ -140,14 +137,13 @@ computational notebook to run the `blender_tissue_cartography` module
 
 - Python libraries:
 
-  - [Open3d](https://www.open3d.org) 3d geometry library.
   - [PyMeshLab](https://pymeshlab.readthedocs.io/en/latest/index.html)
     Python interface to MeshLab.
+  - [trimesh](https://trimesh.org/) for analyzing triangular meshes
   - [Morphsnakes](https://github.com/pmneila/morphsnakes) “Inflating
     balloon” segmentation
   - [nbdev](https://nbdev.fast.ai/tutorials/tutorial.html) for
     notebook-based development, if you want to add your own code
-  - [trimesh](https://trimesh.org/) for working with triangular meshes
 
 - Blender plugins:
 
