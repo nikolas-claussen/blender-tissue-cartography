@@ -47,7 +47,7 @@ def convert_to_pymeshlab(mesh: tcio.ObjMesh, add_texture_info=None) -> pymeshlab
         converted.add_face_custom_point_attribute(atttrib, f"face_tex_vertex_{vertex}")
     return converted
 
-# %% ../nbs/01b_interface_pymeshlab.ipynb 15
+# %% ../nbs/01b_interface_pymeshlab.ipynb 18
 def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=True,
                            texture_vertex_decimals=10) -> tcio.ObjMesh:
     """
@@ -63,10 +63,10 @@ def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=
     normals = mesh.vertex_normal_matrix()
     normals = (normals.T / np.linalg.norm(normals, axis=-1)).T
     if not mesh.has_vertex_tex_coord():
-        faces = [[3*[v,] for v in f] for f in mesh.face_matrix()]
+        faces = [[2*[v,] for v in f] for f in mesh.face_matrix()]
         return tcio.ObjMesh(vertices=vertices, faces=faces, normals=normals)
     if mesh.has_vertex_tex_coord() and not reconstruct_texture_from_faces:
-        faces = [[3*[v,] for v in f] for f in mesh.face_matrix()]
+        faces = [[2*[v,] for v in f] for f in mesh.face_matrix()]
         return tcio.ObjMesh(vertices=vertices, faces=faces, normals=normals,
                            texture_vertices=mesh.vertex_tex_coord_matrix())
     # reconstruct texture vertices - big pain.
@@ -76,7 +76,7 @@ def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=
     texture_vertices_unique, inverse_index = np.unique(texture_vertices, axis=0, return_inverse=True)
     
     n_faces = mesh.face_matrix().shape[0]
-    faces = [[[v, inverse_index[ifc+iv*n_faces], v] for iv, v in enumerate(fc)]
+    faces = [[[v, inverse_index[ifc+iv*n_faces]] for iv, v in enumerate(fc)]
              for ifc, fc in enumerate(mesh.face_matrix())]
 
     return tcio.ObjMesh(vertices=vertices, faces=faces, normals=normals, texture_vertices=texture_vertices_unique)

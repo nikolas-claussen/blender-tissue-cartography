@@ -8,7 +8,7 @@ import numpy as np
 from scipy import stats, spatial, linalg
 import itertools
 
-# %% ../nbs/03a_registration.ipynb 19
+# %% ../nbs/03a_registration.ipynb 20
 def package_affine_transformation(matrix, vector):
     """Package matrix transformation & translation into (d+1,d+1) matrix representation of affine transformation."""
     matrix_rep = np.hstack([matrix, vector[:, np.newaxis]])
@@ -106,7 +106,7 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
     affine_matrix_rep = np.round(package_affine_transformation(trafo_matrix, trafo_translate),decimals=2)
     return affine_matrix_rep, aligned
 
-# %% ../nbs/03a_registration.ipynb 29
+# %% ../nbs/03a_registration.ipynb 34
 def procrustes(source, target, scale=True):
     """
     Procrustes analysis, a similarity test for two data sets.
@@ -194,7 +194,7 @@ def procrustes(source, target, scale=True):
     
     return trafo_affine, aligned, disparity
 
-# %% ../nbs/03a_registration.ipynb 37
+# %% ../nbs/03a_registration.ipynb 42
 def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, scale=True, n_samples=1000):
     """
     Apply the iterative closest point algorithm to align point cloud a with

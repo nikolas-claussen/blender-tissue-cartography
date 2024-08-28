@@ -41,6 +41,7 @@ def shrinkwrap_pymeshlab(mesh_source, mesh_target, n_iter_smooth_target=10, n_it
     mesh_wrapped : tcio.ObjMesh
 
     """
+    warnings.warn('This method is deprecated. Use wrapping.shrinkwrap_igl', DeprecationWarning, stacklevel=2)
     mesh_target_msl = intmsl.convert_to_pymeshlab(mesh_target)
     mesh_source_msl = intmsl.convert_to_pymeshlab(mesh_source)
     # create MeshSet and add the two meshes
@@ -58,7 +59,7 @@ def shrinkwrap_pymeshlab(mesh_source, mesh_target, n_iter_smooth_target=10, n_it
     ms.apply_coord_taubin_smoothing(stepsmoothnum=n_iter_smooth_target)
     mesh_wrapped = intmsl.convert_from_pymeshlab(ms.mesh(1))
     # check if any normals were flipped
-    dots = np.einsum("vi,vi->v", mesh_source.vertex_normals, mesh_wrapped.vertex_normals)
+    dots = np.einsum("vi,vi->v", mesh_source.normals, mesh_wrapped.normals)
     if np.sum(dots < 0) > 0:
-        warnings.warn(f"Warning: {np.sum(dots<0)} normal(s) flipped during shrink-wrapping")
+        warnings.warn(f"Warning: {np.sum(dots<0)} normal(s) flipped during shrink-wrapping", RuntimeWarning)
     return mesh_wrapped
