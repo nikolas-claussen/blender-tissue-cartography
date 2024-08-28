@@ -2,8 +2,8 @@
 
 # %% auto 0
 __all__ = ['adjust_axis_order', 'normalize_quantiles_zstack', 'write_h5', 'read_h5', 'flatten', 'pad_list', 'unique',
-           'index_else_nan', 'ObjMesh', 'save_dict_to_json', 'save_for_imageJ', 'normalize_quantiles_for_png',
-           'save_stack_for_blender']
+           'index_else_nan', 'ObjMesh', 'read_other_formats_without_uv', 'save_dict_to_json', 'save_for_imageJ',
+           'normalize_quantiles_for_png', 'save_stack_for_blender']
 
 # %% ../nbs/01a_io.ipynb 1
 import numpy as np
@@ -15,7 +15,8 @@ import tifffile
 import json
 import os
 from copy import deepcopy
-import meshio
+import warnings
+import igl
 
 # %% ../nbs/01a_io.ipynb 5
 def adjust_axis_order(image, channel_axis=None):
@@ -146,9 +147,10 @@ class ObjMesh:
         - only_vertices = bool. 
     vertices, texture_vertices, normals are np.arrays, faces is a list of lists.
     Each face is either a list of vertex indices (if only_vertices is True), or, if the mesh
-    has texture and normal information, a list of vertex/texture/normal index triples.
-    Missing data is represented by np.nan. Faces can be any length (triangles, quads, ...).
-    Indices start at 0!
+    has texture nformation, a list of vertex/normal index pairs. 
+    Normals are always defined per-vertex, i.e. self.normals[i] is the normal vector at
+    self.vertices[i].   Missing data is represented by np.nan.
+    Faces can be any length (triangles, quads, ...). Indices start at 0!
     
     The method match_vertex_info can be used to match up vertices, texture vertices and
     normals based on the face connectivity. This sets the following attributes:
@@ -165,18 +167,18 @@ class ObjMesh:
         self.vertices, self.faces = (vertices, faces)
         self.texture_vertices, self.normals = (texture_vertices, normals)
         self.name = None
-        self.only_vertices = texture_vertices is None and normals is None
 
     @staticmethod
     def read_obj(filename):
         """
         Return vertices, texture vertices, normals, and faces from an obj file.
 
-        Faces are lists of 3-tuples vertex/texture vertex/normal. If a certain vertex has no texture or normal 
-        associated to it, the entry is np.nan, else it is an index into the vertex, texture, and normal arrays
+        Faces are lists of pairs vertex/texture vertex. If a certain vertex has no texture 
+        associated to it, the entry is np.nan, else it is an index into the vertex/texture arrays
         (note: indices of returned faces start at 0!). See https://en.wikipedia.org/wiki/Wavefront_.obj_file.
         
-        Intended for .obj files containing a single object only.
+        Intended for .obj files containing a single object only. Will emit a warning if multiple objects
+        are detected.
 
         Parameters
         ----------
@@ -194,6 +196,8 @@ class ObjMesh:
         with open(filename, 'r') as f:
             lines = f.readlines()
         names = [ln.split()[1:] for ln in lines if ln.startswith("o ")]
+        if len(names) > 0:
+            warnings.warn(f"Warning: multiple meshes in .obj file", RuntimeWarning)
         name = None if len(names) == 0 else names[0]
         vs = np.array([ln.split()[1:] for ln in lines if ln.startswith("v ")]).astype(float)
         vts = np.array([ln.split()[1:] for ln in lines if ln.startswith("vt ")]).astype(float)
@@ -201,40 +205,20 @@ class ObjMesh:
         fs = [ln.split()[1:] for ln in lines if ln.startswith("f ")]
         fs = [[pad_list([_str_to_int_or_nan(y)-1 for y in x.split("/")], length=3, fill_value=np.nan)
                for x in f] for f in fs]
-        if vts.shape == (0,) and ns.shape == (0,):
+        if vts.shape == (0,) and ns.shape == (0,): # if there is no texture information
             fs = [[v[0] for v in f] for f in fs]
             mesh = ObjMesh(vs, fs, texture_vertices=None, normals=None, name=name)
-        else:
+        else: 
+            # match up normals to vertices
+            v_n_pairs = [np.nan for v in range(vs.shape[0])]
+            for v, _, n in flatten(fs, max_depth=1):
+                v_n_pairs[v] = n
+            ns = index_else_nan(ns, np.array(v_n_pairs))
+            ns = (ns.T/np.linalg.norm(ns, axis=1)).T
+            fs = [[v[:2] for v in f] for f in fs]
             mesh = ObjMesh(vs, fs, texture_vertices=vts, normals=ns, name=name)
         return mesh
-    
-    @staticmethod
-    def read_other_formats_without_uv(filename):
-        """
-        Return vertices and faces from an arbitrary mesh file format. file.
-
-        Use meshio to read in mesh files not saved as .obj (e.g. .ply, .stl etc).
-        This function does NOT read in normals or texture coordinates, and should
-        NOT be used for files with texture/normal information, which is not
-        correctly handled by meshio. 
         
-        See https://github.com/nschloe/meshio.
-        
-        Parameters
-        ----------
-        filename : str
-            filename
-        Returns
-        -------
-        mesh: ObjMesh
-            Only contains face and vertex info.
-        """
-
-        mesh = meshio.read(filename)
-        fs = [list(x) for x in flatten([c.data for c in mesh.cells], max_depth=1)]
-        vs = mesh.points
-        return ObjMesh(vs, fs, texture_vertices=None, normals=None, name=None)
-    
     def write_obj(self, filename,):
         """
         Write mesh to .obj format.
@@ -265,14 +249,14 @@ class ObjMesh:
                 f.writelines(vlines)
                 f.writelines(flines)
         else:
-            assert all([len(v)==3 for v in flatten(self.faces, max_depth=1)]), "each vertex must have 3 indices"
+            assert all([len(v)==2 for v in flatten(self.faces, max_depth=1)]), "each vertex must have 2 indices"
             texture_vertices = [] if self.texture_vertices is None else self.texture_vertices
-            normals = [] if self.normals is None else self.normals
             vlines = ["v {} {} {}\n".format(*v) for v in self.vertices]
             vtlines = ["vt {} {}\n".format(*vt) for vt in texture_vertices]
-            nlines = ["vn {} {} {}\n".format(*n) for n in normals]
+            nlines = ["vn {} {} {}\n".format(*n) for n in self.normals] if self.normals is not None else []
+            faces_with_normals = [[[v[0], v[1], v[0]] for v in fc] for fc in self.faces]
             flines = ["f {} {} {}\n".format(*["{}/{}/{}".format(*[_int_or_nan_to_str(ix+1) for ix in v])
-                                              for v in fc]) for fc in self.faces]
+                                              for v in fc]) for fc in faces_with_normals]
             with open(filename, 'w') as f:
                 f.writelines(namelines)
                 f.writelines(vlines)
@@ -280,6 +264,14 @@ class ObjMesh:
                 f.writelines(nlines)
                 f.writelines(flines)
         return None
+    
+    @property
+    def only_vertices(self):
+        if self.texture_vertices is None:
+            assert all([not isinstance(v, Iterable) for v in flatten(self.faces, max_depth=1)]), \
+                "If texture_vertices is None, faces must be lists of vertex indices only"
+            return True
+        return False
     
     @property
     def is_triangular(self):
@@ -301,30 +293,26 @@ class ObjMesh:
         return np.array([[v[1] for v in fc] for fc in self.faces if len(fc)==3])
     
     @property
-    def vertex_normals(self):
-        """Get array of vertex normals. If multiple normals per vertex are stored, the last one is returned"""
-        if self.only_vertices:
-            return np.nan*np.ones_like(self.vertices)
-        if len(self.normals) == 0:
-            return np.nan*np.ones_like(self.vertices)
-        v_n_pairs = [np.nan for v in range(self.vertices.shape[0])] # in case there are stray vertices w/out face
-        for v, _, n in flatten(self.faces, max_depth=1):
-            v_n_pairs[v] = n
-        return index_else_nan(self.normals, np.array(v_n_pairs))
-
-    @property
     def vertex_textures(self):
         """Get array of vertex texture coordinates. If multiple textures per vertex are stored,
-        the last one is returned"""
+        the last one is returned."""
         if self.only_vertices:
             return np.nan*np.ones_like(self.vertices)[:,:2]
         if len(self.texture_vertices) == 0:
             return np.nan*np.ones_like(self.vertices)[:,:2]
         v_vt_pairs = [np.nan for v in range(self.vertices.shape[0])] # in case there are stray vertices w/out face
-        for v, vt, _ in flatten(self.faces, max_depth=1):
+        for v, vt in flatten(self.faces, max_depth=1):
             v_vt_pairs[v] = vt
         return index_else_nan(self.texture_vertices, np.array(v_vt_pairs))
     
+    def set_normals(self):
+        """Recompute normals based on 3d positions. Only works for triangular meshes."""
+        if not self.is_triangular:
+            warnings.warn(f"Warning: mesh not triangular - normals may be incorrect", RuntimeWarning)
+        normals = igl.per_vertex_normals(self.vertices, self.tris,)
+        self.normals = (normals.T / np.linalg.norm(normals, axis=1)).T
+        return None
+        
     def match_vertex_info(self):
         """
         Match up 3d vertex coordinates and normals to texture vertices based on face connectivity.
@@ -333,7 +321,7 @@ class ObjMesh:
         corresponding to each texture vertex. The resulting arrays have the shape
         (self.texture_vertices.shape[0], 3). For completeness, also sets the attribute 
         matched_texture_vertices, which is identical to texture_vertices. If normal
-        information does not exist for a given texture vertex, the entry is set to np.nan
+        information does not exist for a given texture vertex, the entry is set to np.nan.
                     
         Returns
         -------
@@ -342,15 +330,36 @@ class ObjMesh:
         
         assert not self.only_vertices and len(self.normals) > 0 and len(self.texture_vertices) > 0, \
             """Method requires texture or normal information"""
-        texture_vertex_dict = {v[1]: (v[0], v[2]) for v in flatten(self.faces, max_depth=1) if not np.isnan(v[1])}
-        texture_inds = np.arange(self.texture_vertices.shape[0])
-        matched_vertex_inds = np.array([texture_vertex_dict[i][0] for i in texture_inds])
-        matched_normal_inds = np.array([texture_vertex_dict[i][1] for i in texture_inds])
+        texture_vertex_dict = {v[1]: v[0] for v in flatten(self.faces, max_depth=1) if not np.isnan(v[1])}
+        matched_vertex_inds = np.array([texture_vertex_dict[i] for i in range(self.texture_vertices.shape[0])])
         self.matched_vertices = self.vertices[matched_vertex_inds]
         self.matched_texture_vertices = np.copy(self.texture_vertices)
-        self.matched_normals = index_else_nan(self.normals, matched_normal_inds)
+        self.matched_normals = index_else_nan(self.normals, matched_vertex_inds)
         return None
 
+    def cut_along_seams(self):
+        """
+        Cut mesh along texture seams.
+
+        Returns a new ObjMesh in which the topology of the vertices matches the topology of the texture vertices,
+        by duplicating vertices along "seams" (i.e. which have multiple corresponding texture vertices),
+        and discarding any vertices without texture coordinates.
+        
+        Returns
+        -------
+        ObjMesh
+
+        """
+        assert not self.only_vertices and len(self.normals) > 0 and len(self.texture_vertices) > 0, \
+            """Method requires texture or normal information"""
+        texture_vertex_dict = {v[1]: v[0] for v in flatten(self.faces, max_depth=1) if not np.isnan(v[1])}
+        matched_vertex_inds = np.array([texture_vertex_dict[i] for i in range(self.texture_vertices.shape[0])])
+        matched_vertices = self.vertices[matched_vertex_inds]
+        matched_normals = index_else_nan(self.normals, matched_vertex_inds)
+        cut_faces = [[[v[1], v[1]] for v in fc] for fc in self.faces if not any([np.isnan(v[1]) for v in fc])]
+        return ObjMesh(matched_vertices, cut_faces, texture_vertices=self.texture_vertices,
+                       normals=matched_normals, name=self.name)
+        
     def apply_affine_to_mesh(self, trafo, update_matched_data=True):
         """
         Apply affine transformation to mesh.
@@ -387,7 +396,32 @@ class ObjMesh:
             newmesh.match_vertex_info()
         return newmesh
 
-# %% ../nbs/01a_io.ipynb 34
+# %% ../nbs/01a_io.ipynb 19
+def read_other_formats_without_uv(filename):
+    """
+    Return vertices and faces from a non-.obj mesh file format. file.
+
+    Supported formats are: obj, off, stl, wrl, ply, mesh.
+    Will NOT read in normals or texture coordinates. If you have texture
+    coordinates, save your mesh as .obj. Will only return triangular faces.
+
+    See https://libigl.github.io/libigl-python-bindings/igl_docs/#read_triangle_mesh.
+
+    Parameters
+    ----------
+    filename : str
+        filename
+    Returns
+    -------
+    mesh: ObjMesh
+        Only contains face and vertex info.
+    """
+    vs, fs = igl.read_triangle_mesh(filename)
+    ns = igl.per_vertex_normals(v, f)
+    return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
+
+
+# %% ../nbs/01a_io.ipynb 36
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -413,7 +447,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01a_io.ipynb 36
+# %% ../nbs/01a_io.ipynb 38
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file

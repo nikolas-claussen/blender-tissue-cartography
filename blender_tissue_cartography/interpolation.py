@@ -59,11 +59,10 @@ def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, res
     slice_image = image.take(indices=slice_index, axis=slice_axis+1).transpose((0,2,1))
     slice_coordinate = slice_index*resolution[slice_axis]
     if get_normals:
-        mesh.match_vertex_info()
-        slice_mask = np.abs(mesh.matched_vertices[:,slice_axis]-slice_coordinate) < width
-        slice_vertices = mesh.matched_vertices[slice_mask] / resolution
+        slice_mask = np.abs(mesh.vertices[:,slice_axis]-slice_coordinate) < width
+        slice_vertices = mesh.vertices[slice_mask] / resolution
         slice_vertices = slice_vertices.take(indices=[i for i in range(3) if i != slice_axis], axis=1)
-        slice_normals = mesh.matched_normals[slice_mask] / resolution
+        slice_normals = mesh.normals[slice_mask] / resolution
         slice_normals = slice_normals.take(indices=[i for i in range(3) if i != slice_axis], axis=1)
         return slice_image, slice_vertices, slice_normals
     slice_mask = np.abs(mesh.vertices[:,slice_axis]-slice_coordinate) < width

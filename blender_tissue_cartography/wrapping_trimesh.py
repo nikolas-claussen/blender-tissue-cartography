@@ -42,6 +42,8 @@ def shrinkwrap_trimesh(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter
     mesh_wrapped : tcio.ObjMesh
 
     """
+    warnings.warn('This method is deprecated. Use wrapping.shrinkwrap_igl', DeprecationWarning, stacklevel=2)
+
     mesh_target_trimesh = inttrm.convert_to_trimesh(mesh_target)
     mesh_source_trimesh = inttrm.convert_to_trimesh(mesh_source)
     # taubin smoothing of target
@@ -54,7 +56,7 @@ def shrinkwrap_trimesh(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter
                                                                    iterations=n_iter_smooth_wrapped).vertices
     mesh_wrapped = inttrm.convert_from_trimesh(mesh_source_trimesh, reconstruct_texture_from_faces=True)
     # check if any normals were flipped
-    dots = np.einsum("vi,vi->v", mesh_source.vertex_normals, mesh_wrapped.vertex_normals)
+    dots = np.einsum("vi,vi->v", mesh_source.normals, mesh_wrapped.normals)
     if np.sum(dots < 0) > 0:
-        warnings.warn(f"Warning: {np.sum(dots<0)} normal(s) flipped during shrink-wrapping")
+        warnings.warn(f"Warning: {np.sum(dots<0)} normal(s) flipped during shrink-wrapping", RuntimeWarning)
     return mesh_wrapped
