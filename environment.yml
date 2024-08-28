@@ -10,8 +10,7 @@ dependencies:
   - scikit-image
   - h5py
   - jupyter
-  - nb_conda_kernels
   - tqdm
-  - meshio
   - pip:
       - pymcubes
+      - libigl

@@ -68,7 +68,7 @@ for “production” use yet.
     - `pip install trimesh[easy]` - Install if `pymeshlab` is not
       available
     - `pip install open3d` - Install if neither `pymeshlab` or `trimesh`
-      work for you
+      work for you.
 
 6.  (Optional) If you plan on developing/extending the code, install
     [nbdev](https://nbdev.fast.ai/)
@@ -86,7 +86,7 @@ the jupyter notebooks on GitHub without downloading anything.
 To run a tutorial on your computer, follow the installation instructions
 and then [launch
 jupyter](https://docs.jupyter.org/en/latest/running.html) and open
-`tutorials/02_basics_example.ipynb`. It is recommended you are
+`tutorials/03_basics_example.ipynb`. It is recommended you are
 comfortable with running simple python code (you don’t have to do any
 coding yourself), and know the basic user interface of blender (again,
 nothing fancy).
