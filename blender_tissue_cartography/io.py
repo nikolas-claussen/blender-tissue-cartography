@@ -196,7 +196,7 @@ class ObjMesh:
         with open(filename, 'r') as f:
             lines = f.readlines()
         names = [ln.split()[1:] for ln in lines if ln.startswith("o ")]
-        if len(names) > 0:
+        if len(names) > 1:
             warnings.warn(f"Warning: multiple meshes in .obj file", RuntimeWarning)
         name = None if len(names) == 0 else names[0]
         vs = np.array([ln.split()[1:] for ln in lines if ln.startswith("v ")]).astype(float)
@@ -417,7 +417,7 @@ def read_other_formats_without_uv(filename):
         Only contains face and vertex info.
     """
     vs, fs = igl.read_triangle_mesh(filename)
-    ns = igl.per_vertex_normals(v, f)
+    ns = igl.per_vertex_normals(vs, fs)
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
