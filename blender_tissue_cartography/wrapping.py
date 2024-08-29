@@ -14,7 +14,7 @@ import igl
 
 from scipy import sparse
 
-# %% ../nbs/03b_wrapping.ipynb 18
+# %% ../nbs/03b_wrapping.ipynb 17
 def get_uniform_laplacian(tris, normalize=True):
     """
     Get uniform Laplacian (purely connectivity based) as sparse matrix.
@@ -28,7 +28,7 @@ def get_uniform_laplacian(tris, normalize=True):
         return sparse.diags(1/a_sum)@(a - a_diag)
     return (a - a_diag)
 
-# %% ../nbs/03b_wrapping.ipynb 19
+# %% ../nbs/03b_wrapping.ipynb 18
 def smooth_laplacian(mesh: tcio.ObjMesh, lamb=0.5, n_iter=10, method="explicit") -> tcio.ObjMesh:
     """
     Smooth using Laplacian filter.
@@ -70,7 +70,7 @@ def smooth_laplacian(mesh: tcio.ObjMesh, lamb=0.5, n_iter=10, method="explicit")
     mesh_smoothed.set_normals()
     return mesh_smoothed
 
-# %% ../nbs/03b_wrapping.ipynb 22
+# %% ../nbs/03b_wrapping.ipynb 21
 def smooth_taubin(mesh: tcio.ObjMesh, lamb=0.5, nu=0.53, n_iter=10,) -> tcio.ObjMesh:
     """
     Smooth using Taubin filter (like Laplacian, but avoids shrinkage).
@@ -107,7 +107,7 @@ def smooth_taubin(mesh: tcio.ObjMesh, lamb=0.5, nu=0.53, n_iter=10,) -> tcio.Obj
     mesh_smoothed.set_normals()
     return mesh_smoothed
 
-# %% ../nbs/03b_wrapping.ipynb 32
+# %% ../nbs/03b_wrapping.ipynb 31
 def shrinkwrap_igl(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smooth_wrapped=10):
     """
     Shrink-wrap the source mesh onto the target mesh using trimesh.
@@ -136,7 +136,7 @@ def shrinkwrap_igl(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smo
     mesh_wrapped : tcio.ObjMesh
 
     """
-    if not mesh.is_triangular:
+    if not mesh_target.is_triangular:
         warnings.warn(f"Warning: mesh not triangular - result may be incorrect", RuntimeWarning)
     # smooth if necessary
     if n_iter_smooth_target > 0:
@@ -148,7 +148,7 @@ def shrinkwrap_igl(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smo
                                                                  target_verts, mesh_target.tris)
     # create wrapped mesh
     mesh_wrapped = tcio.ObjMesh(points, mesh_source.faces, texture_vertices=mesh_source.texture_vertices,
-                            normals=None, name=mesh_source.name)
+                                normals=None, name=mesh_source.name)
     mesh_wrapped.set_normals()
     if n_iter_smooth_wrapped > 0:
         mesh_wrapped = smooth_taubin(mesh_wrapped, n_iter=n_iter_smooth_wrapped)
