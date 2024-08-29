@@ -96,10 +96,7 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
             distances.append(stats.trim_mean(tree.query(aligned)[0], q))
         else:
             rot_matrix = source_eig.eigenvectors@flip@target_eig.eigenvectors.T
-            if np.linalg.det(rot_matrix) < 1:
-                distances.append(3)
-            else:
-                distances.append(3-np.trace(rot_matrix))
+            distances.append(np.abs(3-np.trace(rot_matrix)))
     trafo_matrix = trafo_matrix_candidates[np.argmin(distances)]
     trafo_translate = target_centroid - trafo_matrix@source_centroid
     aligned = source@trafo_matrix.T + trafo_translate
