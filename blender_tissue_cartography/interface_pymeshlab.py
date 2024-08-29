@@ -68,7 +68,7 @@ def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=
     if mesh.has_vertex_tex_coord() and not reconstruct_texture_from_faces:
         faces = [[2*[v,] for v in f] for f in mesh.face_matrix()]
         return tcio.ObjMesh(vertices=vertices, faces=faces, normals=normals,
-                           texture_vertices=mesh.vertex_tex_coord_matrix())
+                            texture_vertices=mesh.vertex_tex_coord_matrix())
     # reconstruct texture vertices - big pain.
     texture_vertices = np.vstack([mesh.face_custom_point_attribute_matrix(f"face_tex_vertex_{i}")[:,:2]
                                   for i in [0,1,2]])

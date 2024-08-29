@@ -80,11 +80,12 @@ the jupyter notebooks on GitHub without downloading anything.
 
 To run a tutorial on your computer, follow the installation instructions
 and then [launch
-jupyter](https://docs.jupyter.org/en/latest/running.html) and open
-`tutorials/03_basics_example.ipynb`. It is recommended you are
-comfortable with running simple python code (you don’t have to do any
-coding yourself), and know the basic user interface of blender (again,
-nothing fancy).
+jupyter](https://docs.jupyter.org/en/latest/running.html) and work
+through the notebooks in the `tutorial` directory in order. If you are
+impatient, jump directly to `tutorials/03_basics_example.ipynb`. I
+recommended being comfortable with running simple python code (you don’t
+have to do any coding yourself). The basic user interface of blender is
+explained in `tutorials/02_blender_tutorial.ipynb`.
 
 In general, for each tissue cartography project, first create a folder
 to hold your data and results. You run the `blender_tissue_cartography`
@@ -104,14 +105,34 @@ the notebook, you will:
 
 5.  visualize the results in 3d using blender.
 
-Here’s a screenshot to give you an idea of the work flow for the example
-*Drosophila* dataset: Volumetric data in ImageJ (center), jupyter
-computational notebook to run the `blender_tissue_cartography` module
-(left), and blender project with extracted mesh and texture (right):
+Below is a screenshot to give you an idea of the work flow for the
+example *Drosophila* dataset: Volumetric data in ImageJ (center),
+jupyter computational notebook to run the `blender_tissue_cartography`
+module (left), and blender project with extracted mesh and texture
+(right).
+
+A key idea behind the pipeline is the notion of *iterative design*: if
+after completing a first round of steps 1-5, you are not satisfied with
+the results, you can go back and improve each step. For example, after
+seeing your data projected onto the 3d mesh as below, you can
+graphically adjust the cartographic projection, for example its
+seams/cuts. See \`tutorials/06_iterative_design.ipynb.
 
 ![image.png](index_files/figure-commonmark/cell-6-1-image.png)
 
+In this pipeline, you have the ability to edit meshes and cartographic
+projections interactively - you can create a preliminary projection of
+your data automatically, and use it as guidance when editing your
+cartographic map in blender. Here, we edit the “seam” of our
+cartographic map based on the region occupied by cells during zebrafish
+epiboly (tutorial 6).
+
+![image-2.png](index_files/figure-commonmark/cell-7-1-image-2.png)
+
 ## Software stack
+
+Note: the python libraries will be installed automatically if you follow
+the installation instructions above.
 
 ### Required
 
@@ -149,3 +170,11 @@ computational notebook to run the `blender_tissue_cartography` module
 
   - [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) for
     rendering volumetric `.tif` files in blender
+
+## Acknowledgements
+
+This software is being developed by Nikolas Claussen in the [Streichan
+lab at UCSB](https://streichanlab.physics.ucsb.edu/). Noah Mitchell,
+Susan Wopat, and Matthew Lefebvre contributed example data. Sean Komura
+and Gary Han tested the software. Dillon Cislo provided advice on
+surface-surface registration.
