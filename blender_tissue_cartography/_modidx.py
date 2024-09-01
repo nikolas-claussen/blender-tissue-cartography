@@ -107,6 +107,4 @@ d = { 'settings': { 'branch': 'main',
                                                      'blender_tissue_cartography.wrapping.smooth_laplacian_texture': ( 'wrapping.html#smooth_laplacian_texture',
                                                                                                                        'blender_tissue_cartography/wrapping.py'),
                                                      'blender_tissue_cartography.wrapping.smooth_taubin': ( 'wrapping.html#smooth_taubin',
-                                                                                                            'blender_tissue_cartography/wrapping.py')},
-            'blender_tissue_cartography.wrapping_pymeshlab': { 'blender_tissue_cartography.wrapping_pymeshlab.shrinkwrap_pymeshlab': ( 'wrapping_pymeshlab.html#shrinkwrap_pymeshlab',
-                                                                                                                                       'blender_tissue_cartography/wrapping_pymeshlab.py')}}}
+                                                                                                            'blender_tissue_cartography/wrapping.py')}}}
