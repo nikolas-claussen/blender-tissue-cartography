@@ -144,7 +144,6 @@ the installation instructions above.
   - [h5py](https://www.h5py.org/) for reading/writing of `.h5` files.
   - [tifffile](https://github.com/cgohlke/tifffile/) for reading/writing
     of `.tif` files, including metadata.
-  - [PyMCubes](https://github.com/pmneila/PyMCubes) Marching cubes.
   - [libigl](https://libigl.github.io/libigl-python-bindings) Geometry
     processing.
 - [Ilastik](https://www.ilastik.org/) Image classification and
