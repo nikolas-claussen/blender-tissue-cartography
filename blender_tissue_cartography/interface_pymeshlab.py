@@ -44,7 +44,7 @@ def convert_to_pymeshlab(mesh: tcio.ObjMesh, add_texture_info=None) -> pymeshlab
                                w_tex_coords_matrix=wedge_coords)
     return converted
 
-# %% ../nbs/01b_interface_pymeshlab.ipynb 26
+# %% ../nbs/01b_interface_pymeshlab.ipynb 24
 def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=True,
                            texture_vertex_decimals=10) -> tcio.ObjMesh:
     """
@@ -70,7 +70,7 @@ def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=
     wegde_coords = mesh.wedge_tex_coord_matrix()
     wegde_coords = wegde_coords.reshape((-1,3,2), order="C").reshape((-1,2), order="F")
     wegde_coords = np.round(wegde_coords, decimals=texture_vertex_decimals)
-    texture_vertices_unique, index, inverse_index = np.unique(texture_vertices, axis=0,
+    texture_vertices_unique, index, inverse_index = np.unique(wegde_coords, axis=0,
                                                               return_index=True, return_inverse=True)
     sort_index = index.argsort()
     reorder = {x : i for i, x in enumerate(sort_index)}
