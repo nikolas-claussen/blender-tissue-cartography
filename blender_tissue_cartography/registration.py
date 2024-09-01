@@ -7,8 +7,9 @@ __all__ = ['package_affine_transformation', 'get_inertia', 'align_by_centroid_an
 import numpy as np
 from scipy import stats, spatial, linalg
 import itertools
+import igl
 
-# %% ../nbs/03a_registration.ipynb 20
+# %% ../nbs/03a_registration.ipynb 19
 def package_affine_transformation(matrix, vector):
     """Package matrix transformation & translation into (d+1,d+1) matrix representation of affine transformation."""
     matrix_rep = np.hstack([matrix, vector[:, np.newaxis]])
@@ -103,42 +104,18 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
     affine_matrix_rep = np.round(package_affine_transformation(trafo_matrix, trafo_translate),decimals=2)
     return affine_matrix_rep, aligned
 
-# %% ../nbs/03a_registration.ipynb 34
-def procrustes(source, target, scale=True):
+# %% ../nbs/03a_registration.ipynb 33
+def procrustes(source, target, include_scaling=True, include_reflections=True):
     """
-    Procrustes analysis, a similarity test for two data sets.
-
-    Copied from scipy.spatial.procrustes, modified to return the transform
-    as an affine matrix, and return the transformed source data in the original,
-    non-normalized coordinates.
-
-    Each input matrix is a set of points or vectors (the rows of the matrix).
-    The dimension of the space is the number of columns of each matrix. Given
-    two identically sized matrices, procrustes standardizes both such that:
-
-    - tr(AA^T) = 1.
-    - Both sets of points are centered around the origin.
-
-    Procrustes then applies the optimal transform to the source matrix
-    (including scaling/dilation, rotations, and reflections) to minimize the
-    sum of the squares of the pointwise differences between the two input datasets.
-
-    This function is not designed to handle datasets with different numbers of
-    datapoints (rows).  If two data sets have different dimensionality
-    (different number of columns), simply add columns of zeros to the smaller
-    of the two.
+    Wrapper around igl.procrustes
     
-
+    Compute rotation+scaling+translation between two sets of points.
+    
     Parameters
     ----------
-    source : array_like
-        Matrix, n rows represent points in k (columns) space. The data from
-        source will be transformed to fit the pattern in target.
-    target : array_like
-        Maxtrix, n rows represent points in k (columns) space. 
-        target is the reference data. 
-    scale : bool, default True
-        Whether to allow scaling transformations
+    source : np.array of shape (n_points, n_dimensions)
+    target : np.array of shape (n_points, n_dimensions)
+    include_scaling, nclude_reflections : bool, 
 
     Returns
     -------
@@ -149,50 +126,16 @@ def procrustes(source, target, scale=True):
     disparity : float
         np.linalg.norm(aligned-target, axis=1).mean()
     """
-    mtx1 = np.array(target, dtype=np.float64, copy=True)
-    mtx2 = np.array(source, dtype=np.float64, copy=True)
-
-    if mtx1.ndim != 2 or mtx2.ndim != 2:
-        raise ValueError("Input matrices must be two-dimensional")
-    if mtx1.shape != mtx2.shape:
-        raise ValueError("Input matrices must be of same shape")
-    if mtx1.size == 0:
-        raise ValueError("Input matrices must be >0 rows and >0 cols")
-
-    # translate all the data to the origin
-    centroid1, centroid2 = (np.mean(mtx1, 0), np.mean(mtx2, 0))
-    mtx1 -= centroid1
-    mtx2 -= centroid2
-
-    # change scaling of data (in rows) such that trace(mtx*mtx') = 1
-    norm1 = np.linalg.norm(mtx1)
-    norm2 = np.linalg.norm(mtx2)
-    if norm1 == 0 or norm2 == 0:
-        raise ValueError("Input matrices must contain >1 unique points")
-    mtx1 /= norm1
-    mtx2 /= norm2
-    # transform mtx2 to minimize disparity
-    R, s = linalg.orthogonal_procrustes(mtx1, mtx2)
-    mtx2 = np.dot(mtx2, R.T) * s
-
-    # retranslate and scale
-    aligned = norm1 * mtx2 + centroid1
-
-    # measure the dissimilarity between the two datasets
-    disparity = np.mean(np.linalg.norm(aligned-target, axis=1))
-
-    # assemble the linear transformation
-    if scale:
-        trafo_matrix = (norm1/norm2)*s*R
-    else:
-        trafo_matrix = (norm1/norm2)*R
-    trafo_translate = centroid1 - trafo_matrix@centroid2
-    trafo_affine = package_affine_transformation(trafo_matrix, trafo_translate)
-    
+    scale_igl, rot_igl, translate_igl = igl.procrustes(source, target,
+                                                       include_scaling=include_scaling,
+                                                       include_reflections=include_reflections)
+    trafo_affine = package_affine_transformation(scale_igl*rot_igl.T, translate_igl)
+    aligned = source@trafo_affine[:3,:3].T + trafo_affine[:3,-1]
+    disparity = np.linalg.norm(aligned-target, axis=1).mean()
     return trafo_affine, aligned, disparity
 
-# %% ../nbs/03a_registration.ipynb 42
-def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, scale=True, n_samples=1000):
+# %% ../nbs/03a_registration.ipynb 40
+def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, include_scaling=True, n_samples=1000):
     """
     Apply the iterative closest point algorithm to align point cloud a with
     point cloud b. Will only produce reasonable results if the
@@ -213,7 +156,7 @@ def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, scale=T
       Stop when change in cost is less than threshold
     max_iterations : int
       Maximum number of iterations
-    scale : bool, optional
+    include_scaling : bool, optional
       Whether to allow dilations. If False, orthogonal procrustes is used
     n_samples : int or None
         If not None, n_samples sample points are randomly chosen from source array for distance computation
@@ -240,7 +183,8 @@ def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, scale=T
     for _ in range(max_iterations):
         # Find closest point in target to each point in sample and align
         closest = target[tree.query(samples, 1)[1]]
-        matrix, samples, cost = procrustes(samples, closest, scale=scale)
+        matrix, samples, cost = procrustes(samples, closest, include_scaling=include_scaling,
+                                           include_reflections=False)
         # update a with our new transformed points
         total_matrix = np.dot(matrix, total_matrix)
         if old_cost - cost < threshold:
