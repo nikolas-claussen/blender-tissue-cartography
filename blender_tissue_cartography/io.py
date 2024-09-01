@@ -2,8 +2,8 @@
 
 # %% auto 0
 __all__ = ['adjust_axis_order', 'normalize_quantiles_zstack', 'write_h5', 'read_h5', 'flatten', 'pad_list', 'unique',
-           'index_else_nan', 'ObjMesh', 'read_other_formats_without_uv', 'marching_cubes', 'save_dict_to_json',
-           'save_for_imageJ', 'normalize_quantiles_for_png', 'save_stack_for_blender']
+           'index_else_nan', 'ObjMesh', 'read_other_formats_without_uv', 'glue_seams', 'marching_cubes',
+           'save_dict_to_json', 'save_for_imageJ', 'normalize_quantiles_for_png', 'save_stack_for_blender']
 
 # %% ../nbs/01a_io.ipynb 1
 import numpy as np
@@ -426,7 +426,39 @@ def read_other_formats_without_uv(filename):
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
-# %% ../nbs/01a_io.ipynb 32
+# %% ../nbs/01a_io.ipynb 30
+def glue_seams(mesh, decimals=10):
+    """
+    Merge close vertices.
+
+    Useful to undo cutting of meshes along UV seams. Note: the exact order of vertices will
+    not in general be recovered by glueing after cutting.
+
+    Parameters
+    ----------
+    mesh : ObjMesh
+    decimals : int, default 10
+        Vertices whose positions agree up to 'decimals' decimals are merged
+
+    Returns
+    -------
+    glued_mesh : ObjMesh
+        Mesh with merged vertices.
+
+    """
+
+    rounded_verts = np.round(mesh.vertices, decimals=decimals)
+    unique_verts, index, inverse_index = np.unique(rounded_verts, axis=0, return_index=True, return_inverse=True)
+    sort_index = index.argsort()
+    sort_sort_index = sort_index.argsort()
+    unique_verts = unique_verts[sort_index]
+    glued_faces = [[[sort_sort_index[inverse_index[v[0]]], v[1]] for v in fc] for fc in mesh.faces]
+    glued_mesh = ObjMesh(unique_verts, glued_faces, texture_vertices=mesh.texture_vertices,
+                        normals=None, name=mesh.name)
+    glued_mesh.set_normals()
+    return glued_mesh
+
+# %% ../nbs/01a_io.ipynb 38
 def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     """
     Compute triangular mesh of isosurface using marching cubes as implemented by lib|igl.
@@ -456,7 +488,7 @@ def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     vertices, faces = igl.marching_cubes(vals, pts_grid, *volume.shape, isovalue)
     return vertices, faces
 
-# %% ../nbs/01a_io.ipynb 40
+# %% ../nbs/01a_io.ipynb 46
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -482,7 +514,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01a_io.ipynb 42
+# %% ../nbs/01a_io.ipynb 48
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file
