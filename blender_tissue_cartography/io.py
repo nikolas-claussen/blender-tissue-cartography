@@ -2,11 +2,12 @@
 
 # %% auto 0
 __all__ = ['adjust_axis_order', 'normalize_quantiles_zstack', 'write_h5', 'read_h5', 'flatten', 'pad_list', 'unique',
-           'index_else_nan', 'ObjMesh', 'read_other_formats_without_uv', 'save_dict_to_json', 'save_for_imageJ',
-           'normalize_quantiles_for_png', 'save_stack_for_blender']
+           'index_else_nan', 'ObjMesh', 'read_other_formats_without_uv', 'marching_cubes', 'save_dict_to_json',
+           'save_for_imageJ', 'normalize_quantiles_for_png', 'save_stack_for_blender']
 
 # %% ../nbs/01a_io.ipynb 1
 import numpy as np
+from scipy import ndimage
 from skimage import transform
 from skimage.io import imread, imsave
 import h5py
@@ -421,7 +422,37 @@ def read_other_formats_without_uv(filename):
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
-# %% ../nbs/01a_io.ipynb 36
+# %% ../nbs/01a_io.ipynb 31
+def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
+    """
+    Compute triangular mesh of isosurface using marching cubes as implemented by lib|igl.
+    
+    Parameters
+    ----------
+    volume : 3d np.array
+        Array with scalar values from which to compute the isosurface.
+    isovalue: float, default 0.5
+        Isosurface to extract
+    sigma_smoothing: float, default 0
+        If >0, carry out Gaussian smoothing before marching cubes
+
+    Returns
+    -------
+    vertices : np.array of shape (n_vertices, 3)
+        Vertices
+    faces : np.array of shape (n_faces, 3)
+        Triangular faces (each face is a set of indices into the vertices array)
+    """
+    pts_grid = np.stack(np.meshgrid(*[np.arange(i) for i in volume.shape], indexing="ij"),
+                        axis=-1).reshape(-1,3, order="F").astype(float)
+    if sigma_smoothing>0:
+        vals = ndimage.gaussian_filter(volume, sigma=sigma_smoothing).flatten(order="F")
+    else:
+        vals = volume.flatten(order="F")
+    vertices, faces = igl.marching_cubes(vals, pts_grid, *volume.shape, isovalue)
+    return vertices, faces
+
+# %% ../nbs/01a_io.ipynb 39
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -447,7 +478,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01a_io.ipynb 38
+# %% ../nbs/01a_io.ipynb 41
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file
