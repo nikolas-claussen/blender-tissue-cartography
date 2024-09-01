@@ -19,7 +19,7 @@ def convert_to_pymeshlab(mesh: tcio.ObjMesh, add_texture_info=None) -> pymeshlab
     
     Texture is saved as a vertex attribute via v_tex_coords_matrix. Note that this discards
     information since a vertex can have multiple texture coordinates. For this reason,
-    we also save it as 3 custom face attributes 'face_tex_vertex_{0/1/2}'.
+    we also save it as wedge_tex_coord_matrix (i.e. per triangle) .
     
     Parameters
     ----------
@@ -38,16 +38,13 @@ def convert_to_pymeshlab(mesh: tcio.ObjMesh, add_texture_info=None) -> pymeshlab
                         if add_texture_info is None else add_texture_info)
     if not add_texture_info:
         return pymeshlab.Mesh(vertex_matrix=mesh.vertices, face_matrix=mesh.tris)
+    wedge_coords = mesh.texture_vertices[mesh.texture_tris].reshape((-1,2), order="C")
     converted = pymeshlab.Mesh(vertex_matrix=mesh.vertices, face_matrix=mesh.tris,
-                               v_tex_coords_matrix=mesh.vertex_textures)
-    texture_tris = mesh.texture_tris
-    for vertex in [0,1,2]:
-        atttrib = np.pad(tcio.index_else_nan(mesh.texture_vertices, texture_tris[:,vertex]),
-                         ((0,0), (0,1)), constant_values=0)
-        converted.add_face_custom_point_attribute(atttrib, f"face_tex_vertex_{vertex}")
+                               v_tex_coords_matrix=mesh.vertex_textures,
+                               w_tex_coords_matrix=wedge_coords)
     return converted
 
-# %% ../nbs/01b_interface_pymeshlab.ipynb 18
+# %% ../nbs/01b_interface_pymeshlab.ipynb 26
 def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=True,
                            texture_vertex_decimals=10) -> tcio.ObjMesh:
     """
@@ -70,13 +67,16 @@ def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=
         return tcio.ObjMesh(vertices=vertices, faces=faces, normals=normals,
                             texture_vertices=mesh.vertex_tex_coord_matrix())
     # reconstruct texture vertices - big pain.
-    texture_vertices = np.vstack([mesh.face_custom_point_attribute_matrix(f"face_tex_vertex_{i}")[:,:2]
-                                  for i in [0,1,2]])
-    texture_vertices = np.round(texture_vertices, decimals=texture_vertex_decimals)
-    texture_vertices_unique, inverse_index = np.unique(texture_vertices, axis=0, return_inverse=True)
-    
+    wegde_coords = mesh.wedge_tex_coord_matrix()
+    wegde_coords = wegde_coords.reshape((-1,3,2), order="C").reshape((-1,2), order="F")
+    wegde_coords = np.round(wegde_coords, decimals=texture_vertex_decimals)
+    texture_vertices_unique, index, inverse_index = np.unique(texture_vertices, axis=0,
+                                                              return_index=True, return_inverse=True)
+    sort_index = index.argsort()
+    reorder = {x : i for i, x in enumerate(sort_index)}
+    texture_vertices_unique = texture_vertices_unique[sort_index]
     n_faces = mesh.face_matrix().shape[0]
-    faces = [[[v, inverse_index[ifc+iv*n_faces]] for iv, v in enumerate(fc)]
+    faces = [[[v, reorder[inverse_index[ifc+iv*n_faces]]] for iv, v in enumerate(fc)]
              for ifc, fc in enumerate(mesh.face_matrix())]
 
     return tcio.ObjMesh(vertices=vertices, faces=faces, normals=normals, texture_vertices=texture_vertices_unique)

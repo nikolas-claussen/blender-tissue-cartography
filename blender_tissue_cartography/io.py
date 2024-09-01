@@ -153,15 +153,12 @@ class ObjMesh:
     self.vertices[i].   Missing data is represented by np.nan.
     Faces can be any length (triangles, quads, ...). Indices start at 0!
     
-    The method match_vertex_info can be used to match up vertices, texture vertices and
-    normals based on the face connectivity. This sets the following attributes:
+    The method match_vertex_info can be used to match up vertices and normals to
+    texture vertices based on the face connectivity as base points for interpolation.
+    This sets the following attributes:
         - matched_vertices
-        - matched_texture_vertices
         - matched_normals
-    as np.array's with correspondong rows which can be used as base points for
-    interpolation.
-
-    The property tris gets all triangles as a numpy array.
+    as np.array's
     """
     
     def __init__(self, vertices, faces, texture_vertices=None, normals=None, name=None):
@@ -220,7 +217,7 @@ class ObjMesh:
             mesh = ObjMesh(vs, fs, texture_vertices=vts, normals=ns, name=name)
         return mesh
         
-    def write_obj(self, filename,):
+    def write_obj(self, filename, include_uv_and_normals=True):
         """
         Write mesh to .obj format.
 
@@ -230,7 +227,9 @@ class ObjMesh:
         ----------
         filename : str
             filename to save to
-
+        include_uv_and_normals : bool, default True
+            include uv and normal information if available.
+            
         Returns
         -------
         None
@@ -245,6 +244,13 @@ class ObjMesh:
         if self.only_vertices:
             vlines = ["v {} {} {}\n".format(*v) for v in self.vertices]
             flines = ["f {} {} {}\n".format(*[int(v+1) for v in fc]) for fc in self.faces]
+            with open(filename, 'w') as f:
+                f.writelines(namelines)
+                f.writelines(vlines)
+                f.writelines(flines)
+        if not self.only_vertices and not include_uv_and_normals:
+            vlines = ["v {} {} {}\n".format(*v) for v in self.vertices]
+            flines = ["f {} {} {}\n".format(*[int(v[0]+1) for v in fc]) for fc in self.faces]
             with open(filename, 'w') as f:
                 f.writelines(namelines)
                 f.writelines(vlines)
@@ -278,10 +284,10 @@ class ObjMesh:
     def is_triangular(self):
         """Checks if mesh has triangular faces only."""
         return all([len(fc)==3 for fc in self.faces]) 
-        
+            
     @property
     def tris(self):
-        """Get all triangles in mesh as a numpy array. Entries are vertex indices."""
+        """Get all 3d triangles in mesh as a numpy array. Entries are vertex indices."""
         if self.only_vertices:
             return np.array([fc for fc in self.faces if len(fc)==3])
         return np.array([[v[0] for v in fc] for fc in self.faces if len(fc)==3])
@@ -318,11 +324,10 @@ class ObjMesh:
         """
         Match up 3d vertex coordinates and normals to texture vertices based on face connectivity.
         
-        Sets attributes matched_vertices and matched_normals, which are the 3d vertices and normals
+        Compute matched_vertices and matched_normals, which are the 3d vertices and normals
         corresponding to each texture vertex. The resulting arrays have the shape
-        (self.texture_vertices.shape[0], 3). For completeness, also sets the attribute 
-        matched_texture_vertices, which is identical to texture_vertices. If normal
-        information does not exist for a given texture vertex, the entry is set to np.nan.
+        (self.texture_vertices.shape[0], 3). If normal information does not exist for a given
+        texture vertex, the entry is set to np.nan.
                     
         Returns
         -------
@@ -334,7 +339,6 @@ class ObjMesh:
         texture_vertex_dict = {v[1]: v[0] for v in flatten(self.faces, max_depth=1) if not np.isnan(v[1])}
         matched_vertex_inds = np.array([texture_vertex_dict[i] for i in range(self.texture_vertices.shape[0])])
         self.matched_vertices = self.vertices[matched_vertex_inds]
-        self.matched_texture_vertices = np.copy(self.texture_vertices)
         self.matched_normals = index_else_nan(self.normals, matched_vertex_inds)
         return None
 
@@ -422,7 +426,7 @@ def read_other_formats_without_uv(filename):
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
-# %% ../nbs/01a_io.ipynb 31
+# %% ../nbs/01a_io.ipynb 32
 def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     """
     Compute triangular mesh of isosurface using marching cubes as implemented by lib|igl.
@@ -452,7 +456,7 @@ def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     vertices, faces = igl.marching_cubes(vals, pts_grid, *volume.shape, isovalue)
     return vertices, faces
 
-# %% ../nbs/01a_io.ipynb 39
+# %% ../nbs/01a_io.ipynb 40
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -478,7 +482,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01a_io.ipynb 41
+# %% ../nbs/01a_io.ipynb 42
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file
