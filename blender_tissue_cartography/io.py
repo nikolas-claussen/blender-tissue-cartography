@@ -242,7 +242,6 @@ class ObjMesh:
             return str(x)
         namelines = ["o {}\n".format(*self.name)] if self.name is not None else []
         if self.only_vertices:
-            vlines = ["v {} {} {}\n".format(*v) for v in self.vertices]
             flines = ["f {} {} {}\n".format(*[int(v+1) for v in fc]) for fc in self.faces]
             with open(filename, 'w') as f:
                 f.writelines(namelines)
@@ -255,7 +254,7 @@ class ObjMesh:
                 f.writelines(namelines)
                 f.writelines(vlines)
                 f.writelines(flines)
-        else:
+        if not self.only_vertices and include_uv_and_normals:
             assert all([len(v)==2 for v in flatten(self.faces, max_depth=1)]), "each vertex must have 2 indices"
             texture_vertices = [] if self.texture_vertices is None else self.texture_vertices
             vlines = ["v {} {} {}\n".format(*v) for v in self.vertices]
