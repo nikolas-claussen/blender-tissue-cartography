@@ -14,11 +14,13 @@ import warnings
 import os
 
 # %% ../nbs/05a_remeshing_igl.ipynb 7
-def subdivide_igl(mesh, reglue=False, decimals=10):
+def subdivide_igl(mesh, reglue=True, decimals=10):
     """
-    Refine mesh by edge subdivision using pymeshlab.
+    Refine mesh by edge subdivision using igl.
     
-    Preserves UV information, but cuts the mesh along seams. Can glue back after. Subdivides all edges.
+    Subdivides all edges by placing new vertices at edge midpoints. Preserves UV information,
+    by cuts the mesh along seams and (optionally) glueing back after. New texture vertices
+    are also placed at texture-edge midpoints.
     
     Parameters
     ----------
@@ -35,10 +37,9 @@ def subdivide_igl(mesh, reglue=False, decimals=10):
         Decimal precision for merging vertices when regluing.
     """
     mesh_cut = mesh.cut_along_seams()
-    S, new_faces = igl.loop_subdivision_matrix(mesh_cut.vertices.shape[0], mesh_cut.tris)
-    new_verts = S.dot(mesh_cut.vertices)
-    new_textures = S.dot(mesh_cut.texture_vertices)
-    mesh_subdiv = tcio.ObjMesh(vertices=new_verts, texture_vertices=new_textures,
+    new_vertices, new_faces = igl.upsample(mesh_cut.vertices, mesh_cut.tris, number_of_subdivs=1)
+    new_texture_vertices, _ = igl.upsample(mesh_cut.texture_vertices, mesh_cut.tris, number_of_subdivs=1)
+    mesh_subdiv = tcio.ObjMesh(vertices=new_vertices, texture_vertices=new_texture_vertices,
                                faces=[[[v,v] for v in fc] for fc in new_faces])
     mesh_subdiv.set_normals()
     if reglue:
