@@ -40,6 +40,7 @@ def subdivide_igl(mesh, reglue=False, decimals=10):
     new_textures = S.dot(mesh_cut.texture_vertices)
     mesh_subdiv = tcio.ObjMesh(vertices=new_verts, texture_vertices=new_textures,
                                faces=[[[v,v] for v in fc] for fc in new_faces])
+    mesh_subdiv.set_normals()
     if reglue:
         mesh_subdiv = tcio.glue_seams(mesh_subdiv, decimals=decimals)
     return mesh_subdiv
