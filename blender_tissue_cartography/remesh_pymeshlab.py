@@ -54,7 +54,7 @@ def subdivide_pymeshlab(mesh, threshold=1, iterations=3, reglue=True, decimals=1
     return mesh_subdiv
 
 # %% ../nbs/05b_remeshing_pymeshlab.ipynb 14
-def simplify_pymeshlab(mesh, targetfacenum, tempfilename="temp.obj", reglue=True, decimals=10):
+def simplify_pymeshlab(mesh, targetfacenum, qualitythr=0.3, tempfilename="temp.obj", reglue=False, decimals=10):
     """
     Simplify mesh using pymeshlab, removing small triangles.
     
@@ -68,6 +68,8 @@ def simplify_pymeshlab(mesh, targetfacenum, tempfilename="temp.obj", reglue=True
         Initial mesh.
     targetfacenum : int
         Target number of faces
+    qualitythr : float from 0-1
+        0 accepts any face, penalizes bad shapes. If >0, may cause problems with reglueing.
     tempfilename : str
         Temporary file written for pymeshlab interfacing. This file will be deleted after!
     reglue : bool
@@ -84,8 +86,9 @@ def simplify_pymeshlab(mesh, targetfacenum, tempfilename="temp.obj", reglue=True
     mesh.cut_along_seams().write_obj(tempfilename)
     ms = pymeshlab.MeshSet()
     ms.load_new_mesh(tempfilename)
-    ms.meshing_decimation_quadric_edge_collapse_with_texture(targetfacenum=targetfacenum,
-                                                                  preserveboundary=True)
+    ms.meshing_decimation_quadric_edge_collapse_with_texture(targetfacenum=targetfacenum, qualitythr=qualitythr,
+                                                             preserveboundary=True, preservenormal=True, 
+                                                             extratcoordw=0, planarquadric=True)
     mesh_simplified = intmsl.convert_from_pymeshlab(ms.current_mesh(), reconstruct_texture_from_faces=False)
     
     if reglue:

@@ -5,6 +5,7 @@ __all__ = ['subdivide_igl']
 
 # %% ../nbs/05a_remeshing_igl.ipynb 4
 from . import io as tcio
+from . import wrapping as tcwrap
 
 import numpy as np
 import igl
@@ -13,7 +14,7 @@ import warnings
 import os
 
 # %% ../nbs/05a_remeshing_igl.ipynb 7
-def subdivide_igl(mesh, reglue=True, decimals=10):
+def subdivide_igl(mesh, reglue=False, decimals=10):
     """
     Refine mesh by edge subdivision using pymeshlab.
     
