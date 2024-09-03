@@ -14,7 +14,7 @@ import warnings
 import os
 
 # %% ../nbs/05a_remeshing_igl.ipynb 7
-def subdivide_igl(mesh, reglue=True, decimals=10):
+def subdivide_igl(mesh, reglue=True, decimals=None):
     """
     Refine mesh by edge subdivision using igl.
     
@@ -33,8 +33,9 @@ def subdivide_igl(mesh, reglue=True, decimals=10):
         Subdivided mesh.
     reglue : bool
         Glue back after cutting
-    decimals : int
-        Decimal precision for merging vertices when regluing.
+    decimals : int or None
+        Decimal precision for merging vertices when regluing. If None, estimated from average
+        edge mesh length as -4*log_10(avg length)
     """
     mesh_cut = mesh.cut_along_seams()
     new_vertices, new_faces = igl.upsample(mesh_cut.vertices, mesh_cut.tris, number_of_subdivs=1)

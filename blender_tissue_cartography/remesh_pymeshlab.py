@@ -15,7 +15,7 @@ import os
 import pymeshlab
 
 # %% ../nbs/05b_remeshing_pymeshlab.ipynb 7
-def subdivide_pymeshlab(mesh, threshold=1, iterations=3, reglue=True, decimals=10):
+def subdivide_pymeshlab(mesh, threshold=1, iterations=3, reglue=True, decimals=None):
     """
     Refine mesh by edge subdivision using pymeshlab.
     
@@ -38,8 +38,9 @@ def subdivide_pymeshlab(mesh, threshold=1, iterations=3, reglue=True, decimals=1
         Filter iterations
     reglue : bool
         Glue back after cutting
-    decimals : int
-        Decimal precision for merging vertices when regluing.
+    decimals : int or None
+        Decimal precision for merging vertices when regluing. If None, estimated from average
+        edge mesh length as -4*log_10(avg length)
 
     Returns
     -------
@@ -60,7 +61,7 @@ def subdivide_pymeshlab(mesh, threshold=1, iterations=3, reglue=True, decimals=1
 
 # %% ../nbs/05b_remeshing_pymeshlab.ipynb 13
 @tcio.deprecated
-def simplify_pymeshlab(mesh, targetfacenum, qualitythr=0.3, tempfilename="temp.obj", reglue=False, decimals=10):
+def simplify_pymeshlab(mesh, targetfacenum, qualitythr=0.3, tempfilename="temp.obj", reglue=False, decimals=None):
     """
     Simplify mesh using pymeshlab, removing small triangles.
     
@@ -82,8 +83,9 @@ def simplify_pymeshlab(mesh, targetfacenum, qualitythr=0.3, tempfilename="temp.o
         Temporary file written for pymeshlab interfacing. This file will be deleted after!
     reglue : bool
         Glue back after cutting
-    decimals : int
-        Decimal precision for merging vertices when regluing.
+    decimals : int or None
+        Decimal precision for merging vertices when regluing. If None, estimated from average
+        edge mesh length as -4*log_10(avg length)
 
     Returns
     -------
@@ -104,14 +106,15 @@ def simplify_pymeshlab(mesh, targetfacenum, qualitythr=0.3, tempfilename="temp.o
     return mesh_simplified
 
 # %% ../nbs/05b_remeshing_pymeshlab.ipynb 23
-@tcio.deprecated
-def remesh_pymeshlab(mesh, targetlen=1, iterations=10, reglue=True, decimals=6):
+def remesh_pymeshlab(mesh, targetlen=1, iterations=10):
     """
     Remesh mesh using pymeshlab.
     
-    Use meshing_isotropic_explicit_remeshing filter. Cuts mesh along UV seams so it
-    can preserve UV texture info, optionally regluing. However, this function
-    _will_ degrade the UV quality.
+    This creates a triangulation of triangles which are close to equilateral and
+    everywhere the same shape. Very useful to improve the output of
+    marching cubes. Uses the meshing_isotropic_explicit_remeshing filter.
+    
+    This function erases UV information!
     
     Parameters
     ----------
@@ -121,10 +124,6 @@ def remesh_pymeshlab(mesh, targetlen=1, iterations=10, reglue=True, decimals=6):
         Percent value for target edge length.
     iterations : int
         Number of iterations.
-    reglue : bool
-        Glue back after cutting
-    decimals : int
-        Decimal precision for merging vertices when regluing.
 
     Returns
     -------
@@ -132,19 +131,12 @@ def remesh_pymeshlab(mesh, targetlen=1, iterations=10, reglue=True, decimals=6):
         Simplified mesh.
     
     """
-    mesh_cut = mesh.cut_along_seams()
-    # hack to avoid merging UV seams
-    mesh_cut.vertices += 10**(-decimals-2) * np.random.uniform(size=mesh_cut.vertices.shape) 
-
-    mesh_pymeshlab = intmsl.convert_to_pymeshlab(mesh_cut)
+    mesh_pymeshlab = intmsl.convert_to_pymeshlab(mesh, add_texture_info=False)
     ms = pymeshlab.MeshSet()
     ms.add_mesh(mesh_pymeshlab)
     ms.meshing_isotropic_explicit_remeshing(iterations=iterations, targetlen=pymeshlab.PercentageValue(targetlen),
                                             splitflag=True, collapseflag=True, swapflag=True,
                                             smoothflag=True, reprojectflag=True, adaptive=False)
-
     mesh_pymeshlab_remeshed = ms.current_mesh()
     mesh_remeshed = intmsl.convert_from_pymeshlab(mesh_pymeshlab_remeshed, reconstruct_texture_from_faces=False)    
-    if reglue:
-        mesh_remeshed = tcio.glue_seams(mesh_remeshed, decimals=decimals)
     return mesh_remeshed
