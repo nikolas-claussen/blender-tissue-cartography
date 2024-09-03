@@ -44,7 +44,7 @@ def convert_to_pymeshlab(mesh: tcio.ObjMesh, add_texture_info=None) -> pymeshlab
                                w_tex_coords_matrix=wedge_coords)
     return converted
 
-# %% ../nbs/01b_interface_pymeshlab.ipynb 24
+# %% ../nbs/01b_interface_pymeshlab.ipynb 22
 def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=True,
                            texture_vertex_decimals=10) -> tcio.ObjMesh:
     """
@@ -60,7 +60,7 @@ def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=
     normals = mesh.vertex_normal_matrix()
     normals = (normals.T / np.linalg.norm(normals, axis=-1)).T
     if not mesh.has_vertex_tex_coord():
-        faces = [[2*[v,] for v in f] for f in mesh.face_matrix()]
+        faces = mesh.face_matrix()
         return tcio.ObjMesh(vertices=vertices, faces=faces, normals=normals)
     if mesh.has_vertex_tex_coord() and not reconstruct_texture_from_faces:
         faces = [[2*[v,] for v in f] for f in mesh.face_matrix()]

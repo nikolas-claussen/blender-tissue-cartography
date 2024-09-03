@@ -259,6 +259,7 @@ class ObjMesh:
             return str(x)
         namelines = ["o {}\n".format(*self.name)] if self.name is not None else []
         if self.only_vertices:
+            vlines = ["v {} {} {}\n".format(*v) for v in self.vertices]
             flines = ["f {} {} {}\n".format(*[int(v+1) for v in fc]) for fc in self.faces]
             with open(filename, 'w') as f:
                 f.writelines(namelines)
@@ -443,7 +444,7 @@ def read_other_formats_without_uv(filename):
 
 
 # %% ../nbs/01a_io.ipynb 31
-def glue_seams(mesh, decimals=10):
+def glue_seams(mesh, decimals=None):
     """
     Merge close vertices.
 
@@ -453,8 +454,9 @@ def glue_seams(mesh, decimals=10):
     Parameters
     ----------
     mesh : ObjMesh
-    decimals : int, default 10
+    decimals : int or None, default 10
         Vertices whose positions agree up to 'decimals' decimals are merged. Note: you can use negative values.
+        If None, estimate a value based on average mesh edge length (-4*log_10(avg length))
 
     Returns
     -------
@@ -462,6 +464,9 @@ def glue_seams(mesh, decimals=10):
         Mesh with merged vertices.
 
     """
+    if decimals is None:
+        l = igl.avg_edge_length(mesh.vertices, mesh.tris)
+        decimals = -4*np.round(np.log10(l)).astype(int)
 
     rounded_verts = np.round(mesh.vertices, decimals=decimals)
     unique_verts, index, inverse_index = np.unique(rounded_verts, axis=0, return_index=True, return_inverse=True)
