@@ -337,6 +337,19 @@ class ObjMesh:
         self.normals = (normals.T / np.linalg.norm(normals, axis=1)).T
         return None
         
+    def get_uv_index_to_vertex_index_map(self):
+        """Get map from texture vertex index to the corresponding 3d vertex index as a dictionary."""
+        return {v[1]: v[0] for v in flatten(self.faces, max_depth=1) if not np.isnan(v[1])}
+        
+    def get_uv_matched_vertex_indices(self):
+        """
+        Get an array of indices into 3d vertices that map them to the corresponding texture vertices.
+        
+        Useful for translating per-vertex data into per-texture-vertex data.
+        """
+        texture_vertex_dict = self.get_uv_index_to_vertex_index_map()
+        return np.array([texture_vertex_dict[i] for i in range(self.texture_vertices.shape[0])])
+        
     def match_vertex_info(self):
         """
         Match up 3d vertex coordinates and normals to texture vertices based on face connectivity.
@@ -353,8 +366,7 @@ class ObjMesh:
         
         assert not self.only_vertices and len(self.normals) > 0 and len(self.texture_vertices) > 0, \
             """Method requires texture or normal information"""
-        texture_vertex_dict = {v[1]: v[0] for v in flatten(self.faces, max_depth=1) if not np.isnan(v[1])}
-        matched_vertex_inds = np.array([texture_vertex_dict[i] for i in range(self.texture_vertices.shape[0])])
+        matched_vertex_inds = self.get_uv_matched_vertex_indices()
         self.matched_vertices = self.vertices[matched_vertex_inds]
         self.matched_normals = index_else_nan(self.normals, matched_vertex_inds)
         return None
@@ -418,7 +430,7 @@ class ObjMesh:
             newmesh.match_vertex_info()
         return newmesh
 
-# %% ../nbs/01a_io.ipynb 20
+# %% ../nbs/01a_io.ipynb 19
 def read_other_formats_without_uv(filename):
     """
     Return vertices and faces from a non-.obj mesh file format. file.
@@ -443,7 +455,7 @@ def read_other_formats_without_uv(filename):
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
-# %% ../nbs/01a_io.ipynb 31
+# %% ../nbs/01a_io.ipynb 30
 def glue_seams(mesh, decimals=None):
     """
     Merge close vertices.
@@ -456,7 +468,7 @@ def glue_seams(mesh, decimals=None):
     mesh : ObjMesh
     decimals : int or None, default 10
         Vertices whose positions agree up to 'decimals' decimals are merged. Note: you can use negative values.
-        If None, estimate a value based on average mesh edge length (-4*log_10(avg length))
+        If None, estimate a value based on shortest edge length in the mesh (-2*log_10(minimum length))
 
     Returns
     -------
@@ -465,9 +477,8 @@ def glue_seams(mesh, decimals=None):
 
     """
     if decimals is None:
-        l = igl.avg_edge_length(mesh.vertices, mesh.tris)
-        decimals = -4*np.round(np.log10(l)).astype(int)
-
+        ls = igl.edge_lengths(mesh.vertices, mesh.tris)
+        decimals = np.round(-2*np.log10(ls.min())).astype(int)
     rounded_verts = np.round(mesh.vertices, decimals=decimals)
     unique_verts, index, inverse_index = np.unique(rounded_verts, axis=0, return_index=True, return_inverse=True)
     sort_index = index.argsort()
@@ -479,7 +490,7 @@ def glue_seams(mesh, decimals=None):
     glued_mesh.set_normals()
     return glued_mesh
 
-# %% ../nbs/01a_io.ipynb 39
+# %% ../nbs/01a_io.ipynb 38
 def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     """
     Compute triangular mesh of isosurface using marching cubes as implemented by lib|igl.
@@ -509,7 +520,7 @@ def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     vertices, faces = igl.marching_cubes(vals, pts_grid, *volume.shape, isovalue)
     return vertices, faces
 
-# %% ../nbs/01a_io.ipynb 47
+# %% ../nbs/01a_io.ipynb 46
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -535,7 +546,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01a_io.ipynb 49
+# %% ../nbs/01a_io.ipynb 48
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file
