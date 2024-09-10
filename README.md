@@ -116,7 +116,32 @@ after completing a first round of steps 1-5, you are not satisfied with
 the results, you can go back and improve each step. For example, after
 seeing your data projected onto the 3d mesh as below, you can
 graphically adjust the cartographic projection, for example its
-seams/cuts. See \`tutorials/06_iterative_design.ipynb.
+seams/cuts. See `tutorials/06_iterative_design.ipynb`.
+
+#### Notes for python beginners
+
+- You will need a working python installation (see here: [installing
+  anaconda/miniconda](https://docs.anaconda.com/miniconda/miniconda-install/),
+  and know how to [launch jupyter
+  notebooks](https://docs.jupyter.org/en/latest/running.html). You will
+  run the computational notebooks run in your browser. Here is a [video
+  tutorial](https://www.youtube.com/watch?v=HW29067qVWk)
+
+- Create a new folder for each tissue cartography project. Do not place
+  them into the folder into which you unpacked
+  `blender_tissue_cartography` - otherwise your files will be
+  overwritten if you want to update the software
+
+- The repository contains two sets of notebooks: in the `nbs` folder and
+  in the `tutorial` folder. The `nbs`-notebooks are for developing the
+  code. If you don’t want to develop/adapt the code to your needs, you
+  don’t need to look at them. Copy a notebook from the `tutorial`
+  folder - e.g. `03_basics_example.ipynb` - into your project folder to
+  use it as a template.
+
+- You do not need to copy functions into your notebooks manually. If you
+  followed the installation instructions, the code will be installed as
+  a python package, and can be “imported” by python. See tutorials!
 
 ![image.png](index_files/figure-commonmark/cell-6-1-image.png)
 
