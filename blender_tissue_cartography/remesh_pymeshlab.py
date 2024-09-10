@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['subdivide_pymeshlab', 'simplify_pymeshlab', 'remesh_pymeshlab']
 
-# %% ../nbs/05b_remeshing_pymeshlab.ipynb 4
+# %% ../nbs/05b_remeshing_pymeshlab.ipynb 2
 from . import io as tcio
 from . import interface_pymeshlab as intmsl
 
@@ -14,7 +14,7 @@ import warnings
 import os
 import pymeshlab
 
-# %% ../nbs/05b_remeshing_pymeshlab.ipynb 7
+# %% ../nbs/05b_remeshing_pymeshlab.ipynb 5
 def subdivide_pymeshlab(mesh, threshold=1, iterations=3, reglue=True, decimals=None):
     """
     Refine mesh by edge subdivision using pymeshlab.
@@ -59,7 +59,7 @@ def subdivide_pymeshlab(mesh, threshold=1, iterations=3, reglue=True, decimals=N
 
     return mesh_subdiv
 
-# %% ../nbs/05b_remeshing_pymeshlab.ipynb 13
+# %% ../nbs/05b_remeshing_pymeshlab.ipynb 11
 @tcio.deprecated
 def simplify_pymeshlab(mesh, targetfacenum, qualitythr=0.3, tempfilename="temp.obj", reglue=False, decimals=None):
     """
@@ -105,7 +105,7 @@ def simplify_pymeshlab(mesh, targetfacenum, qualitythr=0.3, tempfilename="temp.o
         mesh_simplified = tcio.glue_seams(mesh_simplified, decimals=decimals)
     return mesh_simplified
 
-# %% ../nbs/05b_remeshing_pymeshlab.ipynb 23
+# %% ../nbs/05b_remeshing_pymeshlab.ipynb 21
 def remesh_pymeshlab(mesh, targetlen=1, iterations=10):
     """
     Remesh mesh using pymeshlab.
@@ -131,6 +131,11 @@ def remesh_pymeshlab(mesh, targetlen=1, iterations=10):
         Simplified mesh.
     
     """
+    if not mesh.is_triangular:
+        warnings.warn(f"Warning: mesh not triangular - result may be incorrect", RuntimeWarning)
+    if not mesh.only_vertices:
+        warnings.warn(f"Warning: texture information will be discarded", RuntimeWarning)
+    
     mesh_pymeshlab = intmsl.convert_to_pymeshlab(mesh, add_texture_info=False)
     ms = pymeshlab.MeshSet()
     ms.add_mesh(mesh_pymeshlab)
