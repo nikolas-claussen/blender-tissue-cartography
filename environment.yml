@@ -13,3 +13,4 @@ dependencies:
   - tqdm
   - pip:
       - libigl
+      - scikit-fmm
