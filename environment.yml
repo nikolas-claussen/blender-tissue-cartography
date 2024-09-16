@@ -8,6 +8,7 @@ dependencies:
   - numpy
   - scipy
   - scikit-image
+  - tifffile
   - h5py
   - jupyter
   - tqdm
