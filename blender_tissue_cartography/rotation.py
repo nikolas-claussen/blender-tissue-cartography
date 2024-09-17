@@ -4,7 +4,8 @@
 __all__ = ['cartesian_to_spherical', 'compute_spherical_harmonics_coeffs', 'spherical_harmonics_to_grid', 'quaternion_to_rot_max',
            'rot_mat_to_quaternion', 'conjugate_quaternion', 'invert_quaternion', 'multiply_quaternions',
            'quaternion_power', 'quaternion_to_complex_pair', 'get_wigner_D_matrix', 'rotate_spherical_harmonics_coeffs',
-           'get_icosphere', 'rotation_alignment_brute_force', 'rotation_alignment_refined']
+           'parity_spherical_harmonics_coeffs', 'get_icosphere', 'rotation_alignment_brute_force',
+           'rotation_alignment_refined']
 
 # %% ../nbs/03c_rotation_registration.ipynb 1
 from . import io as tcio
@@ -16,16 +17,13 @@ from copy import deepcopy
 import warnings
 import igl
 
-from scipy import integrate, interpolate, ndimage, optimize, sparse, spatial, special
-from skimage import registration, transform
+from scipy import integrate, interpolate, optimize, special
 
 import matplotlib as mpl
 
-import skfmm
-
 import itertools
 
-# %% ../nbs/03c_rotation_registration.ipynb 7
+# %% ../nbs/03c_rotation_registration.ipynb 8
 def cartesian_to_spherical(arr):
     """
     Convert cartesian coordinates to spherical coordinates.
@@ -47,7 +45,7 @@ def cartesian_to_spherical(arr):
     phi = np.sign(arr[...,1])*np.arccos(arr[...,0]/np.linalg.norm(arr[...,:2], axis=-1))
     return r, theta, phi
 
-# %% ../nbs/03c_rotation_registration.ipynb 15
+# %% ../nbs/03c_rotation_registration.ipynb 16
 def compute_spherical_harmonics_coeffs(f, phi, theta, weights, max_l):
     """
     Compute spherical harmonic coefficients for a scalar real-valued function defined on the unit sphere.
@@ -88,7 +86,7 @@ def compute_spherical_harmonics_coeffs(f, phi, theta, weights, max_l):
         coeffs[l] = np.copy(vec)
     return coeffs
 
-# %% ../nbs/03c_rotation_registration.ipynb 18
+# %% ../nbs/03c_rotation_registration.ipynb 19
 def spherical_harmonics_to_grid(coeffs, n_grid=256):
     """
     Compute signal on rectangular phi-theta grid given spherical harmonics coefficients.
@@ -118,7 +116,7 @@ def spherical_harmonics_to_grid(coeffs, n_grid=256):
                 reconstructed += (coeff_vec[l+m]*np.conjugate(Y_ml)+coeff_vec[l-m]*Y_ml*(-1)**m)
     return reconstructed
 
-# %% ../nbs/03c_rotation_registration.ipynb 39
+# %% ../nbs/03c_rotation_registration.ipynb 40
 def quaternion_to_rot_max(q):
     """
     Convert unit quaternion into a 3d rotation matrix.
@@ -186,7 +184,7 @@ def quaternion_to_complex_pair(q):
     """Convert quaternion to pair of complex numbers q0+iq3, q2+iq1"""
     return q[0]+1j*q[3], q[2]+1j*q[1]
 
-# %% ../nbs/03c_rotation_registration.ipynb 52
+# %% ../nbs/03c_rotation_registration.ipynb 53
 def _get_wigner_D_element(Ra, Rb, l, mp, m, binomial_matrix):
     """
     Compute Wigner's D matrix element for a rotation defined by a unit quaternion R,
@@ -237,7 +235,7 @@ def get_wigner_D_matrix(q, l, binomial_matrix=None):
             matrix[l+mp, l+m] = _get_wigner_D_element(Ra, Rb, l, mp, m, binomial_matrix=binomial_matrix)
     return matrix
 
-# %% ../nbs/03c_rotation_registration.ipynb 59
+# %% ../nbs/03c_rotation_registration.ipynb 60
 def rotate_spherical_harmonics_coeffs(q, coeffs):
     """
     Rotate spherical harmonics by given unit quaternion.
@@ -256,13 +254,34 @@ def rotate_spherical_harmonics_coeffs(q, coeffs):
     
     Returns
     -------
-    coeffs_rotated : 2d np.array
+    dict of np.array
         Rotated spherical harmonics coefficients.
-    
     """
     return {key: get_wigner_D_matrix(q, l=key)@val for key, val in coeffs.items()}
 
-# %% ../nbs/03c_rotation_registration.ipynb 73
+# %% ../nbs/03c_rotation_registration.ipynb 61
+def parity_spherical_harmonics_coeffs(coeffs):
+    """
+    Apply parity operator to spherical harmonics coefficients.
+    
+    Parity means (x,y,z) -> (-x,-y,-z) and f^l_m -> (-1)^m * f^l_m.
+    
+    Parameters
+    ----------
+         use rot_mat_to_quaternion
+    coeffs : dict of np.array
+        Dictionary, indexed by total angular momentum l=0 ,..., max_l. Each entry is a vector
+        of coefficients for the different values of m=-2l,...,2*l
+    
+    Returns
+    -------
+    dict of np.array
+        Parity-transformed spherical harmonics coefficients.
+
+    """
+    return {key: (-1)**key * val for key, val in coeffs.items()}
+
+# %% ../nbs/03c_rotation_registration.ipynb 75
 def get_icosphere(subdivide=0):
     """
     Return the icosphere triangle mesh with 42 regulary spaced vertices on the unit sphere.
@@ -315,7 +334,7 @@ def get_icosphere(subdivide=0):
     vertices = (vertices.T/np.linalg.norm(vertices, axis=-1)).T
     return tcio.ObjMesh(vertices=vertices, faces=faces)
 
-# %% ../nbs/03c_rotation_registration.ipynb 75
+# %% ../nbs/03c_rotation_registration.ipynb 76
 def rotation_alignment_brute_force(sph_harmonics_source, sph_harmonics_target, 
                                    max_l=None, n_angle=100, n_subdiv_axes=1):
     """
@@ -384,7 +403,7 @@ def rotation_alignment_brute_force(sph_harmonics_source, sph_harmonics_target,
     
     return q_opt, overlap
 
-# %% ../nbs/03c_rotation_registration.ipynb 78
+# %% ../nbs/03c_rotation_registration.ipynb 79
 def _get_minus_overlap(q, sph_harmonics_source, sph_harmonics_target, max_l=None, binomial_matrix=None,):
     """
     Get negative overlap between spherical harmonics, as function of rotation q, for optimization.

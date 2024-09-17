@@ -3,32 +3,27 @@
 # %% auto 0
 __all__ = ['map_to_disk', 'rot_mat', 'rotational_align_disk', 'extrapolate_fast_marching', 'wrap_coords_via_disk',
            'wrap_coords_via_disk_no_skfmm', 'stereographic_plane_to_sphere', 'stereographic_sphere_to_plane',
-           'center_moebius', 'map_to_sphere', 'compute_spherical_harmonics_coeffs', 'spherical_harmonics_to_grid',
-           'quaternion_to_rot_max', 'rot_mat_to_quaternion', 'conjugate_quaternion', 'invert_quaternion',
-           'multiply_quaternions', 'quaternion_power', 'quaternion_to_complex_pair', 'get_wigner_D_element',
-           'get_wigner_D_matrix', 'get_icosphere', 'rotation_alignment_brute_force', 'rotation_alignment_refined']
+           'center_moebius', 'map_to_sphere']
 
 # %% ../nbs/03d_conformal_wrapping.ipynb 1
 from . import io as tcio
 from . import registration as tcreg
 from . import wrapping as tcwrap
-from . import wrapping as tcwrap
+from . import rotation as tcrot
 
 import numpy as np
 from copy import deepcopy
 import warnings
 import igl
 
-from scipy import integrate, interpolate, ndimage, optimize, sparse, spatial, special
+from scipy import interpolate, ndimage, optimize, sparse, spatial
 from skimage import registration, transform
 
 import matplotlib as mpl
 
 import skfmm
 
-import itertools
-
-# %% ../nbs/03d_conformal_wrapping.ipynb 9
+# %% ../nbs/03d_conformal_wrapping.ipynb 10
 def map_to_disk(mesh):
     """
     Map mesh to unit disk by computing harmonic UV coordinates.
@@ -50,7 +45,6 @@ def map_to_disk(mesh):
     -------
     mesh_parametrized : tcio.ObjMesh
         Mesh with UV coordinates mapping it to the disk.
-
     
     """
     if not mesh.is_triangular:
@@ -73,12 +67,12 @@ def map_to_disk(mesh):
     
     return mesh_parametrized
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 14
+# %% ../nbs/03d_conformal_wrapping.ipynb 15
 def rot_mat(phi):
     """Get rotation matrix with angle phi"""
     return np.array([[np.cos(phi), np.sin(phi)],[-np.sin(phi), np.cos(phi)]])
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 17
+# %% ../nbs/03d_conformal_wrapping.ipynb 18
 def rotational_align_disk(mesh_source, mesh_target, q=0.05, n_grid=256):
     """
     Rotationally align two UV map to the disk by the conformal factor.
@@ -153,14 +147,14 @@ def rotational_align_disk(mesh_source, mesh_target, q=0.05, n_grid=256):
     new_texture_vertices += np.array([0.5,0.5])
     return new_texture_vertices
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 21
+# %% ../nbs/03d_conformal_wrapping.ipynb 22
 def extrapolate_fast_marching(arr):
     """Fill nans in 2d numpy array via fast-marching extrapolation."""
     mask = ~ndimage.binary_erosion(~np.isnan(arr), iterations=2)
     extended = skfmm.extension_velocities(mask, arr)[1]
     return extended
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 22
+# %% ../nbs/03d_conformal_wrapping.ipynb 23
 def wrap_coords_via_disk(mesh_source, mesh_target, n_grid=512):
     """
     Map 3d coords of source mesh to target mesh via a disk parametrization. 
@@ -183,7 +177,7 @@ def wrap_coords_via_disk(mesh_source, mesh_target, n_grid=512):
                            for x in interpolated], axis=-1)
     return new_coords
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 23
+# %% ../nbs/03d_conformal_wrapping.ipynb 24
 def wrap_coords_via_disk_no_skfmm(mesh_source, mesh_target):
     """
     Map 3d coords of source mesh to target mesh via a disk parametrization. 
@@ -218,7 +212,7 @@ def wrap_coords_via_disk_no_skfmm(mesh_source, mesh_target):
         interpolated[~mask] = missing
     return interpolated
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 35
+# %% ../nbs/03d_conformal_wrapping.ipynb 36
 def stereographic_plane_to_sphere(uv):
     """
     Stererographic projection from plane to unit sphere from north pole (0,0,1).
@@ -240,7 +234,7 @@ def stereographic_sphere_to_plane(pts):
     assert np.allclose(np.linalg.norm(pts, axis=1), 1, rtol=1e-03, atol=1e-04), "Points not on unit sphere!"
     return (np.stack([pts[:,0], pts[:,1]], axis=0)/(1-pts[:,2])).T
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 39
+# %% ../nbs/03d_conformal_wrapping.ipynb 40
 def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alpha=0.5):
     """
     Apply Moeboius inversions to minimize area distortion of map from mesh to sphere.
@@ -285,7 +279,7 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
         Vs = ((1-np.linalg.norm(c)**2)*(Vs+c).T /np.linalg.norm(Vs+c, axis=1)**2).T + c
     return Vs, np.linalg.norm(mu)
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 41
+# %% ../nbs/03d_conformal_wrapping.ipynb 42
 def map_to_sphere(mesh, n_iter_centering=10, alpha=0.5):
     """
     Compute conformal map of mesh to unit sphere.
@@ -350,384 +344,3 @@ def map_to_sphere(mesh, n_iter_centering=10, alpha=0.5):
         vertices_sphere, _ = center_moebius(mesh.vertices, vertices_sphere, faces_all,
                                             n_iter_centering=n_iter_centering, alpha=alpha)
     return vertices_sphere
-
-# %% ../nbs/03d_conformal_wrapping.ipynb 61
-def compute_spherical_harmonics_coeffs(f, phi, theta, weights, max_l):
-    """
-    Compute spherical harmonic coefficients for a scalar real-valued function defined on the unit sphere.
-    
-    Takes as input values of the function at sample points (and sample weights), and computes
-    the overlap with each spherical harmonic by "naive" numerical integration.
-    
-    Since the function is assumed real, we have f^{l}_{-m} = np.conjugate(f^{l}_{m}).
-    
-    Parameters
-    ----------
-    f : np.array 
-        Sample values
-    phi : np.array of shape
-        Sample point azimuthal coordinates
-    theta : np.array of shape
-        Sample point longditudinal coordinates
-    weights : np.array
-        Sample weights. For instance, if you have a function sampled on a regular phi-theta grid,
-        this should be dTheta*dPhi*np.sin(theta)
-    max_l : int
-        Maximum angular momentum
-        
-    Returns
-    -------
-    coeffs : dict of np.array
-        Dictionary, indexed by total angular momentum l=0 ,..., max_l. Each entry is a vector
-        of coefficients for the different values of m=-2l,...,2*l
-    """
-
-    coeffs = {}
-    for l in range(max_l):
-        vec = np.zeros(max([1, 2*l+1]), dtype="complex_")
-        for m in range(0, l+1):
-            entry = np.sum(weights*f*special.sph_harm(m, l, phi, theta))
-            vec[l+m] = entry
-            vec[l-m] = np.conjugate(entry)*(-1)**m
-        coeffs[l] = np.copy(vec)
-    return coeffs
-
-# %% ../nbs/03d_conformal_wrapping.ipynb 64
-def spherical_harmonics_to_grid(coeffs, n_grid=256):
-    """
-    Compute signal on rectangular phi-theta grid given spherical harmonics coefficients.
-    
-    Assumes underlying function is real-valued
-    
-    Parameters
-    ----------
-    coeffs : dict of np.array
-        Dictionary, indexed by total angular momentum l=0 ,..., max_l. Each entry is a vector
-        of coefficients for the different values of m=-2l,...,2*l
-    
-    Returns
-    -------
-    reconstructed : 2d np.array
-        Reconstructed signal interpolated on rectangular phi-theta grid
-    
-    """
-    phi_grid, theta_grid = np.meshgrid(np.linspace(-np.pi,np.pi, 2*n_grid), np.linspace(0, np.pi, n_grid)[::-1], )
-    reconstructed = np.zeros_like(phi_grid, dtype="complex_")
-    for l, coeff_vec in coeffs.items():
-        for m in range(0, l+1):
-            Y_ml = special.sph_harm(m, l, phi_grid, theta_grid)
-            if m == 0:
-                reconstructed += coeff_vec[l]*Y_ml
-            else:
-                reconstructed += (coeff_vec[l+m]*np.conjugate(Y_ml)+coeff_vec[l-m]*Y_ml*(-1)**m)
-    return reconstructed
-
-# %% ../nbs/03d_conformal_wrapping.ipynb 84
-def quaternion_to_rot_max(q):
-    """
-    Convert unit quaternion into a 3d rotation matrix.
-    
-    See https://fr.wikipedia.org/wiki/Quaternions_et_rotation_dans_l%27espace
-    """
-    assert np.allclose(np.linalg.norm(q), 1), "Must be unit quaternion!"
-    a, b, c, d = q
-    return np.array([[a**2+b**2-c**2-d**2, 2*b*c-2*a*d, 2*a*c+2*b*d],
-                     [2*a*d+2*b*c, a**2-b**2+c**2-d**2, 2*c*d-2*a*b],
-                     [2*b*d-2*a*c, 2*a*b+2*c*d, a**2-b**2-c**2+d**2]])
-
-def rot_mat_to_quaternion(Q):
-    """
-    Convert 3d rotation matrix into unit quaternion.
-    
-    See https://fr.wikipedia.org/wiki/Quaternions_et_rotation_dans_l%27espace
-    """
-    trace = np.trace(Q)
-    if trace < (-1+1e-5): # rotation by pi
-        vals, vecs = np.linalg.eig(Q)
-        u = vecs[:,np.argmin(np.abs(vals-1))].real
-        return np.hstack([[0], u])
-    r = np.sqrt(1+trace)/2
-    u_ind = np.argmax(np.abs(np.diag(Q)))
-    q = np.array([r, 0, 0, 0])
-    Q_anti = (Q-Q.T)/(4*r)
-    q[1+(u_ind+0)%3] = Q_anti[(u_ind+2)%3,(u_ind+1)%3]
-    q[1+(u_ind+1)%3] = Q_anti[(u_ind+0)%3,(u_ind+2)%3]
-    q[1+(u_ind+2)%3] = Q_anti[(u_ind+1)%3,(u_ind+0)%3]
-    return q
-
-def conjugate_quaternion(q):
-    """Conjugate a quaternion"""
-    return np.array([1, -1, -1, -1]) * q
-
-def invert_quaternion(q):
-    """Invert a quaternion"""
-    return conjugate_quaternion(q) / np.linalg.norm(q)
-
-def multiply_quaternions(q, p):
-     return np.array([q[0]*p[0]-q[1]*p[1]-q[2]*p[2]-q[3]*p[3],
-                      q[0]*p[1]+q[1]*p[0]+q[2]*p[3]-q[3]*p[2],
-                      q[0]*p[2]+q[2]*p[0]-q[1]*p[3]+q[3]*p[1],
-                      q[0]*p[3]+q[3]*p[0]+q[1]*p[2]-q[2]*p[1]])
-    
-def quaternion_power(q, n):
-    """Raise quaternion to integer power, potentially negative"""
-    assert isinstance(n, int), "power n must be integer"
-    if n == 0:
-        return np.array([1,0,0,0])
-    if n > 0:
-        n_iter = n
-        q_inverted = q
-    elif n < 0:
-        n_iter = -n
-        q_inverted = invert_quaternion(q)
-    res = np.copy(q_inverted)
-    while n_iter > 1:
-        res = multiply_quaternions(q_inverted,res)
-        n_iter -= 1
-    return res
-
-def quaternion_to_complex_pair(q):
-    """Convert quaternion to pair of complex numbers q0+iq3, q2+iq1"""
-    return q[0]+1j*q[3], q[2]+1j*q[1]
-
-# %% ../nbs/03d_conformal_wrapping.ipynb 98
-def get_wigner_D_element(Ra, Rb, l, mp, m, binomial_matrix):
-    """
-    Compute Wigner's D matrix element for a rotation defined by a unit quaternion R,
-    represented as complex pair (R0+iR3), (R2+iR1). Requires pre-computed binomial matrix.
-    
-    Following https://spherical.readthedocs.io/en/main/WignerDMatrices/
-    """
-    comb_factor = np.sqrt(binomial_matrix[2*l, l+mp]/binomial_matrix[2*l, l+m])
-    if np.abs(Ra) < 1e-10:
-        if -mp != m:
-            return 0
-        return (-1)**(l+m) * Rb**(2*m)
-    if np.abs(Rb) < 1e-10:
-        if mp != m:
-            return 0
-        return Ra**(2*m)
-    if np.abs(Ra) > np.abs(Rb):
-        R_factor = np.abs(Ra)**(2*l-2*m) * Ra**(m+mp) * Rb**(m-mp)
-        choose_factor = 0
-        rho_min = max([mp-m, 0])
-        power_fac = (np.abs(Rb)/np.abs(Ra))**2
-        for rho in range(rho_min, l+mp+1):
-            choose_factor += (binomial_matrix[l+mp, rho]*binomial_matrix[l-mp, l-rho-m]
-                              *power_fac**(rho-rho_min)*(-1)**rho)
-        return comb_factor*R_factor*choose_factor*power_fac**rho_min
-    elif np.abs(Rb) > np.abs(Ra):
-        R_factor = np.abs(Rb)**(2*l-2*m) * Ra**(m+mp) * Rb**(m-mp)
-        choose_factor = 0
-        rho_min = max([-mp-m, 0])
-        power_fac = (np.abs(Ra)/np.abs(Rb))**2
-        for rho in range(rho_min, l-mp+1):
-            choose_factor += (binomial_matrix[l-mp, rho]*binomial_matrix[l+mp, l-rho-m]
-                              *power_fac**(rho-rho_min)*(-1)**rho)
-        return (-1)**(l-m)*comb_factor*R_factor*choose_factor*power_fac**rho_min
-
-def get_wigner_D_matrix(R, l, binomial_matrix=None):
-    """Get (2*l+1, 2*l+1) Wigner D matrix for angular momentum l and rotation R,
-    represented by quaternion"""
-    matrix = np.zeros(((2*l+1, 2*l+1)), dtype="complex_")
-    Ra, Rb = quaternion_to_complex_pair(R)
-    if l == 0:
-        matrix[0,0] = 1
-        return matrix
-    if binomial_matrix is None:
-        binomial_matrix = get_binomial_matrix(2*l)
-    for m in range(-l, l+1):
-        for mp in range(-l, l+1):
-            matrix[l+mp, l+m] = get_wigner_D_element(Ra, Rb, l, mp, m, binomial_matrix=binomial_matrix)
-    return matrix
-
-# %% ../nbs/03d_conformal_wrapping.ipynb 118
-def get_icosphere(subdivide=0):
-    """
-    Return the icosphere triangle mesh with 42 regulary spaced vertices on the unit sphere.
-    
-    Optionally, subdivide mesh n times, increasing vertex count by factor 4^n.
-    """
-    vertices = np.array([[ 0.      , -1.      ,  0.      ], [ 0.723607, -0.44722 ,  0.525725],
-                         [-0.276388, -0.44722 ,  0.850649], [-0.894426, -0.447216,  0.      ],
-                         [-0.276388, -0.44722 , -0.850649], [ 0.723607, -0.44722 , -0.525725],
-                         [ 0.276388,  0.44722 ,  0.850649], [-0.723607,  0.44722 ,  0.525725],
-                         [-0.723607,  0.44722 , -0.525725], [ 0.276388,  0.44722 , -0.850649],
-                         [ 0.894426,  0.447216,  0.      ], [ 0.      ,  1.      ,  0.      ],
-                         [-0.162456, -0.850654,  0.499995], [ 0.425323, -0.850654,  0.309011],
-                         [ 0.262869, -0.525738,  0.809012], [ 0.850648, -0.525736,  0.      ],
-                         [ 0.425323, -0.850654, -0.309011], [-0.52573 , -0.850652,  0.      ],
-                         [-0.688189, -0.525736,  0.499997], [-0.162456, -0.850654, -0.499995],
-                         [-0.688189, -0.525736, -0.499997], [ 0.262869, -0.525738, -0.809012],
-                         [ 0.951058,  0.      ,  0.309013], [ 0.951058,  0.      , -0.309013],
-                         [ 0.      ,  0.      ,  1.      ], [ 0.587786,  0.      ,  0.809017],
-                         [-0.951058,  0.      ,  0.309013], [-0.587786,  0.      ,  0.809017],
-                         [-0.587786,  0.      , -0.809017], [-0.951058,  0.      , -0.309013],
-                         [ 0.587786,  0.      , -0.809017], [ 0.      ,  0.      , -1.      ],
-                         [ 0.688189,  0.525736,  0.499997], [-0.262869,  0.525738,  0.809012],
-                         [-0.850648,  0.525736,  0.      ], [-0.262869,  0.525738, -0.809012],
-                         [ 0.688189,  0.525736, -0.499997], [ 0.162456,  0.850654,  0.499995],
-                         [ 0.52573 ,  0.850652,  0.      ], [-0.425323,  0.850654,  0.309011],
-                         [-0.425323,  0.850654, -0.309011], [ 0.162456,  0.850654, -0.499995]])
-    faces = np. array([[ 0, 13, 12], [12, 14,  2], [12, 13, 14], [13,  1, 14],
-                       [ 1, 13, 15], [ 0, 12, 17], [ 0, 17, 19], [ 0, 19, 16],
-                       [ 1, 15, 22], [ 2, 14, 24], [ 3, 18, 26], [ 4, 20, 28],
-                       [ 5, 21, 30], [ 1, 22, 25], [ 2, 24, 27], [ 3, 26, 29],
-                       [ 4, 28, 31], [ 5, 30, 23], [ 6, 32, 37], [ 7, 33, 39],
-                       [ 8, 34, 40], [ 9, 35, 41], [10, 36, 38], [38, 41, 11],
-                       [38, 36, 41], [36,  9, 41], [41, 40, 11], [41, 35, 40],
-                       [35,  8, 40], [40, 39, 11], [40, 34, 39], [34,  7, 39],
-                       [39, 37, 11], [39, 33, 37], [33,  6, 37], [37, 38, 11],
-                       [37, 32, 38], [32, 10, 38], [23, 36, 10], [23, 30, 36],
-                       [30,  9, 36], [31, 35,  9], [31, 28, 35], [28,  8, 35],
-                       [29, 34,  8], [29, 26, 34], [26,  7, 34], [27, 33,  7],
-                       [27, 24, 33], [24,  6, 33], [25, 32,  6], [25, 22, 32],
-                       [22, 10, 32], [30, 31,  9], [30, 21, 31], [21,  4, 31],
-                       [28, 29,  8], [28, 20, 29], [20,  3, 29], [26, 27,  7],
-                       [26, 18, 27], [18,  2, 27], [24, 25,  6], [24, 14, 25],
-                       [14,  1, 25], [22, 23, 10], [22, 15, 23], [15,  5, 23],
-                       [16, 21,  5], [16, 19, 21], [19,  4, 21], [19, 20,  4],
-                       [19, 17, 20], [17,  3, 20], [17, 18,  3], [17, 12, 18],
-                       [12,  2, 18], [15, 16,  5], [15, 13, 16], [13,  0, 16],])
-    if subdivide > 0:
-        vertices, faces = igl.loop(vertices, faces, number_of_subdivs=subdivide)
-    vertices = (vertices.T/np.linalg.norm(vertices, axis=-1)).T
-    return tcio.ObjMesh(vertices=vertices, faces=faces)
-
-# %% ../nbs/03d_conformal_wrapping.ipynb 123
-def rotation_alignment_brute_force(sph_harmonics_source, sph_harmonics_target, 
-                                   max_l=None, n_angle=100, n_subdiv_axes=1):
-    """
-    Compute rotational alignment between two signals on sphere by brute force.
-    
-    The two signals have to be represented by their spherical harmonics coefficients.
-    Uses Wigner-D matrices to calculate the overlap between the two signals
-    for a set of rotations and finds the rotation that maximzes the overlap.
-    
-    The trial rotations are generated by taking a set of approx. equidistant
-    points on the 2d sphere as rotation axes, and a set of equally spaced
-    angles [0,..., 2*pi] as rotation angles.
-    
-    The rotation is such that it transforms the source signal to match the target.
-        
-    Parameters
-    ----------
-    sph_harmonics_source : dict of np.array
-        Dictionary, indexed by total angular momentum l=0 ,..., max_l. Each entry is a vector
-        of coefficients for the different values of m=-2l,...,2*l. Source signal, to be
-        transformed.
-    sph_harmonics_target : dict of np.array
-        Dictionary, indexed by total angular momentum l=0 ,..., max_l. Each entry is a vector
-        of coefficients for the different values of m=-2l,...,2*l. Target signal.
-    max_l : int
-        Maximum angular momentum. If None, the maximum value available in the input
-        spherical harmonics is used.
-    n_angle : int
-        Number of trial rotation angles [0,..., 2*pi]
-    n_subdiv_axes : int
-        Controls number of trial rotatio axes. Rotation axes are vertices of
-        the icosphere which can be subdivided. There will be roughly
-        40*4**n_subdiv_axes trial axes. This parameter has the strongest influence
-        on the run time.
-    
-    Returns
-    -------
-    optimal_trial_rotation : 4d np.array
-        Best trial rotation as unit quaternion.
-    overlap : float
-        Normalized overlap. 1=perfect alignment.
-    """
-    if max_l is None:
-        max_l = min([max(sph_harmonics_source.keys()), max(sph_harmonics_target.keys())])
-
-    alpha_0 = 2*np.pi/n_angle
-    axes = get_icosphere(subdivide=n_subdiv_axes).vertices
-    corr_coeffs = np.zeros((axes.shape[0], n_angle+1), dtype="complex_")
-    for i, axis in enumerate(axes): # iterate over rotation axes
-        q = np.hstack([[np.cos(alpha_0/2)], np.sin(alpha_0/2)*axis])
-        correlation = np.zeros(n_angle+1,  dtype="complex_")
-        for l in range(0, max_l):
-            D_matrix = get_wigner_D_matrix(q, l=l)
-            rotated_l = [D_matrix@sph_harmonics_source[l]]
-            for n in range(n_angle): # iterate over rotation strength via 
-                rotated_l.append(D_matrix@rotated_l[-1])
-            correlation += np.stack(rotated_l).dot(np.conjugate(sph_harmonics_target[l]))
-        corr_coeffs[i] = correlation
-    max_index = np.unravel_index(np.argmax(np.abs(corr_coeffs)), corr_coeffs.shape)
-    alpha_opt = max_index[1]*alpha_0
-    q_opt = np.hstack([[np.cos(alpha_opt/2)], np.sin(alpha_opt/2)*axes[max_index[0]]])
-    
-    normalization = np.sqrt(np.sum([val.dot(np.conjugate(val)) for val in sph_harmonics_source.values()])
-                           *np.sum([val.dot(np.conjugate(val)) for val in sph_harmonics_target.values()]))
-    overlap = corr_coeffs[max_index]/normalization
-    
-    return q_opt, overlap
-
-# %% ../nbs/03d_conformal_wrapping.ipynb 126
-def _get_minus_overlap(q, sph_harmonics_source, sph_harmonics_target, max_l=None, binomial_matrix=None,):
-    """
-    Get negative overlap between spherical harmonics, as function of rotation q, for optimization.
-    
-    
-    """
-    if max_l is None:
-        max_l = min([max(sph_harmonics_source.keys()), max(sph_harmonics_target.keys())])    
-    corr_coeff = 0
-    for l in range(0, max_l):
-        D_matrix = get_wigner_D_matrix(q/np.linalg.norm(q),
-                                       l=l, binomial_matrix=binomial_matrix)
-        corr_coeff += np.sum(D_matrix@spherical_harmonics_coeffs_direct[l]
-                             *np.conjugate(spherical_harmonics_coeffs_rotated[l]))
-    normalization = np.sqrt(np.abs(np.sum([val.dot(np.conjugate(val)) for val in sph_harmonics_source.values()])
-                                  *np.sum([val.dot(np.conjugate(val)) for val in sph_harmonics_target.values()])))
-    return -np.abs(corr_coeff)/normalization
-
-def rotation_alignment_refined(sph_harmonics_source, sph_harmonics_target, q_initial,
-                               max_l=None, maxfev=200):
-    """
-    Refine rotational alignment between two signals on sphere by optimization.
-    
-    The two signals have to be represented by their spherical harmonics coefficients.
-    Uses Wigner-D matrices to calculate the overlap between the two signals
-    and uses Nelder-Mead optimization to find the best one.
-    
-    Requires a good initial guess for the rotation, as created by 
-    rotation_alignment_brute_force.
-    
-    The rotation is such that it transforms the source signal to match the target.
-        
-    Parameters
-    ----------
-    sph_harmonics_source : dict of np.array
-        Dictionary, indexed by total angular momentum l=0 ,..., max_l. Each entry is a vector
-        of coefficients for the different values of m=-2l,...,2*l. Source signal, to be
-        transformed.
-    sph_harmonics_target : dict of np.array
-        Dictionary, indexed by total angular momentum l=0 ,..., max_l. Each entry is a vector
-        of coefficients for the different values of m=-2l,...,2*l. Target signal.
-    q_initial : 4d np.array
-        Initial rotation as quaternion
-    max_l : int
-        Maximum angular momentum. If None, the maximum value available in the input
-        spherical harmonics is used.
-    maxfev : int
-        Number of function evaluations during optimization.This parameter has
-        the strongest influence on the run time.
-    
-    Returns
-    -------
-    optimal_rotation : 4d np.array
-        Best rotation as unit quaternion.
-    overlap : float
-        Normalized overlap. 1=perfect alignment.
-    overlap_initial : float
-        Normalized overlap of initial condition. 1=perfect alignment. 
-    """
-    if max_l is None:
-        max_l = min([max(sph_harmonics_source.keys()), max(sph_harmonics_target.keys())])
-    args = (sph_harmonics_source, sph_harmonics_target, max_l, get_binomial_matrix(2*max_l))
-    sol = optimize.minimize(_get_minus_overlap, q_initial, args=args, method="Nelder-Mead", tol=1e-5,
-                            options={"maxfev": maxfev})
-    return sol.x/np.linalg.norm(sol.x), sol.fun, get_minus_overlap(q_opt, *args)
-
-

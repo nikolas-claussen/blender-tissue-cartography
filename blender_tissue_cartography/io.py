@@ -2,8 +2,8 @@
 
 # %% auto 0
 __all__ = ['deprecated', 'adjust_axis_order', 'subsample_image', 'normalize_quantiles_zstack', 'write_h5', 'read_h5', 'flatten',
-           'pad_list', 'unique', 'index_else_nan', 'ObjMesh', 'read_other_formats_without_uv', 'glue_seams',
-           'marching_cubes', 'save_dict_to_json', 'save_for_imageJ', 'normalize_quantiles_for_png',
+           'pad_list', 'unique', 'index_else_nan', 'invert_dictionary', 'ObjMesh', 'read_other_formats_without_uv',
+           'glue_seams', 'marching_cubes', 'save_dict_to_json', 'save_for_imageJ', 'normalize_quantiles_for_png',
            'save_stack_for_blender']
 
 # %% ../nbs/01a_io.ipynb 1
@@ -186,6 +186,21 @@ def index_else_nan(arr, inds):
     selected[mask] = np.nan
     return selected
 
+def invert_dictionary(my_map, assume_unique=False):
+    """
+    Invert key -> value map defined by a dictionary
+    
+    If assume_unique is True, key/value pairs are assumed to be unique.
+    Else, a dictionary of list returned. Each entry is a list
+    of keys that map to the given value.
+    """
+    if assume_unique:
+        return {v: k for k, v in my_map.items()}
+    inv_map = {}
+    for k, v in my_map.items():
+        inv_map[v] = inv_map.get(v, []) + [k]
+    return inv_map
+
 # %% ../nbs/01a_io.ipynb 20
 class ObjMesh:
     """
@@ -291,7 +306,7 @@ class ObjMesh:
             if np.isnan(x):
                 return ''
             return str(x)
-        namelines = ["o {}\n".format(*self.name)] if self.name is not None else []
+        namelines = ["o {}\n".format(self.name)] if self.name is not None else []
         if self.only_vertices:
             vlines = ["v {} {} {}\n".format(*v) for v in self.vertices]
             flines = ["f {} {} {}\n".format(*[int(v+1) for v in fc]) for fc in self.faces]
@@ -374,6 +389,16 @@ class ObjMesh:
     def get_uv_index_to_vertex_index_map(self):
         """Get map from texture vertex index to the corresponding 3d vertex index as a dictionary."""
         return {v[1]: v[0] for v in flatten(self.faces, max_depth=1) if not np.isnan(v[1])}
+    
+    def get_vertex_index_to_uv_index_map(self):
+        """
+        Get map from 3d vertex index to the corresponding UV vertex index as a dictionary.
+        
+        Note: each dict item is a list, since a 3d vertex can map to multiple UV vertices.
+        """
+        uv_to_vertex = self.get_uv_index_to_vertex_index_map()
+        return invert_dictionary(uv_to_vertex, assume_unique=False)
+
         
     def get_uv_matched_vertex_indices(self):
         """
