@@ -199,6 +199,6 @@ the installation instructions above.
 
 This software is being developed by Nikolas Claussen in the [Streichan
 lab at UCSB](https://streichanlab.physics.ucsb.edu/). Noah Mitchell,
-Susan Wopat, and Matthew Lefebvre contributed example data. Sean Komura
-and Gary Han tested the software. Dillon Cislo provided advice on
-surface-surface registration.
+Susan Wopat, Dong-Yuan Chen, and Matthew Lefebvre contributed example
+data. Sean Komura and Gary Han tested the software. Dillon Cislo
+provided advice on surface-surface registration.
