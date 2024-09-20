@@ -467,5 +467,3 @@ def rotation_alignment_refined(sph_harmonics_source, sph_harmonics_target, q_ini
     sol = optimize.minimize(_get_minus_overlap, q_initial, args=args, method="Nelder-Mead", tol=1e-5,
                             options={"maxfev": maxfev})
     return sol.x/np.linalg.norm(sol.x), sol.fun
-
-

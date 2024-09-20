@@ -36,6 +36,8 @@ def convert_to_pymeshlab(mesh: tcio.ObjMesh, add_texture_info=None) -> pymeshlab
         warnings.warn(f"Warning: mesh not triangular. discarding non-triangular faces")
     add_texture_info = ((not mesh.only_vertices and len(mesh.texture_vertices) > 0)
                         if add_texture_info is None else add_texture_info)
+    if mesh.tris.shape[0] == 0:
+        return pymeshlab.Mesh(vertex_matrix=mesh.vertices)
     if not add_texture_info:
         return pymeshlab.Mesh(vertex_matrix=mesh.vertices, face_matrix=mesh.tris)
     wedge_coords = mesh.texture_vertices[mesh.texture_tris].reshape((-1,2), order="C")
@@ -59,6 +61,8 @@ def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=
     vertices = mesh.vertex_matrix()
     normals = mesh.vertex_normal_matrix()
     normals = (normals.T / np.linalg.norm(normals, axis=-1)).T
+    if mesh.face_matrix().shape[0] == 0:
+        return tcio.ObjMesh(vertices=vertices, faces=[])
     if not mesh.has_vertex_tex_coord():
         faces = mesh.face_matrix()
         return tcio.ObjMesh(vertices=vertices, faces=faces, normals=normals)
