@@ -15,4 +15,3 @@ dependencies:
   - pip
   - pip:
       - libigl
-      - scikit-fmm
