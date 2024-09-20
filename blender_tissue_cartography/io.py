@@ -66,7 +66,7 @@ def adjust_axis_order(image, channel_axis=None):
         channel_axis = np.argmin(image.shape)
     return np.moveaxis(image, channel_axis, 0)
 
-# %% ../nbs/01a_io.ipynb 10
+# %% ../nbs/01a_io.ipynb 9
 def subsample_image(image, subsampling_factors, use_block_averaging_if_possible=True):
     """
     Subsample (downscale) image by given factors.
@@ -99,7 +99,7 @@ def subsample_image(image, subsampling_factors, use_block_averaging_if_possible=
         return np.stack([transform.downscale_local_mean(chn, inverse_factors) for chn in image], axis=0)
     return np.stack([transform.rescale(chn, subsampling_factors, preserve_range=True) for chn in image], axis=0)
 
-# %% ../nbs/01a_io.ipynb 13
+# %% ../nbs/01a_io.ipynb 12
 def normalize_quantiles_zstack(image, quantiles=(0.01, 0.99)):
     """
     Normalize an image by setting given quantiles to 0 and 1.
@@ -121,7 +121,7 @@ def normalize_quantiles_zstack(image, quantiles=(0.01, 0.99)):
     image_normalized = np.nan_to_num(image_normalized)
     return image_normalized.astype(np.uint8)
 
-# %% ../nbs/01a_io.ipynb 14
+# %% ../nbs/01a_io.ipynb 13
 def write_h5(filename, image, h5_dataset_name="image"):
     """Write image (numpy array) as .h5 file (e.g. as input for ilastik)."""
     with h5py.File(filename, "w") as f:
@@ -134,7 +134,7 @@ def read_h5(filename):
         arr = f[sorted(f.keys())[0]][()] 
     return arr
 
-# %% ../nbs/01a_io.ipynb 19
+# %% ../nbs/01a_io.ipynb 18
 def flatten(lst, max_depth=1000, iter_count=0):
     """
     Flatten a list of lists into a list.
@@ -201,7 +201,7 @@ def invert_dictionary(my_map, assume_unique=False):
         inv_map[v] = inv_map.get(v, []) + [k]
     return inv_map
 
-# %% ../nbs/01a_io.ipynb 20
+# %% ../nbs/01a_io.ipynb 19
 class ObjMesh:
     """
     Simple class for reading, holding, transforming, and saving 3d polygonal meshes in the .obj format.
@@ -489,7 +489,7 @@ class ObjMesh:
             newmesh.match_vertex_info()
         return newmesh
 
-# %% ../nbs/01a_io.ipynb 21
+# %% ../nbs/01a_io.ipynb 20
 def read_other_formats_without_uv(filename):
     """
     Return vertices and faces from a non-.obj mesh file format. file.
@@ -514,7 +514,7 @@ def read_other_formats_without_uv(filename):
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
-# %% ../nbs/01a_io.ipynb 32
+# %% ../nbs/01a_io.ipynb 31
 def glue_seams(mesh, decimals=None):
     """
     Merge close vertices.
@@ -549,7 +549,7 @@ def glue_seams(mesh, decimals=None):
     glued_mesh.set_normals()
     return glued_mesh
 
-# %% ../nbs/01a_io.ipynb 40
+# %% ../nbs/01a_io.ipynb 39
 def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     """
     Compute triangular mesh of isosurface using marching cubes as implemented by lib|igl.
@@ -579,7 +579,7 @@ def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     vertices, faces = igl.marching_cubes(vals, pts_grid, *volume.shape, isovalue)
     return vertices, faces
 
-# %% ../nbs/01a_io.ipynb 48
+# %% ../nbs/01a_io.ipynb 47
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -605,7 +605,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01a_io.ipynb 50
+# %% ../nbs/01a_io.ipynb 49
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file

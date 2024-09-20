@@ -118,6 +118,17 @@ seeing your data projected onto the 3d mesh as below, you can
 graphically adjust the cartographic projection, for example its
 seams/cuts. See `tutorials/06_iterative_design.ipynb`.
 
+![image.png](index_files/figure-commonmark/cell-6-1-image.png)
+
+In this pipeline, you have the ability to edit meshes and cartographic
+projections interactively - you can create a preliminary projection of
+your data automatically, and use it as guidance when editing your
+cartographic map in blender. Here, we edit the “seam” of our
+cartographic map based on the region occupied by cells during zebrafish
+epiboly (tutorial 6).
+
+![image-2.png](index_files/figure-commonmark/cell-7-1-image-2.png)
+
 #### Notes for python beginners
 
 - You will need a working python installation (see here: [installing
@@ -142,17 +153,6 @@ seams/cuts. See `tutorials/06_iterative_design.ipynb`.
 - You do not need to copy functions into your notebooks manually. If you
   followed the installation instructions, the code will be installed as
   a python package, and can be “imported” by python. See tutorials!
-
-![image.png](index_files/figure-commonmark/cell-6-1-image.png)
-
-In this pipeline, you have the ability to edit meshes and cartographic
-projections interactively - you can create a preliminary projection of
-your data automatically, and use it as guidance when editing your
-cartographic map in blender. Here, we edit the “seam” of our
-cartographic map based on the region occupied by cells during zebrafish
-epiboly (tutorial 6).
-
-![image-2.png](index_files/figure-commonmark/cell-7-1-image-2.png)
 
 ## Software stack
 
