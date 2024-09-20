@@ -2,10 +2,10 @@
 
 # %% auto 0
 __all__ = ['cartesian_to_spherical', 'compute_spherical_harmonics_coeffs', 'spherical_harmonics_to_grid', 'quaternion_to_rot_max',
-           'rot_mat_to_quaternion', 'conjugate_quaternion', 'invert_quaternion', 'multiply_quaternions',
-           'quaternion_power', 'quaternion_to_complex_pair', 'get_wigner_D_matrix', 'rotate_spherical_harmonics_coeffs',
-           'parity_spherical_harmonics_coeffs', 'get_icosphere', 'rotation_alignment_brute_force',
-           'rotation_alignment_refined']
+           'rot_mat_to_quaternion', 'quaternion_to_complex_pair', 'conjugate_quaternion', 'invert_quaternion',
+           'multiply_quaternions', 'quaternion_power', 'get_binomial_matrix', 'get_wigner_D_matrix',
+           'parity_spherical_harmonics_coeffs', 'rotate_spherical_harmonics_coeffs', 'overlap_spherical_harmonics',
+           'get_icosphere', 'rotation_alignment_brute_force', 'rotation_alignment_refined']
 
 # %% ../nbs/03c_rotation_registration.ipynb 1
 from . import io as tcio
@@ -72,7 +72,7 @@ def compute_spherical_harmonics_coeffs(f, phi, theta, weights, max_l):
     Returns
     -------
     coeffs : dict of np.array
-        Dictionary, indexed by total angular momentum l=0 ,..., max_l. Each entry is a vector
+        Dictionary, indexed by total angular momentum l=0 ,..., max_l-1. Each entry is a vector
         of coefficients for the different values of m=-2l,...,2*l
     """
 
@@ -133,8 +133,12 @@ def rot_mat_to_quaternion(Q):
     """
     Convert 3d rotation matrix into unit quaternion.
     
+    If determinant(Q) = -1, returns the unit quaternion corresponding to -Q
+    
     See https://fr.wikipedia.org/wiki/Quaternions_et_rotation_dans_l%27espace
     """
+    if np.linalg.det(Q) < 0:
+        return rot_mat_to_quaternion(-Q)
     trace = np.trace(Q)
     if trace < (-1+1e-5): # rotation by pi
         vals, vecs = np.linalg.eig(Q)
@@ -148,6 +152,10 @@ def rot_mat_to_quaternion(Q):
     q[1+(u_ind+1)%3] = Q_anti[(u_ind+0)%3,(u_ind+2)%3]
     q[1+(u_ind+2)%3] = Q_anti[(u_ind+1)%3,(u_ind+0)%3]
     return q
+
+def quaternion_to_complex_pair(q):
+    """Convert quaternion to pair of complex numbers q0+iq3, q2+iq1"""
+    return q[0]+1j*q[3], q[2]+1j*q[1]
 
 def conjugate_quaternion(q):
     """Conjugate a quaternion"""
@@ -180,9 +188,19 @@ def quaternion_power(q, n):
         n_iter -= 1
     return res
 
-def quaternion_to_complex_pair(q):
-    """Convert quaternion to pair of complex numbers q0+iq3, q2+iq1"""
-    return q[0]+1j*q[3], q[2]+1j*q[1]
+# %% ../nbs/03c_rotation_registration.ipynb 50
+def get_binomial_matrix(N_max):
+    """
+    Get N_max*N_max matrix with entries binomial_matrix[i, j]= (i choose j).
+    
+    Computed via Pascal's triangle recursion.
+    """
+    binomial_matrix = np.zeros((N_max+1, N_max+1))
+    binomial_matrix[0,0] = binomial_matrix[1,0] = 1
+    for i in range(1, N_max+1):
+        for j in range(0, i+1):
+            binomial_matrix[i, j] = binomial_matrix[i-1, j-1]+binomial_matrix[i-1, j]
+    return binomial_matrix
 
 # %% ../nbs/03c_rotation_registration.ipynb 53
 def _get_wigner_D_element(Ra, Rb, l, mp, m, binomial_matrix):
@@ -236,30 +254,6 @@ def get_wigner_D_matrix(q, l, binomial_matrix=None):
     return matrix
 
 # %% ../nbs/03c_rotation_registration.ipynb 60
-def rotate_spherical_harmonics_coeffs(q, coeffs):
-    """
-    Rotate spherical harmonics by given unit quaternion.
-    
-    Uses Wigner-D matrices. Don't use this function in an optimization context - 
-    you can in general save a bunch of time by reusing D-matrices etc.
-    
-    Parameters
-    ----------
-    q : np.array of shape (4)
-        Unit quaternion representing rotation. If you have a rotation matrix,
-         use rot_mat_to_quaternion
-    coeffs : dict of np.array
-        Dictionary, indexed by total angular momentum l=0 ,..., max_l. Each entry is a vector
-        of coefficients for the different values of m=-2l,...,2*l
-    
-    Returns
-    -------
-    dict of np.array
-        Rotated spherical harmonics coefficients.
-    """
-    return {key: get_wigner_D_matrix(q, l=key)@val for key, val in coeffs.items()}
-
-# %% ../nbs/03c_rotation_registration.ipynb 61
 def parity_spherical_harmonics_coeffs(coeffs):
     """
     Apply parity operator to spherical harmonics coefficients.
@@ -281,7 +275,49 @@ def parity_spherical_harmonics_coeffs(coeffs):
     """
     return {key: (-1)**key * val for key, val in coeffs.items()}
 
-# %% ../nbs/03c_rotation_registration.ipynb 75
+def rotate_spherical_harmonics_coeffs(R, coeffs):
+    """
+    Rotate spherical harmonics by given rotation matrix.
+    
+    Uses Wigner-D matrices. Don't use this function in an optimization context - 
+    you can in general save a bunch of time by reusing D-matrices etc.
+    
+    Parameters
+    ----------
+    R : np.array of shape (3, 3)
+        Rotation matrix, may be improper. If you have a quaternion,
+         use quaternion_to_rot_mat
+    coeffs : dict of np.array
+        Dictionary, indexed by total angular momentum l=0 ,..., max_l. Each entry is a vector
+        of coefficients for the different values of m=-2l,...,2*l
+    
+    Returns
+    -------
+    dict of np.array
+        Rotated spherical harmonics coefficients.
+    """
+    if np.linalg.det(R) < 0:
+        q = rot_mat_to_quaternion(-R)
+        return {key: get_wigner_D_matrix(q, l=key)@val
+                for key, val in parity_spherical_harmonics_coeffs(coeffs).items()}
+    q = rot_mat_to_quaternion(-R)
+    return {key: get_wigner_D_matrix(q, l=key)@val for key, val in coeffs.items()}
+
+def overlap_spherical_harmonics(coeffsA, coeffsB, normalized=False):
+    """
+    Compute overlap (L2 inner product) between two sets of spherical harmonics
+    
+    """
+    max_l = min([max(coeffsA.keys()), max(coeffsB.keys())])
+    ls = range(0, max_l)
+    inner_prod = np.sum([coeffsA[l].dot(np.conjugate(coeffsB[l])) for l in ls])
+    if normalized:
+        normalization = np.sqrt(np.abs(np.sum([coeffsA[l].dot(np.conjugate(coeffsA[l])) for l in ls])
+                               *np.sum([coeffsB[l].dot(np.conjugate(coeffsB[l])) for l in ls])))
+        return inner_prod/normalization
+    return inner_prod
+
+# %% ../nbs/03c_rotation_registration.ipynb 74
 def get_icosphere(subdivide=0):
     """
     Return the icosphere triangle mesh with 42 regulary spaced vertices on the unit sphere.
@@ -334,9 +370,9 @@ def get_icosphere(subdivide=0):
     vertices = (vertices.T/np.linalg.norm(vertices, axis=-1)).T
     return tcio.ObjMesh(vertices=vertices, faces=faces)
 
-# %% ../nbs/03c_rotation_registration.ipynb 76
+# %% ../nbs/03c_rotation_registration.ipynb 75
 def rotation_alignment_brute_force(sph_harmonics_source, sph_harmonics_target, 
-                                   max_l=None, n_angle=100, n_subdiv_axes=1):
+                                   max_l=None, n_angle=100, n_subdiv_axes=1, allow_flip=False):
     """
     Compute rotational alignment between two signals on sphere by brute force.
     
@@ -369,11 +405,13 @@ def rotation_alignment_brute_force(sph_harmonics_source, sph_harmonics_target,
         the icosphere which can be subdivided. There will be roughly
         40*4**n_subdiv_axes trial axes. This parameter has the strongest influence
         on the run time.
+    allow_flip : bool
+        Whether to allow improper rotations with determinant -1.
     
     Returns
     -------
-    optimal_trial_rotation : 4d np.array
-        Best trial rotation as unit quaternion.
+    optimal_trial_rotation : (3,3) np.array
+        Best trial rotation as rotation matrix.
     overlap : float
         Normalized overlap. 1=perfect alignment.
     """
@@ -383,46 +421,61 @@ def rotation_alignment_brute_force(sph_harmonics_source, sph_harmonics_target,
     alpha_0 = 2*np.pi/n_angle
     axes = get_icosphere(subdivide=n_subdiv_axes).vertices
     corr_coeffs = np.zeros((axes.shape[0], n_angle+1), dtype="complex_")
+    corr_coeffs_flipped = np.zeros((axes.shape[0], n_angle+1), dtype="complex_")
+    sph_harmonics_source_flipped = parity_spherical_harmonics_coeffs(sph_harmonics_source)
+    normalization = np.sqrt(np.sum([val.dot(np.conjugate(val)) for val in sph_harmonics_source.values()])
+                           *np.sum([val.dot(np.conjugate(val)) for val in sph_harmonics_target.values()]))
+
     for i, axis in enumerate(axes): # iterate over rotation axes
         q = np.hstack([[np.cos(alpha_0/2)], np.sin(alpha_0/2)*axis])
         correlation = np.zeros(n_angle+1,  dtype="complex_")
+        correlation_flipped = np.zeros(n_angle+1,  dtype="complex_")
         for l in range(0, max_l):
             D_matrix = get_wigner_D_matrix(q, l=l)
-            rotated_l = [D_matrix@sph_harmonics_source[l]]
-            for n in range(n_angle): # iterate over rotation strength via 
+            rotated_l = [sph_harmonics_source[l], D_matrix@sph_harmonics_source[l]]
+            for n in range(1, n_angle): # iterate over rotation angle via matrix multiplication
                 rotated_l.append(D_matrix@rotated_l[-1])
             correlation += np.stack(rotated_l).dot(np.conjugate(sph_harmonics_target[l]))
+            # now the same for the parity-flipped coeffs
+            rotated_l_flipped = [sph_harmonics_source_flipped[l], D_matrix@sph_harmonics_source_flipped[l]]
+            for n in range(1, n_angle):
+                rotated_l_flipped.append(D_matrix@rotated_l_flipped[-1])
+            correlation_flipped += np.stack(rotated_l_flipped).dot(np.conjugate(sph_harmonics_target[l]))
         corr_coeffs[i] = correlation
-    max_index = np.unravel_index(np.argmax(np.abs(corr_coeffs)), corr_coeffs.shape)
+        corr_coeffs_flipped[i] = correlation_flipped
+    print(np.max(corr_coeffs.real), np.max(corr_coeffs_flipped.real))
+    flipped = np.max(corr_coeffs_flipped.real) > np.max(corr_coeffs.real)
+    if allow_flip and flipped:
+        max_index = np.unravel_index(np.argmax(corr_coeffs_flipped.real), corr_coeffs_flipped.shape)
+        alpha_opt = max_index[1]*alpha_0
+        q_opt = np.hstack([[np.cos(alpha_opt/2)], np.sin(alpha_opt/2)*axes[max_index[0]]])
+        overlap = corr_coeffs_flipped[max_index]/normalization
+        return -quaternion_to_rot_max(q_opt), overlap
+    max_index = np.unravel_index(np.argmax(corr_coeffs.real), corr_coeffs.shape)
     alpha_opt = max_index[1]*alpha_0
     q_opt = np.hstack([[np.cos(alpha_opt/2)], np.sin(alpha_opt/2)*axes[max_index[0]]])
-    
-    normalization = np.sqrt(np.sum([val.dot(np.conjugate(val)) for val in sph_harmonics_source.values()])
-                           *np.sum([val.dot(np.conjugate(val)) for val in sph_harmonics_target.values()]))
     overlap = corr_coeffs[max_index]/normalization
-    
-    return q_opt, overlap
+    return quaternion_to_rot_max(q_opt), overlap
 
-# %% ../nbs/03c_rotation_registration.ipynb 79
+# %% ../nbs/03c_rotation_registration.ipynb 82
 def _get_minus_overlap(q, sph_harmonics_source, sph_harmonics_target, max_l=None, binomial_matrix=None,):
     """
     Get negative overlap between spherical harmonics, as function of rotation q, for optimization.
-    
-    
     """
     if max_l is None:
         max_l = min([max(sph_harmonics_source.keys()), max(sph_harmonics_target.keys())])    
     corr_coeff = 0
-    for l in range(0, max_l):
-        D_matrix = get_wigner_D_matrix(q/np.linalg.norm(q),
-                                       l=l, binomial_matrix=binomial_matrix)
-        corr_coeff += np.sum(D_matrix@spherical_harmonics_coeffs_direct[l]
-                             *np.conjugate(spherical_harmonics_coeffs_rotated[l]))
-    normalization = np.sqrt(np.abs(np.sum([val.dot(np.conjugate(val)) for val in sph_harmonics_source.values()])
-                                  *np.sum([val.dot(np.conjugate(val)) for val in sph_harmonics_target.values()])))
-    return -np.abs(corr_coeff)/normalization
+    ls = range(0, max_l)
+    for l in ls:
+        D_matrix = get_wigner_D_matrix(q/np.linalg.norm(q), l=l, binomial_matrix=binomial_matrix)
+        corr_coeff += (D_matrix@sph_harmonics_source[l]).dot(np.conjugate(sph_harmonics_target[l]))
+    normalization = np.sqrt(np.abs(np.sum([sph_harmonics_source[l].dot(np.conjugate(sph_harmonics_source[l]))
+                                           for l in ls])
+                                  *np.sum([sph_harmonics_target[l].dot(np.conjugate(sph_harmonics_target[l]))
+                                           for l in ls])))
+    return -corr_coeff.real/normalization
 
-def rotation_alignment_refined(sph_harmonics_source, sph_harmonics_target, q_initial,
+def rotation_alignment_refined(sph_harmonics_source, sph_harmonics_target, R_initial,
                                max_l=None, maxfev=200):
     """
     Refine rotational alignment between two signals on sphere by optimization.
@@ -445,8 +498,8 @@ def rotation_alignment_refined(sph_harmonics_source, sph_harmonics_target, q_ini
     sph_harmonics_target : dict of np.array
         Dictionary, indexed by total angular momentum l=0 ,..., max_l. Each entry is a vector
         of coefficients for the different values of m=-2l,...,2*l. Target signal.
-    q_initial : 4d np.array
-        Initial rotation as quaternion
+    R_initial : (3, 3) np.array
+        Initial rotation as rotation matrix
     max_l : int
         Maximum angular momentum. If None, the maximum value available in the input
         spherical harmonics is used.
@@ -456,14 +509,24 @@ def rotation_alignment_refined(sph_harmonics_source, sph_harmonics_target, q_ini
     
     Returns
     -------
-    optimal_rotation : 4d np.array
-        Best rotation as unit quaternion.
+    optimal_rotation : (3, 3) np.array
+        Best rotation as roation matrix. Will always have the same determinant (i.e. -1, 1)
+        as the initial guess.
     overlap : float
         Normalized overlap. 1=perfect alignment.
     """
     if max_l is None:
         max_l = min([max(sph_harmonics_source.keys()), max(sph_harmonics_target.keys())])
+    if np.linalg.det(R_initial) < 0:
+        q_initial = rot_mat_to_quaternion(-R_initial)
+        sph_harmonics_source_flipped = parity_spherical_harmonics_coeffs(sph_harmonics_source)
+        args = (sph_harmonics_source_flipped, sph_harmonics_target,
+                max_l, get_binomial_matrix(2*max_l))
+        sol = optimize.minimize(_get_minus_overlap, q_initial, args=args, method="Nelder-Mead", tol=1e-5,
+                                options={"maxfev": maxfev})
+        return -quaternion_to_rot_max(sol.x/np.linalg.norm(sol.x)), -sol.fun
+    q_initial = rot_mat_to_quaternion(R_initial)
     args = (sph_harmonics_source, sph_harmonics_target, max_l, get_binomial_matrix(2*max_l))
     sol = optimize.minimize(_get_minus_overlap, q_initial, args=args, method="Nelder-Mead", tol=1e-5,
                             options={"maxfev": maxfev})
-    return sol.x/np.linalg.norm(sol.x), sol.fun
+    return quaternion_to_rot_max(sol.x/np.linalg.norm(sol.x)), -sol.fun
