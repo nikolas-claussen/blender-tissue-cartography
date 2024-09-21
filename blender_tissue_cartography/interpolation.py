@@ -181,9 +181,9 @@ def get_triangle_areas_in_UV(mesh, which_area="3d", uv_mask=None, uv_grid_steps=
     ----------
     mesh : tcio.ObjMesh
         Input mesh with UV coordinates.
-    which_area : str, "3d" or "UV"
-        Which triangle areas to compute (in 3d or UV). "UV" option is mainly usefull for computing
-        conformal factors (map distortion).
+    which_area : str, "3d", "UV", or "ratio"
+        Which triangle areas to compute (in 3d, UV, or the ratio 3d/UV). "ratio" option is
+        usefull for computing conformal map distortion.
     uv_mask : None or np.array of shape (uv_grid_steps, uv_grid_steps) of dtype bool
         Used if mesh_triangles is None - mask of covered part of the UV square. If provided,
         interpolation results are set to np.nan outside the covered region. If None, no masking
@@ -205,6 +205,8 @@ def get_triangle_areas_in_UV(mesh, which_area="3d", uv_mask=None, uv_grid_steps=
         areas = igl.doublearea(mesh.vertices, mesh.tris)
     elif which_area == "UV":
         areas = igl.doublearea(mesh.texture_vertices, mesh.texture_tris)
+    elif which_area == "ration":
+        areas = igl.doublearea(mesh.vertices, mesh.tris)/igl.doublearea(mesh.texture_vertices, mesh.texture_tris)
     areas = igl.average_onto_vertices(mesh.texture_vertices, mesh.texture_tris, np.stack(2*[areas]).T)[:,0]
     areas_interpolated = interpolate_per_vertex_scalar_to_UV(mesh, areas, uv_mask=uv_mask,
                                                              uv_grid_steps=uv_grid_steps, map_back=map_back)
