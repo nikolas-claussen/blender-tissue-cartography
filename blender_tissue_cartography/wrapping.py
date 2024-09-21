@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['get_uniform_laplacian', 'smooth_laplacian', 'smooth_laplacian_texture', 'smooth_taubin', 'shrinkwrap_igl',
-           'smooth_laplacian_on_surface']
+           'smooth_laplacian_on_surface', 'transfer_per_vertex_attribute']
 
 # %% ../nbs/03b_wrapping.ipynb 1
 from . import io as tcio
@@ -228,3 +228,40 @@ def smooth_laplacian_on_surface(mesh: tcio.ObjMesh, n_iter=10, lamb=0.5, n_iter_
         mesh_reference = mesh_smoothed
     mesh_smoothed.set_normals()
     return mesh_smoothed
+
+# %% ../nbs/03b_wrapping.ipynb 41
+def transfer_per_vertex_attribute(source_vertices, target_vertices, target_faces, attribute):
+    """
+    Transfer a per-vertex attribute from one mesh to another via barycentric interpolation.
+    
+    For each point among the source vertices, find the closest point on the target mesh
+    (not necessarily a target vertex!), and find the value of the per-target-vertex
+    attribute "attribute" via barycentric interpolation.
+    
+    This can be used to copy e.g. 3d coordinates from one mesh to another given 
+    a common paramatrization (e.g. to disk or sphere).
+    
+    Parameters
+    ----------
+    source_vertices : np.array of shape (..., 3)
+        Vertices onto which to transfer the attribute
+    target_vertices : np.array of shape (..., 3)
+        Vertices on which the attribute is defined
+    target_faces : np.arraay of shape (..., 3)
+        Triangular faces of target mesh, indices into the target_vertices array
+    attribute : np.array
+        Must have same length of axis 0 as target_vertices
+        
+    Returns
+    -------
+    transfered_attribute : np.array
+        Same length of axis 0 as source_vertices.
+    
+    """
+    distances, indices, points = igl.point_mesh_squared_distance(source_vertices, target_vertices, target_faces)
+    hit_tris = target_faces[indices]
+    # barycentric coordinates of the hit points. need small hack for data type issue 
+    barycentric = igl.barycentric_coordinates_tri(np.array(points, order="C"),
+                                                 *np.array(target_vertices[hit_tris].transpose((1,0,2)), order='C'))
+    interpolated = np.einsum('vt,vt...->v...', barycentric, attribute[hit_tris])
+    return interpolated
