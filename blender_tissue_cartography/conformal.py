@@ -68,7 +68,7 @@ def map_to_disk(mesh, set_uvs=False):
     return uv
 
 # %% ../nbs/03d_conformal_wrapping.ipynb 16
-def compute_per_vertex_conformal_factor(vertices, faces, target_vertices, target_faces):
+def compute_per_vertex_conformal_factor(vertices, faces, target_vertices, target_faces, cutoff=1e-15):
     """
     Compute conformal factor for map between meshes.
     
@@ -85,12 +85,16 @@ def compute_per_vertex_conformal_factor(vertices, faces, target_vertices, target
         Target mesh vertices.
     target_faces : np.array of shape (..., 3)
         Target mesh faces. Must be triangular.
+    cutoff : float
+        Numerical cutoff for small target areas (avoid 0 division error)
     Returns
     -------
     area_ratio_at_vertices : np.array
         Conformal factor (area / target area) evaluated on target mesh vertices.
     """
-    area_ratio = igl.doublearea(vertices, faces)/igl.doublearea(target_vertices, target_faces)
+    areas = igl.doublearea(vertices, faces)
+    areas_target = np.clip(igl.doublearea(target_vertices, target_faces), cutoff, np.inf)
+    area_ratio = areas/areas_target
     area_ratio_at_vertices = igl.average_onto_vertices(target_vertices, target_faces,
                                                        np.stack(target_vertices.shape[1]*[area_ratio]).T)[:,0]
     return area_ratio_at_vertices
@@ -237,10 +241,27 @@ def wrap_coords_via_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv_
                                                       mesh_target.tris, mesh_target.vertices)
     return new_coords
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 49
-#| export
+# %% ../nbs/03d_conformal_wrapping.ipynb 41
+def _find_conformal_boundary_conditions(vertices_disk, faces_disk, bnd, tol=1e-2):
+    """
+    Find boundary condition for map to disk most compatible with conformal map.
+    
+    Uses stupid method - direct optimization. To do: look at https://arxiv.org/pdf/1704.06873
+    """
+    angles_3d = igl.internal_angles(vertices_disk, faces_disk)
+    bnd_uv_initial = igl.map_vertices_to_circle(vertices_disk, bnd)
+    phi_bnd_initial = np.arctan2(*bnd_uv_initial.T)
+    def _conformal_err(phi_bnd):
+        bnd_uv = np.stack([np.sin(phi_bnd), np.cos(phi_bnd)], axis=-1)
+        uv = igl.harmonic(vertices_disk, faces_disk, bnd, bnd_uv, 1)
+        angles_uv = igl.internal_angles(uv, faces_disk)
+        return np.nanmean(np.abs(angles_3d-angles_uv))
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 53
+    sol = optimize.minimize(_conformal_err, phi_bnd_initial, method="BFGS", tol=tol)
+    bnd_final = np.stack([np.sin(sol.x), np.cos(sol.x)], axis=-1)
+    return bnd_final
+
+# %% ../nbs/03d_conformal_wrapping.ipynb 49
 def stereographic_plane_to_sphere(uv):
     """
     Stererographic projection from plane to unit sphere from north pole (0,0,1).
@@ -262,7 +283,7 @@ def stereographic_sphere_to_plane(pts):
     assert np.allclose(np.linalg.norm(pts, axis=1), 1, rtol=1e-03, atol=1e-04), "Points not on unit sphere!"
     return (np.stack([pts[:,0], pts[:,1]], axis=0)/(1-pts[:,2])).T
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 57
+# %% ../nbs/03d_conformal_wrapping.ipynb 53
 def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alpha=0.5):
     """
     Apply Moeboius inversions to minimize area distortion of map from mesh to sphere.
@@ -307,7 +328,7 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
         Vs = ((1-np.linalg.norm(c)**2)*(Vs+c).T /np.linalg.norm(Vs+c, axis=1)**2).T + c
     return Vs, np.linalg.norm(mu)
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 66
+# %% ../nbs/03d_conformal_wrapping.ipynb 62
 def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=10, alpha=0.5, set_uvs=False):
     """
     Compute conformal map of mesh to unit sphere.
@@ -326,8 +347,9 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=10, alpha
     ----------
     mesh : tcio.ObjMesh
         Mesh. Must be topologically a sphere, and should be triangular.
-    method : str, "harmonic" or "LSCM"
-        Method for comuting the map from sphere \ north pole to plane
+    method : str, "harmonic", "harmonic-free-boundary", "LSCM"
+        Method for comuting the map from sphere \ north pole to plane.
+        Recommended: harmonic
     R_max :  float
         Maximum radius to consider when computing inverse stereographic
         projection. If you get weird results, try a lower value.
@@ -354,13 +376,17 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=10, alpha
     vertices_disk = mesh.vertices[:-1]
     ## Find the open boundary
     bnd = igl.boundary_loop(faces_disk)
-    assert method in ["LSCM", "harmonic"], "Method must be LSCM or harmonic"
+    assert method in ["LSCM", "harmonic", "harmonic-free-boundary"], "Invalid method"
     if method == "LSCM": ## least squares conformal map
         bnd = igl.boundary_loop(faces_disk)
         b = np.array([bnd[0], bnd[int(np.round(len(bnd)/2))]])
         bc = np.array([[0.0, -1.0], [0.0, 1.0]])
         _, uv = igl.lscm(vertices_disk, faces_disk, b, bc)
         uv = uv-uv.mean(axis=0)
+    if method == "harmonic-free-boundary": # harmonic map
+        #bnd_uv = igl.map_vertices_to_circle(vertices_disk, bnd)
+        bnd_uv = _find_conformal_boundary_conditions(vertices_disk, faces_disk, bnd)
+        uv = igl.harmonic(vertices_disk, faces_disk, bnd, bnd_uv, 1)
     if method == "harmonic": # harmonic map
         bnd_uv = igl.map_vertices_to_circle(vertices_disk, bnd)
         uv = igl.harmonic(vertices_disk, faces_disk, bnd, bnd_uv, 1)
@@ -391,9 +417,12 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=10, alpha
         phi = np.clip(phi/(2*np.pi)+0.5, 0, 1)
         mesh.faces = [[[v,v] for v in fc] for fc in mesh.tris]
         mesh.texture_vertices = np.stack([phi, theta], axis=-1)
+    if igl.doublearea(vertices_sphere, faces_all).min() <= 0:
+        warnings.warn("Warning: some triangle on sphere have 0 or negative area", RuntimeWarning)
+        
     return vertices_sphere
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 86
+# %% ../nbs/03d_conformal_wrapping.ipynb 82
 def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coords_sphere_target,
                             allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
     """
@@ -494,7 +523,7 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
 
     return coords_sphere_source @ R_refined.T, R_refined, overlap
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 93
+# %% ../nbs/03d_conformal_wrapping.ipynb 89
 def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, coords_sphere_target=None,
                            method="harmonic", n_iter_centering=10, alpha=0.5,
                            align=True, allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
