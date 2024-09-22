@@ -406,7 +406,6 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
         warnings.simplefilter("error")
         if mesh.is_triangular:
             try:
-                warnings.simplefilter("always")
                 interpolated_3d_positions = interpolate_3d_to_uv(mesh.texture_vertices,
                                                                  mesh.matched_vertices,
                                                                  mesh_triangles=mesh.texture_tris,
@@ -423,6 +422,9 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
                                                                                  resolution, uv_mask=None)
                 return interpolated_data, interpolated_3d_positions, interpolated_normals 
             except RuntimeWarning:
+                warnings.simplefilter("always")
+                warnings.warn(f"Invalid triangulation - trying alternate interpolation method.\
+                    If results look bad, your mesh may be broken", RuntimeWarning)
                 pass
         if (uv_mask == "auto"):
             uv_mask = get_uv_layout_mask_mask(mesh, uv_grid_steps=uv_grid_steps)

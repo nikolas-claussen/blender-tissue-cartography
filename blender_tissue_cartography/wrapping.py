@@ -30,7 +30,7 @@ def get_uniform_laplacian(tris, normalize=True):
     return (a - a_diag)
 
 # %% ../nbs/03b_wrapping.ipynb 18
-def smooth_laplacian(mesh: tcio.ObjMesh, lamb=0.5, n_iter=10, method="explicit") -> tcio.ObjMesh:
+def smooth_laplacian(mesh: tcio.ObjMesh, lamb=0.5, n_iter=10, method="explicit", boundary="fixed") -> tcio.ObjMesh:
     """
     Smooth mesh vertex positions using Laplacian filter.
     
@@ -46,6 +46,8 @@ def smooth_laplacian(mesh: tcio.ObjMesh, lamb=0.5, n_iter=10, method="explicit")
         Filter iterations
     method : str, default "explicit"
         Can use explicit (fast, simple) or implicit (slow, more accurate) method.
+    boundary : str, "fixed" or "free"
+        Whether to allow mesh boundary to move
 
     Returns
     -------
@@ -57,26 +59,33 @@ def smooth_laplacian(mesh: tcio.ObjMesh, lamb=0.5, n_iter=10, method="explicit")
         warnings.warn(f"Warning: mesh not triangular - result may be incorrect", RuntimeWarning)
     v_smoothed = np.copy(mesh.vertices)
     f = mesh.tris
+    boundary_vertices = igl.boundary_facets(f)[:, 0]
+
     if method == "implicit":
         laplacian = igl.cotmatrix(v_smoothed, f)
         for _ in range(n_iter):
             mass = igl.massmatrix(v_smoothed, f, igl.MASSMATRIX_TYPE_BARYCENTRIC)
             v_smoothed = sparse.linalg.spsolve(mass - lamb * laplacian, mass.dot(v_smoothed))
+            if boundary == "fixed":
+                v_smoothed[boundary_vertices] = mesh.vertices[boundary_vertices]
     elif method == "explicit":
         laplacian_uniform = get_uniform_laplacian(f)
         for _ in range(n_iter):
             v_smoothed += lamb*laplacian_uniform.dot(v_smoothed)
+            if boundary == "fixed":
+                v_smoothed[boundary_vertices] = mesh.vertices[boundary_vertices]
     mesh_smoothed = tcio.ObjMesh(v_smoothed, mesh.faces, texture_vertices=mesh.texture_vertices,
                                  normals=None, name=mesh.name)
     mesh_smoothed.set_normals()
     return mesh_smoothed
 
 # %% ../nbs/03b_wrapping.ipynb 19
-def smooth_laplacian_texture(mesh: tcio.ObjMesh, lamb=0.5, n_iter=10,) -> tcio.ObjMesh:
+def smooth_laplacian_texture(mesh: tcio.ObjMesh, lamb=0.5, n_iter=10, boundary="fixed") -> tcio.ObjMesh:
     """
     Smooth mesh texture positions using Laplacian filter.
     
-    Assumes mesh is triangular.
+    This function is very helpful to fix UV maps with flipped triangles, as detected by
+    igl.flipped_triangles. Assumes mesh is triangular.
     
     Parameters
     ----------
@@ -86,6 +95,8 @@ def smooth_laplacian_texture(mesh: tcio.ObjMesh, lamb=0.5, n_iter=10,) -> tcio.O
         Filter strength. Higher = more smoothing.
     n_iter : int
         Filter iterations
+    boundary : str, "fixed" or "free"
+         Whether to allow UV "island" boundary to move
 
     Returns
     -------
@@ -98,13 +109,17 @@ def smooth_laplacian_texture(mesh: tcio.ObjMesh, lamb=0.5, n_iter=10,) -> tcio.O
     v_smoothed = np.copy(mesh.texture_vertices)
     f = mesh.texture_tris
     laplacian_uniform = get_uniform_laplacian(f)
+    boundary_vertices = igl.boundary_facets(f)[:, 0]
+
     for _ in range(n_iter):
         v_smoothed += lamb*laplacian_uniform.dot(v_smoothed)
+        if boundary == "fixed":
+            v_smoothed[boundary_vertices] = mesh.texture_vertices[boundary_vertices]
     mesh_smoothed = tcio.ObjMesh(mesh.vertices, mesh.faces, texture_vertices=v_smoothed,
                                  normals=mesh.normals, name=mesh.name)
     return mesh_smoothed
 
-# %% ../nbs/03b_wrapping.ipynb 22
+# %% ../nbs/03b_wrapping.ipynb 25
 def smooth_taubin(mesh: tcio.ObjMesh, lamb=0.5, nu=0.53, n_iter=10,) -> tcio.ObjMesh:
     """
     Smooth using Taubin filter (like Laplacian, but avoids shrinkage).
@@ -141,7 +156,7 @@ def smooth_taubin(mesh: tcio.ObjMesh, lamb=0.5, nu=0.53, n_iter=10,) -> tcio.Obj
     mesh_smoothed.set_normals()
     return mesh_smoothed
 
-# %% ../nbs/03b_wrapping.ipynb 32
+# %% ../nbs/03b_wrapping.ipynb 35
 def shrinkwrap_igl(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smooth_wrapped=10):
     """
     Shrink-wrap the source mesh onto the target mesh using trimesh.
@@ -192,7 +207,7 @@ def shrinkwrap_igl(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smo
         warnings.warn(f"Warning: {np.sum(dots<0)} normal(s) flipped during shrink-wrapping", RuntimeWarning)
     return mesh_wrapped
 
-# %% ../nbs/03b_wrapping.ipynb 36
+# %% ../nbs/03b_wrapping.ipynb 39
 def smooth_laplacian_on_surface(mesh: tcio.ObjMesh, n_iter=10, lamb=0.5, n_iter_laplace=10) -> tcio.ObjMesh:
     """
     Smooth mesh vertex positions using Laplacian filter and project vertices back to original surface.
@@ -229,7 +244,7 @@ def smooth_laplacian_on_surface(mesh: tcio.ObjMesh, n_iter=10, lamb=0.5, n_iter_
     mesh_smoothed.set_normals()
     return mesh_smoothed
 
-# %% ../nbs/03b_wrapping.ipynb 41
+# %% ../nbs/03b_wrapping.ipynb 44
 def transfer_per_vertex_attribute(source_vertices, target_vertices, target_faces, attribute):
     """
     Transfer a per-vertex attribute from one mesh to another via barycentric interpolation.
