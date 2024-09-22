@@ -212,14 +212,19 @@ class ObjMesh:
         - normals = [(nx_0, ny_0, nz_0), ...] or None
         - faces = [f0, ...]
         - only_vertices = bool. 
-    vertices, texture_vertices, normals are np.arrays, faces is a list of lists.
+    vertices, texture_vertices, normals are np.arrays, faces is a list.
     Each face is either a list of vertex indices (if only_vertices is True), or, if the mesh
-    has texture nformation, a list of vertex/normal index pairs. 
+    has texture nformation, a list of vertex/texture vertex index pairs. 
     Normals are always defined per-vertex, i.e. self.normals[i] is the normal vector at
     self.vertices[i].   Missing data is represented by np.nan.
     Faces can be any length (triangles, quads, ...). Indices start at 0!
     
-    The method match_vertex_info can be used to match up vertices and normals to
+    The methods self.get_uv_index_to_vertex_index_map(), self.get_uv_matched_vertex_indices()
+    can be used to map data from 3d to UV, for instance for cartographic interpolation:
+    self.vertices[self.get_uv_matched_vertex_indices()] will give you the 3d coordinates
+    at each 
+    
+    match_vertex_info can be used to match up vertices and normals to
     texture vertices based on the face connectivity as base points for interpolation.
     This sets the following attributes:
         - matched_vertices
@@ -398,7 +403,6 @@ class ObjMesh:
         """
         uv_to_vertex = self.get_uv_index_to_vertex_index_map()
         return invert_dictionary(uv_to_vertex, assume_unique=False)
-
         
     def get_uv_matched_vertex_indices(self):
         """
@@ -514,7 +518,7 @@ def read_other_formats_without_uv(filename):
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
-# %% ../nbs/01a_io.ipynb 31
+# %% ../nbs/01a_io.ipynb 30
 def glue_seams(mesh, decimals=None):
     """
     Merge close vertices.
@@ -549,7 +553,7 @@ def glue_seams(mesh, decimals=None):
     glued_mesh.set_normals()
     return glued_mesh
 
-# %% ../nbs/01a_io.ipynb 39
+# %% ../nbs/01a_io.ipynb 38
 def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     """
     Compute triangular mesh of isosurface using marching cubes as implemented by lib|igl.
@@ -579,7 +583,7 @@ def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     vertices, faces = igl.marching_cubes(vals, pts_grid, *volume.shape, isovalue)
     return vertices, faces
 
-# %% ../nbs/01a_io.ipynb 47
+# %% ../nbs/01a_io.ipynb 46
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -605,7 +609,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01a_io.ipynb 49
+# %% ../nbs/01a_io.ipynb 48
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file
