@@ -22,13 +22,12 @@ modular python code and blender’s graphical user interface.
 
 ### Work in progress!
 
-This project is a work in progress and I do not recommend installing it
-for “production” use yet.
+This project is a work in progress and will change rapidly. If you want
+to use it, I recommend updating regularly via `git pull`.
 
-- Tools for individual recordings are in a reasonably complete state.
-- Support for multiple recordings (e.g. frames of a movie with a dynamic
-  surface or multiple images of similarly-shaped structures) is in
-  progress
+- Tools for individual recordings are in a reasonably complete state
+- Tools for dynamic recordings/movies are complete, but not fully tested
+- Tutorials to be written: dynamic surfaces, analysis in 3d
 
 ## Installation
 
@@ -163,7 +162,7 @@ the installation instructions above.
 
 - Python, with the following libraries
   - [jupyter](https://jupyter.org/)
-  - [Numpy](https://numpy.org/) / [Matplotlib](https://matplotlib.org/)
+  - [numpy](https://numpy.org/) / [Matplotlib](https://matplotlib.org/)
     / [Scipy](https://scipy.org/)
   - [skimage](https://scikit-image.org) various image processing tools.
   - [h5py](https://www.h5py.org/) for reading/writing of `.h5` files.
@@ -184,9 +183,8 @@ the installation instructions above.
 
   - [PyMeshLab](https://pymeshlab.readthedocs.io/en/latest/index.html)
     Python interface to MeshLab.
-  - [trimesh](https://trimesh.org/) for analyzing triangular meshes
-  - [Morphsnakes](https://github.com/pmneila/morphsnakes) “Inflating
-    balloon” segmentation
+  - [pyFM](https://github.com/RobinMagnet/pyFM) Functional maps for
+    mesh-to-mesh registration (for dynamic data)
   - [nbdev](https://nbdev.fast.ai/tutorials/tutorial.html) for
     notebook-based development, if you want to add your own code
 
