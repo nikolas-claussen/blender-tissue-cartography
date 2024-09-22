@@ -328,7 +328,7 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
         Vs = ((1-np.linalg.norm(c)**2)*(Vs+c).T /np.linalg.norm(Vs+c, axis=1)**2).T + c
     return Vs, np.linalg.norm(mu)
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 62
+# %% ../nbs/03d_conformal_wrapping.ipynb 63
 def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=10, alpha=0.5, set_uvs=False):
     """
     Compute conformal map of mesh to unit sphere.
@@ -422,7 +422,7 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=10, alpha
         
     return vertices_sphere
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 82
+# %% ../nbs/03d_conformal_wrapping.ipynb 83
 def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coords_sphere_target,
                             allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
     """
@@ -523,7 +523,7 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
 
     return coords_sphere_source @ R_refined.T, R_refined, overlap
 
-# %% ../nbs/03d_conformal_wrapping.ipynb 89
+# %% ../nbs/03d_conformal_wrapping.ipynb 90
 def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, coords_sphere_target=None,
                            method="harmonic", n_iter_centering=10, alpha=0.5,
                            align=True, allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
