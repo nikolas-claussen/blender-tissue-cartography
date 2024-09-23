@@ -222,14 +222,7 @@ class ObjMesh:
     The methods self.get_uv_index_to_vertex_index_map(), self.get_uv_matched_vertex_indices()
     can be used to map data from 3d to UV, for instance for cartographic interpolation:
     self.vertices[self.get_uv_matched_vertex_indices()] will give you the 3d coordinates
-    at each 
-    
-    match_vertex_info can be used to match up vertices and normals to
-    texture vertices based on the face connectivity as base points for interpolation.
-    This sets the following attributes:
-        - matched_vertices
-        - matched_normals
-    as np.array's
+    at each texture vertex point in 2d.
     """
     
     def __init__(self, vertices, faces, texture_vertices=None, normals=None, name=None):
@@ -413,27 +406,6 @@ class ObjMesh:
         texture_vertex_dict = self.get_uv_index_to_vertex_index_map()
         return np.array([texture_vertex_dict[i] for i in range(self.texture_vertices.shape[0])])
         
-    def match_vertex_info(self):
-        """
-        Match up 3d vertex coordinates and normals to texture vertices based on face connectivity.
-        
-        Compute matched_vertices and matched_normals, which are the 3d vertices and normals
-        corresponding to each texture vertex. The resulting arrays have the shape
-        (self.texture_vertices.shape[0], 3). If normal information does not exist for a given
-        texture vertex, the entry is set to np.nan.
-                    
-        Returns
-        -------
-        None
-        """
-        
-        assert not self.only_vertices and len(self.normals) > 0 and len(self.texture_vertices) > 0, \
-            """Method requires texture or normal information"""
-        matched_vertex_inds = self.get_uv_matched_vertex_indices()
-        self.matched_vertices = self.vertices[matched_vertex_inds]
-        self.matched_normals = index_else_nan(self.normals, matched_vertex_inds)
-        return None
-
     def cut_along_seams(self):
         """
         Cut mesh along texture seams.
@@ -457,7 +429,7 @@ class ObjMesh:
         return ObjMesh(matched_vertices, cut_faces, texture_vertices=self.texture_vertices,
                        normals=matched_normals, name=self.name)
         
-    def apply_affine_to_mesh(self, trafo, update_matched_data=True):
+    def apply_affine_to_mesh(self, trafo,):
         """
         Apply affine transformation to mesh.
         
@@ -468,8 +440,6 @@ class ObjMesh:
         ----------
         trafo : np.array of shape (4,4) or (3,3)
             Transformation matrix. If (4,4), it is interpreted as affine transformation.
-        update_matched_data : bool, default True
-            Update matched data
 
         Returns
         -------
@@ -489,8 +459,6 @@ class ObjMesh:
             newmesh.normals = (normals_transformed.T / np.linalg.norm(normals_transformed, axis=-1)).T
         if np.linalg.det(trafo_matrix) < 0:
             newmesh.faces = [fc[::-1] for fc in self.faces]
-        if update_matched_data and not self.only_vertices:
-            newmesh.match_vertex_info()
         return newmesh
 
 # %% ../nbs/01a_io.ipynb 20
@@ -518,7 +486,7 @@ def read_other_formats_without_uv(filename):
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
-# %% ../nbs/01a_io.ipynb 30
+# %% ../nbs/01a_io.ipynb 29
 def glue_seams(mesh, decimals=None):
     """
     Merge close vertices.
@@ -553,7 +521,7 @@ def glue_seams(mesh, decimals=None):
     glued_mesh.set_normals()
     return glued_mesh
 
-# %% ../nbs/01a_io.ipynb 38
+# %% ../nbs/01a_io.ipynb 37
 def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     """
     Compute triangular mesh of isosurface using marching cubes as implemented by lib|igl.
@@ -583,7 +551,7 @@ def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     vertices, faces = igl.marching_cubes(vals, pts_grid, *volume.shape, isovalue)
     return vertices, faces
 
-# %% ../nbs/01a_io.ipynb 46
+# %% ../nbs/01a_io.ipynb 45
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -609,7 +577,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01a_io.ipynb 48
+# %% ../nbs/01a_io.ipynb 47
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file
