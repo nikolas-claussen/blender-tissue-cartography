@@ -121,7 +121,10 @@ def interpolate_barycentric(points, vertices, faces, values, distance_threshold=
     Can handle triangular meshes in both 3d and 2d. Points that do not lie on the triangular mesh
     are projected onto the closest point. Points more distant than the distance_threshold
     will be set to np.nan. The data defined on the triangular mesh must be defined per-vertex
-    and can have any number of axes (scalars, vectors, tensors, ...)
+    and can have any number of axes (scalars, vectors, tensors, ...).
+    
+    This function can also be used to transfer values defined on one mesh to another mesh's
+    vertices (if the two meshes are well-aligned in space).
     
     Parameters
     ----------
@@ -150,7 +153,7 @@ def interpolate_barycentric(points, vertices, faces, values, distance_threshold=
 
     # find closest points on mesh
     squared_distances, indices, points = igl.point_mesh_squared_distance(points, vertices, faces)
-    hit_tris = target_faces[indices]
+    hit_tris = faces[indices]
     # barycentric coordinates of the hit points. need small hack for data type issue 
     barycentric = igl.barycentric_coordinates_tri(np.array(points, order="C"),
                                                  *np.array(vertices[hit_tris].transpose((1,0,2)), order='C'))
