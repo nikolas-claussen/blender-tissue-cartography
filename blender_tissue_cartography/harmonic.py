@@ -2,9 +2,10 @@
 
 # %% auto 0
 __all__ = ['map_to_disk', 'compute_per_vertex_conformal_factor', 'get_rot_mat2d', 'rotational_align_disk', 'wrap_coords_via_disk',
-           'polygon_area', 'polygon_centroid', 'moebius_disk', 'map_cylinder_to_disk',
-           'find_conformal_boundary_conditions', 'stereographic_plane_to_sphere', 'stereographic_sphere_to_plane',
-           'center_moebius', 'map_to_sphere', 'rotational_align_sphere', 'wrap_coords_via_sphere']
+           'polygon_area', 'polygon_centroid', 'xy_to_complex', 'complex_to_xy', 'moebius_disk', 'circle_invert',
+           'map_cylinder_to_disk', 'wrap_coords_via_disk_cylinder', 'find_conformal_boundary_conditions',
+           'stereographic_plane_to_sphere', 'stereographic_sphere_to_plane', 'center_moebius', 'map_to_sphere',
+           'rotational_align_sphere', 'wrap_coords_via_sphere']
 
 # %% ../nbs/05_harmonic_wrapping.ipynb 1
 from . import io as tcio
@@ -95,7 +96,9 @@ def compute_per_vertex_conformal_factor(vertices, faces, target_vertices, target
         Conformal factor (area / target area) evaluated on target mesh vertices.
     """
     areas = igl.doublearea(vertices, faces)
-    areas_target = np.clip(igl.doublearea(target_vertices, target_faces), cutoff, np.inf)
+    areas_target = igl.doublearea(target_vertices, target_faces)
+    mask_target = np.abs(areas_target) < cutoff
+    areas_target[mask_target] = cutoff * np.sign(areas_target[mask_target])
     area_ratio = areas/areas_target
     area_ratio_at_vertices = igl.average_onto_vertices(target_vertices, target_faces,
                                                        np.stack(target_vertices.shape[1]*[area_ratio]).T)[:,0]
@@ -106,18 +109,17 @@ def get_rot_mat2d(phi):
     """Get 2d rotation matrix with angle phi"""
     return np.array([[np.cos(phi), np.sin(phi)],[-np.sin(phi), np.cos(phi)]])
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 24
-def rotational_align_disk(mesh_source, mesh_target, 
-                          disk_uv_source=None, disk_uv_target=None,
-                          q=0.01, n_grid=256):
+# %% ../nbs/05_harmonic_wrapping.ipynb 27
+def rotational_align_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv_target=None,
+                          allow_flip=True, q=0.01, n_grid=1024):
     """
     Rotationally align two UV map to the disk by the conformal factor.
     
     Computes aligned UV coordinates. Assumes that the UV
-    coordinates are in [0,1]^2. Rotational alignment works by computing
+    coordinates are in [0,1]^2. This works by computing
     the conformal factor (how much triangle size changes as it is
-    mapped to the plane), which is rotated so that the maximum is at the y-axis
-    via a Fourier transform.
+    mapped to the plane), and finding the optimal rotation to align
+    the conformal factors via phase correlation.
     
     Parameters
     ----------
@@ -133,6 +135,9 @@ def rotational_align_disk(mesh_source, mesh_target,
     disk_uv_target : np.array or None
         Disk coordinates for each vertex in target mesh. Optional.
         If None, the UV coordinates of disk_uv_target are used.
+    allow_flip : bool
+        Whether to allow flips (improper rotations). If a flip
+        occurs, np.linalg.det(rot_mat) < 0
     q : float between 0 and 0.5
         Conformal factors are clipped at this quantile to avoid outliers.
     n_grid : int
@@ -144,6 +149,8 @@ def rotational_align_disk(mesh_source, mesh_target,
         Rotationally aligned texture vertices
     rot_mat : np.array of shape (2,2)
         Rotation matrix
+    overlap : float
+        Overlap between aligned conformal factors. 1 = perfect alignment.
     
     """
     if disk_uv_source is None:
@@ -156,9 +163,7 @@ def rotational_align_disk(mesh_source, mesh_target,
         disk_tris_target = mesh_target.texture_tris
     else:
         disk_tris_target = mesh_target.tris
-
     # compute conformal distortion factors, clip to avoid outliers
-    # To do: replace by new interpolation code
     conformal_factor_source = compute_per_vertex_conformal_factor(mesh_source.vertices, mesh_source.tris,
                                                                   disk_uv_source, disk_tris_source)
     conformal_factor_source = np.clip(conformal_factor_source, np.quantile(conformal_factor_source, q),
@@ -167,32 +172,43 @@ def rotational_align_disk(mesh_source, mesh_target,
                                                                   disk_uv_target, disk_tris_target)
     conformal_factor_target = np.clip(conformal_factor_target, np.quantile(conformal_factor_target, q),
                                       np.quantile(conformal_factor_target, 1-q))
-    # interpolate onto a grid
-    U, V = np.meshgrid(*2*[np.linspace(0, 1, n_grid)])
-    interpolated_source = mpl.tri.LinearTriInterpolator(mpl.tri.Triangulation(*disk_uv_source.T,
-                                                                              disk_tris_source),
-                                                        conformal_factor_source)(U,V)
-    interpolated_target = mpl.tri.LinearTriInterpolator(mpl.tri.Triangulation(*disk_uv_target.T,
-                                                                              disk_tris_target),
-                                                        conformal_factor_target)(U,V)
-    # compute rotational alignment
+    assert conformal_factor_source.mean() > 0, "Maps to disk must be orientation-preserving"
+    assert conformal_factor_target.mean() > 0, "Maps to disk must be orientation-preserving"
+    # interpolate into UV square
+    u, v = 2*[np.linspace(0, 1, n_grid),]
+    UV = np.stack(np.meshgrid(u, v), axis=-1).reshape((-1, 2))
+    interpolated_source = tcinterp.interpolate_barycentric(UV, disk_uv_source, disk_tris_source,
+                                                           conformal_factor_source, distance_threshold=np.inf)
+    interpolated_source = interpolated_source.reshape((n_grid, n_grid))[::-1]
+
+    interpolated_target = tcinterp.interpolate_barycentric(UV, disk_uv_target, disk_tris_target,
+                                                           conformal_factor_target, distance_threshold=np.inf)
+    interpolated_target = interpolated_target.reshape((n_grid, n_grid))[::-1]
+    # compute rotational alignment, allowing for flips
     interpolated_source_polar = transform.warp_polar(interpolated_source, radius=n_grid/2-1)
     interpolated_target_polar = transform.warp_polar(interpolated_target, radius=n_grid/2-1)
-
-    shifts, _, _ = registration.phase_cross_correlation(interpolated_source_polar, interpolated_target_polar,
-                                                        reference_mask=~np.isnan(interpolated_source_polar),
-                                                        moving_mask=~np.isnan(interpolated_target_polar),
-                                                        normalization=None)
-
-    rot_angle = shifts[0]*np.pi/180
+    shifts, error, _ = registration.phase_cross_correlation(interpolated_source_polar, interpolated_target_polar,
+                                                            normalization=None)
+    if allow_flip:
+        interpolated_source_polar_flipped = interpolated_source_polar[::-1]
+        shifts_flipped, error_flipped, _ = registration.phase_cross_correlation(interpolated_source_polar_flipped,
+                                                        interpolated_target_polar, normalization=None)
+        if error > error_flipped:
+            rot_angle = -shifts_flipped[0]*np.pi/180
+            rot_mat = get_rot_mat2d(rot_angle) @ np.diag([1,-1])
+            new_texture_vertices = (disk_uv_source-np.array([0.5,0.5]))@rot_mat.T
+            new_texture_vertices += np.array([0.5,0.5])
+            return new_texture_vertices, rot_mat, 1-error_flipped
+    rot_angle = -shifts[0]*np.pi/180
     rot_mat = get_rot_mat2d(rot_angle)
     new_texture_vertices = (disk_uv_source-np.array([0.5,0.5]))@rot_mat.T
     new_texture_vertices += np.array([0.5,0.5])
-    return new_texture_vertices, rot_mat
+    return new_texture_vertices, rot_mat, 1-error
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 37
-def wrap_coords_via_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv_target=None,
-                         align=True, q=0.05, n_grid=256):
+# %% ../nbs/05_harmonic_wrapping.ipynb 32
+def wrap_coords_via_disk(mesh_source, mesh_target,
+                         disk_uv_source=None, disk_uv_target=None,
+                         align=True, q=0.01, n_grid=1024):
     """
     Map 3d coords of source mesh to target mesh via a disk parametrization.
     
@@ -226,6 +242,8 @@ def wrap_coords_via_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv_
     new_coords : np.array
         New 3d vertex coordinates for mesh_source, lying on the surface
         defined by mesh_target
+    overlap : float
+        Only returned if align is True. Measure of geometry overlap. 1 = perfect alignment
     """
     # compute harmonic map to disk
     if disk_uv_source is None:
@@ -234,17 +252,19 @@ def wrap_coords_via_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv_
         disk_uv_target = map_to_disk(mesh_target, set_uvs=False)
     # rotational alignment of parametrizations
     if align:
-        disk_uv_source_aligned, _ = rotational_align_disk(mesh_source, mesh_target, disk_uv_source, disk_uv_target,
-                                                          q=q, n_grid=n_grid)
+        disk_uv_source_aligned, _, _ = rotational_align_disk(mesh_source, mesh_target, disk_uv_source, disk_uv_target,
+                                                             q=q, n_grid=n_grid)
     else:
         disk_uv_source_aligned = disk_uv_source
     # copy over 3d coordinates 
     new_coords = tcinterp.interpolate_barycentric(np.pad(disk_uv_source_aligned, ((0,0), (0,1))),
                                                   np.pad(disk_uv_target, ((0,0), (0,1))),
                                                   mesh_target.tris, mesh_target.vertices, distance_threshold=np.inf)
+    if align:
+        return new_coords, overlap
     return new_coords
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 44
+# %% ../nbs/05_harmonic_wrapping.ipynb 39
 def polygon_area(pts):
     """Poygon area via shoe-lace formula. Assuming no self-intersection. pts.shape is (..., 2)"""
     return np.sum(pts[...,0]*np.roll(pts[...,1], 1, axis=0) - np.roll(pts[...,0], 1, axis=0)*pts[...,1], axis=0)/2
@@ -257,15 +277,30 @@ def polygon_centroid(pts):
                  *(pts[...,0]*np.roll(pts[...,1], 1, axis=0)-np.roll(pts[...,0], 1, axis=0)*pts[...,1]), axis=0)/2
     return np.array([C_x, C_y]) / (6*polygon_area(pts))
 
+def xy_to_complex(arr):
+    """Map (x,y) to x+iy. arr.shape==(...,2 )"""
+    return arr[...,0]+1j*arr[...,1]
+
+def complex_to_xy(arr):
+    """Map x+iy to (x, y). Return shape==(...,2 )"""
+    return np.stack([arr.real, arr.imag], axis=-1)
+
 def moebius_disk(pts, b):
     """Compute a Moebius transformation of the disk. Moves disk origin by b. pts.shape is (..., 2)"""
-    z = pts[...,0]+1j*pts[...,1]
-    b = b[0]+1j*b[1]
+    z, b = (xy_to_complex(pts), xy_to_complex(b))
     z_transformed = (z+b)/(1+np.conjugate(b)*z)
-    return np.stack([z_transformed.real, z_transformed.imag], axis=-1)
+    return complex_to_xy(z_transformed)
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 53
-def map_cylinder_to_disk(mesh, d_inner=0.25, outer_boundary="longest", first_boundary=None,
+# %% ../nbs/05_harmonic_wrapping.ipynb 48
+def circle_invert(arr, R, C):
+    """Invert points about circle with center C and radius R. arr.shape == (..., 2)"""
+    arr_centered = (arr-C)
+    arr_inverted = R**2 * (arr_centered.T / np.linalg.norm(arr_centered, axis=-1)**2).T
+    arr_inverted = arr_inverted + C
+    return arr_inverted
+
+# %% ../nbs/05_harmonic_wrapping.ipynb 64
+def map_cylinder_to_disk(mesh, d_inner=1e-3, outer_boundary="longest", first_boundary=None,
                          second_boundary=None, set_uvs=False):
     """
     Map cylinder mesh to unit disk by computing harmonic UV coordinates.
@@ -285,7 +320,7 @@ def map_cylinder_to_disk(mesh, d_inner=0.25, outer_boundary="longest", first_bou
     mesh : tcio.ObjMesh
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
-    R_inner : float
+    d_inner : float
         Inner annulus diameter
     outer_boundary : "longest", "shortest" or int
         Which boundary to map to the unit circle. If "longest"/"shortest", 
@@ -348,7 +383,89 @@ def map_cylinder_to_disk(mesh, d_inner=0.25, outer_boundary="longest", first_bou
         mesh.texture_vertices = uv_fixed
     return uv_fixed
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 73
+# %% ../nbs/05_harmonic_wrapping.ipynb 82
+def wrap_coords_via_disk_cylinder(mesh_source, mesh_target,
+                                  disk_uv_source=None, disk_uv_target=None,
+                                  d_inner=1e-3, align=True, q=0.01, n_grid=1024):
+    """
+    Map 3d coords of source mesh to target mesh via a annulus parametrization.
+    
+    Annulus parametrization can be provided or computed on the fly via harmonic coordinates.
+    If desired, the two disks are also rotationally aligned. Meshes must be cylindrical.
+    Two choices exist for mapping a cylinder to the plane (depending ob which boundary)
+    circle is mapped to the inner resp. out boundary of the annulus). If no
+    parametrization is provided, both options are tried, and the one leading
+    to better alignment is used.
+    
+    Parameters
+    ----------
+    mesh_source : tcio.ObjMesh
+        Mesh. Must be topologically a disk (potentially with holes),
+        and should be triangular.
+    mesh_target : tcio.ObjMesh
+        Mesh. Must be topologically a disk (potentially with holes),
+        and should be triangular.
+    disk_uv_source : np.array or None
+        Disk coordinates for each vertex in source mesh. Optional.
+        If None, computed via map_to_disk.
+    disk_uv_target : np.array or None
+        Disk coordinates for each vertex in target mesh. Optional.
+        If None, computed via map_to_disk.
+    d_inner : float
+        Inner annulus diameter. Only used when recomputing maps to the annulus.
+    align : bool, default True
+        Whether to rotationally align the parametrizations. If False, they are used as-is.
+    q : float between 0 and 0.5
+        Conformal factors are clipped at this quantile to avoid outliers.
+    n_grid : int
+        Grid for interpolation of conformal factor during alignment.
+        Higher values increase alignment precision.
+    
+    Returns
+    -------
+    new_coords : np.array
+        New 3d vertex coordinates for mesh_source, lying on the surface
+        defined by mesh_target
+    overlap : float
+        Only returned if align is True. Measure of geometry overlap. 1 = perfect alignment
+    """
+    # compute harmonic map to annulus. For the source mesh, try both cylinders
+    if disk_uv_source is None:
+        disk_uv_source_a = map_cylinder_to_disk(mesh_source, set_uvs=False, 
+                                                outer_boundary="longest", d_inner=d_inner)
+        disk_uv_source_b = map_cylinder_to_disk(mesh_source, set_uvs=False, 
+                                        outer_boundary="shortest", d_inner=d_inner)
+
+    if disk_uv_target is None:
+        disk_uv_target = map_cylinder_to_disk(mesh_target, set_uvs=False,
+                                              outer_boundary="longest", d_inner=d_inner)
+    # rotational alignment of parametrizations
+    if align:
+        disk_uv_source_aligned_a, _, overlap_a = rotational_align_disk(mesh_source, mesh_target,
+                                                                       disk_uv_source_a, disk_uv_target,
+                                                                       q=q, n_grid=n_grid)
+        disk_uv_source_aligned_b, _, overlap_b = rotational_align_disk(mesh_source, mesh_target,
+                                                                       disk_uv_source_b, disk_uv_target,
+                                                                       q=q, n_grid=n_grid)
+        if overlap_a > overlap_b:
+            disk_uv_source_aligned = disk_uv_source_aligned_a
+            overlap = overlap_a
+        else:
+            disk_uv_source_aligned = disk_uv_source_aligned_b
+            overlap = overlap_b
+        print(overlap_a, overlap_b)
+        disk_uv_source_aligned = disk_uv_source_aligned_b
+    else:
+        disk_uv_source_aligned = disk_uv_source
+    # copy over 3d coordinates 
+    new_coords = tcinterp.interpolate_barycentric(np.pad(disk_uv_source_aligned, ((0,0), (0,1))),
+                                                  np.pad(disk_uv_target, ((0,0), (0,1))),
+                                                  mesh_target.tris, mesh_target.vertices, distance_threshold=np.inf)
+    if align:
+        return new_coords, overlap
+    return new_coords
+
+# %% ../nbs/05_harmonic_wrapping.ipynb 95
 def find_conformal_boundary_conditions(vertices_disk, faces_disk, bnd, tol=1e-2):
     """
     Find boundary condition for map to disk most compatible with conformal map.
@@ -372,7 +489,7 @@ def find_conformal_boundary_conditions(vertices_disk, faces_disk, bnd, tol=1e-2)
     bnd_final = np.stack([np.sin(sol.x), np.cos(sol.x)], axis=-1)
     return bnd_final
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 89
+# %% ../nbs/05_harmonic_wrapping.ipynb 111
 def stereographic_plane_to_sphere(uv):
     """
     Stererographic projection from plane to unit sphere from north pole (0,0,1).
@@ -394,7 +511,7 @@ def stereographic_sphere_to_plane(pts):
     assert np.allclose(np.linalg.norm(pts, axis=1), 1, rtol=1e-03, atol=1e-04), "Points not on unit sphere!"
     return (np.stack([pts[:,0], pts[:,1]], axis=0)/(1-pts[:,2])).T
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 93
+# %% ../nbs/05_harmonic_wrapping.ipynb 115
 def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alpha=0.5):
     """
     Apply Moeboius inversions to minimize area distortion of map from mesh to sphere.
@@ -439,7 +556,7 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
         Vs = ((1-np.linalg.norm(c)**2)*(Vs+c).T /np.linalg.norm(Vs+c, axis=1)**2).T + c
     return Vs, np.linalg.norm(mu)
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 103
+# %% ../nbs/05_harmonic_wrapping.ipynb 125
 def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha=0.5, set_uvs=False):
     """
     Compute conformal map of mesh to unit sphere.
@@ -529,7 +646,7 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
         
     return vertices_sphere
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 122
+# %% ../nbs/05_harmonic_wrapping.ipynb 144
 def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coords_sphere_target,
                             allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
     """
@@ -630,7 +747,7 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
 
     return coords_sphere_source @ R_refined.T, R_refined, overlap
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 129
+# %% ../nbs/05_harmonic_wrapping.ipynb 151
 def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, coords_sphere_target=None,
                            method="harmonic", n_iter_centering=10, alpha=0.5,
                            align=True, allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
