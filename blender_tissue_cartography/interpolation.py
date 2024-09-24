@@ -177,7 +177,7 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
     mesh : tcio.ObjMesh
         Input mesh with UV coordinates.
     field : np.array of shape (mesh.texture_vertices.shape[0],...)
-        Input field. Can be an array with one or two axes (i.e. scalar or vector field).
+        Input field. Can be an array with any number of axes (e.g. scalar or vector field).
     domain : "per-vertex" or "per-texture-vertex"
         Whether the field is defined per-vertex or per texture vertex.
     uv_grid_steps : int, default 256
@@ -187,7 +187,7 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
 
     Returns
     -------
-    interpolated : np.array of shape (uv_grid_steps, uv_grid_steps)
+    interpolated : np.array of shape (uv_grid_steps, uv_grid_steps, ...)
         Field across [0,1]^2 UV grid, with uniform step size. UV positions that don't
         correspond to any value are set to np.nan.
     
@@ -225,7 +225,7 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
     UV = np.stack(np.meshgrid(u, v), axis=-1).reshape((-1, 2))
     interpolated = interpolate_barycentric(UV, texture_vertices, mesh.texture_tris, field,
                                            distance_threshold=1e-5)
-    interpolated = interpolated.reshape((uv_grid_steps, uv_grid_steps, 3))[::-1]
+    interpolated = interpolated.reshape((uv_grid_steps, uv_grid_steps,)+field.shape[1:])[::-1]
     return interpolated
 
 # %% ../nbs/02_cartographic_interpolation.ipynb 45

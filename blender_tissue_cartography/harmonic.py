@@ -2,6 +2,7 @@
 
 # %% auto 0
 __all__ = ['map_to_disk', 'compute_per_vertex_conformal_factor', 'get_rot_mat2d', 'rotational_align_disk', 'wrap_coords_via_disk',
+           'polygon_area', 'polygon_centroid', 'moebius_disk', 'map_cylinder_to_disk',
            'find_conformal_boundary_conditions', 'stereographic_plane_to_sphere', 'stereographic_sphere_to_plane',
            'center_moebius', 'map_to_sphere', 'rotational_align_sphere', 'wrap_coords_via_sphere']
 
@@ -21,12 +22,13 @@ from skimage import registration, transform
 import matplotlib as mpl
 
 # %% ../nbs/05_harmonic_wrapping.ipynb 11
-def map_to_disk(mesh, set_uvs=False):
+def map_to_disk(mesh, bnd=None, set_uvs=False):
     """
     Map mesh to unit disk by computing harmonic UV coordinates.
     
     The longest boundary loop of the mesh is mapped to the unit circle.
     Follows https://libigl.github.io/libigl-python-bindings/tut-chapter4/.
+    Note: the disk is centerd at (1/2, 1/2).
     
     The disk rotation angle is arbitrary
     
@@ -35,8 +37,8 @@ def map_to_disk(mesh, set_uvs=False):
     mesh : tcio.ObjMesh
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
-    quantiles : tuple
-        Image quantile to set to 0 and 1.
+    bnd : np.array of ints or None
+        Boundary to map to the unit circle. If None, computed automatically.
     set_uvs : bool
         whether to set the disk coordinates as UV coordinates of the mesh.
     
@@ -49,7 +51,8 @@ def map_to_disk(mesh, set_uvs=False):
     if not mesh.is_triangular:
         warnings.warn("Warning: ignoring non-triangular faces", RuntimeWarning)
     ## Find the open boundary
-    bnd = igl.boundary_loop(mesh.tris)
+    if bnd is None:
+        bnd = igl.boundary_loop(mesh.tris)
     assert len(bnd) > 0, "No boundary found! Your mesh may not be a disk" 
 
     ## Map the boundary to a circle, preserving edge proportions
@@ -106,7 +109,7 @@ def get_rot_mat2d(phi):
 # %% ../nbs/05_harmonic_wrapping.ipynb 24
 def rotational_align_disk(mesh_source, mesh_target, 
                           disk_uv_source=None, disk_uv_target=None,
-                          q=0.05, n_grid=256):
+                          q=0.01, n_grid=256):
     """
     Rotationally align two UV map to the disk by the conformal factor.
     
@@ -155,6 +158,7 @@ def rotational_align_disk(mesh_source, mesh_target,
         disk_tris_target = mesh_target.tris
 
     # compute conformal distortion factors, clip to avoid outliers
+    # To do: replace by new interpolation code
     conformal_factor_source = compute_per_vertex_conformal_factor(mesh_source.vertices, mesh_source.tris,
                                                                   disk_uv_source, disk_tris_source)
     conformal_factor_source = np.clip(conformal_factor_source, np.quantile(conformal_factor_source, q),
@@ -186,7 +190,7 @@ def rotational_align_disk(mesh_source, mesh_target,
     new_texture_vertices += np.array([0.5,0.5])
     return new_texture_vertices, rot_mat
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 28
+# %% ../nbs/05_harmonic_wrapping.ipynb 37
 def wrap_coords_via_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv_target=None,
                          align=True, q=0.05, n_grid=256):
     """
@@ -240,7 +244,111 @@ def wrap_coords_via_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv_
                                                   mesh_target.tris, mesh_target.vertices, distance_threshold=np.inf)
     return new_coords
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 45
+# %% ../nbs/05_harmonic_wrapping.ipynb 44
+def polygon_area(pts):
+    """Poygon area via shoe-lace formula. Assuming no self-intersection. pts.shape is (..., 2)"""
+    return np.sum(pts[...,0]*np.roll(pts[...,1], 1, axis=0) - np.roll(pts[...,0], 1, axis=0)*pts[...,1], axis=0)/2
+
+def polygon_centroid(pts):
+    """See https://en.wikipedia.org/wiki/Centroid. pts.shape is (..., 2)"""
+    C_x = np.sum((pts[...,0]+np.roll(pts[...,0], 1, axis=0))
+                 *(pts[...,0]*np.roll(pts[...,1], 1, axis=0)-np.roll(pts[...,0], 1, axis=0)*pts[...,1]), axis=0)/2
+    C_y = np.sum((pts[...,1]+np.roll(pts[...,1], 1, axis=0))
+                 *(pts[...,0]*np.roll(pts[...,1], 1, axis=0)-np.roll(pts[...,0], 1, axis=0)*pts[...,1]), axis=0)/2
+    return np.array([C_x, C_y]) / (6*polygon_area(pts))
+
+def moebius_disk(pts, b):
+    """Compute a Moebius transformation of the disk. Moves disk origin by b. pts.shape is (..., 2)"""
+    z = pts[...,0]+1j*pts[...,1]
+    b = b[0]+1j*b[1]
+    z_transformed = (z+b)/(1+np.conjugate(b)*z)
+    return np.stack([z_transformed.real, z_transformed.imag], axis=-1)
+
+# %% ../nbs/05_harmonic_wrapping.ipynb 53
+def map_cylinder_to_disk(mesh, d_inner=0.25, outer_boundary="longest", first_boundary=None,
+                         second_boundary=None, set_uvs=False):
+    """
+    Map cylinder mesh to unit disk by computing harmonic UV coordinates.
+    
+    One boundary loop of the mesh is mapped to the circle with unit diameter,
+    and the second one to the circle with diameter d_inner, so the mesh is
+    mapped to an annulus. Note: the annulus is centered at (1/2, 1/2).
+    Follows https://libigl.github.io/libigl-python-bindings/tut-chapter4/.
+    
+    Which of the two circular boundaries is mapped to the inner resp.
+    outer circle is set by the option outer_boundary.
+    
+    The disk rotation angle is arbitrary.
+    
+    Parameters
+    ----------
+    mesh : tcio.ObjMesh
+        Mesh. Must be topologically a disk (potentially with holes),
+        and should be triangular.
+    R_inner : float
+        Inner annulus diameter
+    outer_boundary : "longest", "shortest" or int
+        Which boundary to map to the unit circle. If "longest"/"shortest", 
+        the longer/shorter one is mapped to the unit circle. If int,
+        the boundary containing the vertex defined by the int is used.
+    first_boundary : np.array of ints or None
+        First boundary loop of cylinder. If None, computed automatically.
+    second_boundary : np.array of ints or None
+        Second boundary loop of cylinder. If None, computed automatically.
+    set_uvs : bool
+        whether to set the disk coordinates as UV coordinates of the mesh.
+    
+    Returns
+    -------
+    uv : np.array
+        2d vertex coordinates mapping the mesh to the unit disk in [0,1]^1
+    
+    """
+    if not mesh.is_triangular:
+        warnings.warn("Warning: ignoring non-triangular faces", RuntimeWarning)
+    # determine the boundary
+    if first_boundary is None:
+        first_boundary = igl.boundary_loop(mesh.tris)
+    if second_boundary is None:
+        all_boundary_edges = igl.boundary_facets(mesh.tris)
+        second_boundary = igl.edges_to_path(np.stack([e for e in all_boundary_edges
+                                                      if not e[0] in first_boundary]))[0][:-1]    
+    assert len(first_boundary) > 0 and len(second_boundary) > 0, "No boundary found! Your mesh must be a cylinder" 
+    # decide which one is the outer boundary
+    if outer_boundary == "shortest" or outer_boundary in second_boundary:
+        first_boundary, second_boundary = (second_boundary, first_boundary)
+    # determine boundary conditions
+    first_bnd_uv = igl.map_vertices_to_circle(mesh.vertices, first_boundary)
+    # Harmonic parametrization for the internal vertices with free boundary conditions for the inner loop
+    uv_free = igl.harmonic(mesh.vertices, mesh.tris, first_boundary, first_bnd_uv, 1)
+    # map the center of the second loop to a circle around the origin
+    uv_inner = uv_free[second_boundary]
+    center = polygon_centroid(uv_inner)
+    uv_free = moebius_disk(uv_free, -2*center)
+    # find the positions of the inner and outer vertices
+    uv_outer = uv_free[first_boundary]
+    uv_inner = uv_free[second_boundary]
+    uv_inner = (d_inner/2)*(uv_inner.T / np.linalg.norm(uv_inner, axis=1)).T
+    bnd = np.hstack([first_boundary, second_boundary])
+    bnd_uv = np.vstack([uv_outer, uv_inner])
+    # Harmonic parametrization for the internal vertices, now mapping the inner loop to the inner circle
+    success, uv_fixed = igl.bijective_composite_harmonic_mapping(uv_free, mesh.tris, bnd, bnd_uv)
+    assert success, "UV mapping failed. Try lower value of d_inner?"
+    # iterate this one more time
+    uv_inner = uv_fixed[second_boundary]
+    uv_inner = d_inner*(uv_inner.T / np.linalg.norm(uv_inner, axis=1)).T
+    bnd_uv = np.vstack([uv_outer, uv_inner])
+    success, uv_fixed = igl.bijective_composite_harmonic_mapping(uv_fixed, mesh.tris, bnd, bnd_uv)
+    assert success, "UV mapping failed. Try lower value of d_inner?"
+    # translate+scale so we fit in the UV square
+    uv_fixed = uv_fixed/2+np.array([0.5, 0.5])
+    # set UV coordinates if desired mesh
+    if set_uvs:
+        mesh.faces = [[[v,v] for v in fc] for fc in mesh.tris]
+        mesh.texture_vertices = uv_fixed
+    return uv_fixed
+
+# %% ../nbs/05_harmonic_wrapping.ipynb 73
 def find_conformal_boundary_conditions(vertices_disk, faces_disk, bnd, tol=1e-2):
     """
     Find boundary condition for map to disk most compatible with conformal map.
@@ -264,7 +372,7 @@ def find_conformal_boundary_conditions(vertices_disk, faces_disk, bnd, tol=1e-2)
     bnd_final = np.stack([np.sin(sol.x), np.cos(sol.x)], axis=-1)
     return bnd_final
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 61
+# %% ../nbs/05_harmonic_wrapping.ipynb 89
 def stereographic_plane_to_sphere(uv):
     """
     Stererographic projection from plane to unit sphere from north pole (0,0,1).
@@ -286,7 +394,7 @@ def stereographic_sphere_to_plane(pts):
     assert np.allclose(np.linalg.norm(pts, axis=1), 1, rtol=1e-03, atol=1e-04), "Points not on unit sphere!"
     return (np.stack([pts[:,0], pts[:,1]], axis=0)/(1-pts[:,2])).T
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 65
+# %% ../nbs/05_harmonic_wrapping.ipynb 93
 def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alpha=0.5):
     """
     Apply Moeboius inversions to minimize area distortion of map from mesh to sphere.
@@ -331,7 +439,7 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
         Vs = ((1-np.linalg.norm(c)**2)*(Vs+c).T /np.linalg.norm(Vs+c, axis=1)**2).T + c
     return Vs, np.linalg.norm(mu)
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 75
+# %% ../nbs/05_harmonic_wrapping.ipynb 103
 def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha=0.5, set_uvs=False):
     """
     Compute conformal map of mesh to unit sphere.
@@ -350,9 +458,9 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
     ----------
     mesh : tcio.ObjMesh
         Mesh. Must be topologically a sphere, and should be triangular.
-    method : str, "harmonic", "harmonic-conformal-boundary", "LSCM"
+    method : str, "harmonic", "LSCM"
         Method for comuting the map from sphere \ north pole to plane.
-        Recommended: harmonic
+        Recommended: harmonic.
     R_max :  float
         Maximum radius to consider when computing inverse stereographic
         projection. If you get weird results, try a lower value.
@@ -386,9 +494,6 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
         bc = np.array([[0.0, -1.0], [0.0, 1.0]])
         _, uv = igl.lscm(vertices_disk, faces_disk, b, bc)
         uv = uv-uv.mean(axis=0)
-    if method == "harmonic-conformal-boundary": # harmonic map
-        bnd_uv = find_conformal_boundary_conditions(vertices_disk, faces_disk, bnd)
-        uv = igl.harmonic(vertices_disk, faces_disk, bnd, bnd_uv, 1)
     if method == "harmonic": # harmonic map
         bnd_uv = igl.map_vertices_to_circle(vertices_disk, bnd)
         uv = igl.harmonic(vertices_disk, faces_disk, bnd, bnd_uv, 1)
@@ -424,7 +529,7 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
         
     return vertices_sphere
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 94
+# %% ../nbs/05_harmonic_wrapping.ipynb 122
 def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coords_sphere_target,
                             allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
     """
@@ -525,7 +630,7 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
 
     return coords_sphere_source @ R_refined.T, R_refined, overlap
 
-# %% ../nbs/05_harmonic_wrapping.ipynb 101
+# %% ../nbs/05_harmonic_wrapping.ipynb 129
 def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, coords_sphere_target=None,
                            method="harmonic", n_iter_centering=10, alpha=0.5,
                            align=True, allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
