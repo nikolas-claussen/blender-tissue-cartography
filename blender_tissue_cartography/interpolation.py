@@ -2,8 +2,9 @@
 
 # %% auto 0
 __all__ = ['get_cross_section_vertices_normals', 'get_uv_layout_mask_mask', 'interpolate_barycentric',
-           'interpolate_per_vertex_field_to_UV', 'get_triangle_areas_in_UV', 'interpolate_volumetric_data_to_uv',
-           'interpolate_volumetric_data_to_uv_multilayer', 'create_cartographic_projections']
+           'interpolate_per_vertex_field_to_UV', 'interpolate_UV_to_per_vertex_field',
+           'interpolate_volumetric_data_to_uv', 'interpolate_volumetric_data_to_uv_multilayer',
+           'create_cartographic_projections']
 
 # %% ../nbs/02_cartographic_interpolation.ipynb 1
 import numpy as np
@@ -162,7 +163,8 @@ def interpolate_barycentric(points, vertices, faces, values, distance_threshold=
     return interpolated
 
 # %% ../nbs/02_cartographic_interpolation.ipynb 42
-def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid_steps=256, map_back=True):
+def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid_steps=256, map_back=True,
+                                       distance_threshold=1e-4):
     """
     Interpolate a field defined per-vertex into the UV square.
     
@@ -184,6 +186,9 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
         Size of UV grid. Determines resolution of result.
     map_back : bool, default True
         Map back the UV coordinates to [0,1]^2. Else, coordinates outside [0,1] are ignored.
+    distance_threshold : float
+        Points at a squared distance > distance_threshold in the UV square are considered
+        "outside" the unwrapped mesh and are set to np.nan.
 
     Returns
     -------
@@ -203,13 +208,7 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
         warnings.warn("Use of non-triangular meshes is discouraged", DeprecationWarning)
         u, v = 2*[np.linspace(0,1, uv_grid_steps),]
         U, V = np.meshgrid(u, v)
-        if len(field.shape) == 1: 
-            interpolated = interpolate.griddata(texture_vertices, field, (U, V), method='linear')[::-1]
-        elif len(field.shape) == 2:
-            interpolated = np.stack([interpolate.griddata(texture_vertices, x, (U, V), method='linear')[::-1]
-                                     for x in field.T], axis=-1)
-        else:
-            raise NotImplementedError("Fields with more than 2 axes not supported for non-triangular meshes")
+        interpolated = interpolate.griddata(texture_vertices, field, (U, V), method='linear')[::-1]
         uv_mask = get_uv_layout_mask_mask(mesh, uv_grid_steps=uv_grid_steps)
         interpolated[~uv_mask] = np.nan
         return interpolated
@@ -224,52 +223,53 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
     u, v = 2*[np.linspace(0, 1, uv_grid_steps),]
     UV = np.stack(np.meshgrid(u, v), axis=-1).reshape((-1, 2))
     interpolated = interpolate_barycentric(UV, texture_vertices, mesh.texture_tris, field,
-                                           distance_threshold=1e-5)
+                                           distance_threshold=distance_threshold)
     interpolated = interpolated.reshape((uv_grid_steps, uv_grid_steps,)+field.shape[1:])[::-1]
     return interpolated
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 45
-def get_triangle_areas_in_UV(mesh, which_area="ratio", uv_grid_steps=256, map_back=True):
+# %% ../nbs/02_cartographic_interpolation.ipynb 50
+def interpolate_UV_to_per_vertex_field(mesh, field, domain="per-vertex"):
     """
-    Interpolate mesh area into the UV square.
+    Interpolate a field defined by gridded values across UV square onto mesh vertices.
     
-    Used to measure area distortion of your cartographic mapping.
+    This is useful for downstream geometric analysis. For example, you compute
+    a vector field on a grid of the UV square, and now want to get its values
+    at the mesh vertices for geometric analysis.
     
-    Assumes the map $x,y,z \mapsto u,v$ to be invertible. This is not guaranteed
-    - you can create overlapping UV coordinates in blender. The provided UV coordinates
-    will be mapped back to [0, 1]^2 if map_back is True. Else, coordinates  outside [0,1] are ignored.
+    There may be some np.nans at the mesh boundary!
     
+    The result can be defined per texture-vertex or per 3d-vertex. Make sure you use the right option!
+        
     Parameters
     ----------
     mesh : tcio.ObjMesh
         Input mesh with UV coordinates.
-    which_area : str, "3d", "UV", or "ratio"
-        Which triangle areas to compute (in 3d, UV, or the ratio 3d/UV). "ratio" option is
-        useful for computing conformal map distortion.
-    uv_grid_steps : int, default 256
-        Size of UV grid. Determines resolution of result.
-    map_back : bool, default True
-        Map back the UV coordinates to [0,1]^2. Else, coordinates outside [0,1] are ignored.
+    field : np.array of shape (uv_grid_steps, uv_grid_steps,...)
+        Input field. Can be an array with any number of axes (e.g. scalar or vector field).
+        Must be defined on a square grid with uniform step size of the UV square.
+    domain : "per-vertex" or "per-texture-vertex"
+        Whether the result will be defined per-vertex or per texture vertex.
+        If per-vertex, the values corresponding to all texture vertices that
+        map to a vertex are averaged.
 
     Returns
     -------
-    areas_interpolated : np.array of shape (uv_grid_steps, uv_grid_steps)
-        Area across [0,1]^2 UV grid, with uniform step size. UV positions that don't
-        correspond to any value are set to np.nan.
-
+    np.array of shape (n_vertices, ...)
+        Field evaluted at mesh vertices.
+            
     """
-    if which_area == "3d":
-        areas = igl.doublearea(mesh.vertices, mesh.tris)
-    elif which_area == "UV":
-        areas = igl.doublearea(mesh.texture_vertices, mesh.texture_tris)
-    elif which_area == "ration":
-        areas = igl.doublearea(mesh.vertices, mesh.tris)/igl.doublearea(mesh.texture_vertices, mesh.texture_tris)
-    areas = igl.average_onto_vertices(mesh.texture_vertices, mesh.texture_tris, np.stack(2*[areas]).T)[:,0]
-    areas_interpolated = interpolate_per_vertex_field_to_UV(mesh, areas, uv_grid_steps=uv_grid_steps,
-                                                            map_back=map_back)
-    return areas_interpolated
+    assert field.shape[0] == field.shape[1], "Input shape must be square"
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 46
+    uv_grid_steps = field.shape[0]
+    u, v = 2*[np.linspace(0,1, uv_grid_steps),]
+    U, V = np.meshgrid(u, v)
+    per_texture_vertex = interpolate.interpn((u, v), np.moveaxis(field, 1,0)[:,::-1], mesh.texture_vertices,
+                                             method="linear", bounds_error=False)
+    if domain == "per-texture-vertex":
+        return per_texture_vertex
+    return mesh.map_per_texture_vertex_to_per_vertex(per_texture_vertex)
+
+# %% ../nbs/02_cartographic_interpolation.ipynb 52
 def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resolution):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
@@ -298,7 +298,7 @@ def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resoluti
     
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 54
+# %% ../nbs/02_cartographic_interpolation.ipynb 60
 def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_positions, interpolated_normals,
                                                  normal_offsets, resolution):
     """ 
@@ -337,7 +337,7 @@ def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_position
                                   for o in normal_offsets], axis=1)
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 60
+# %% ../nbs/02_cartographic_interpolation.ipynb 66
 def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,), uv_grid_steps=256,
                                     map_back=True):
     """

@@ -15,7 +15,7 @@ import igl
 
 from scipy import sparse
 
-# %% ../nbs/04c_wrapping.ipynb 23
+# %% ../nbs/04c_wrapping.ipynb 22
 def shrinkwrap_igl(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smooth_wrapped=10):
     """
     Shrink-wrap the source mesh onto the target mesh using trimesh.
