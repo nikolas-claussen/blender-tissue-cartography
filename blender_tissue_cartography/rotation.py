@@ -144,7 +144,7 @@ def quaternion_to_rot_max(q):
     
     See https://fr.wikipedia.org/wiki/Quaternions_et_rotation_dans_l%27espace
     """
-    assert np.allclose(np.linalg.norm(q), 1), "Must be unit quaternion!"
+    assert np.allclose(np.linalg.norm(q, axis=0), 1), "Must be unit quaternion!"
     a, b, c, d = q
     return np.array([[a**2+b**2-c**2-d**2, 2*b*c-2*a*d, 2*a*c+2*b*d],
                      [2*a*d+2*b*c, a**2-b**2+c**2-d**2, 2*c*d-2*a*b],

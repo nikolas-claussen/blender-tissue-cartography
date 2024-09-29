@@ -3,12 +3,14 @@
 # %% auto 0
 __all__ = ['compute_per_vertex_area_distortion', 'get_area_distortion_in_UV', 'compute_per_vertex_angle_distortion',
            'compute_per_face_jacobian', 'compute_per_vertex_jacobian', 'get_metric_norm', 'get_metric_angle',
-           'get_induced_metric', 'tri_grad']
+           'get_induced_metric', 'tri_grad', 'get_normal_projector', 'separate_tangential_normal', 'get_div', 'get_rot',
+           'get_grad_perp']
 
 # %% ../nbs/05_analysis.ipynb 1
 from . import io as tcio
 from . import interpolation as tcinterp
 from . import smoothing as tcsmooth
+from . import rotation as tcrot
 
 import numpy as np
 from copy import deepcopy
@@ -17,7 +19,7 @@ import igl
 
 from scipy import sparse, linalg
 
-# %% ../nbs/05_analysis.ipynb 7
+# %% ../nbs/05_analysis.ipynb 8
 def compute_per_vertex_area_distortion(source_vertices, source_faces, target_vertices, target_faces,
                                        evaluate_at='source', cutoff=1e-15):
     """
@@ -68,7 +70,7 @@ def compute_per_vertex_area_distortion(source_vertices, source_faces, target_ver
                                                            np.stack(source_vertices.shape[1]*[area_ratio]).T)[:,0]
     return area_ratio_at_vertices
 
-# %% ../nbs/05_analysis.ipynb 8
+# %% ../nbs/05_analysis.ipynb 9
 def get_area_distortion_in_UV(mesh, uv_grid_steps=1024, map_back=True):
     """
     Get area distortion of UV map, interpolated across the UV square.
@@ -106,7 +108,7 @@ def get_area_distortion_in_UV(mesh, uv_grid_steps=1024, map_back=True):
                                                                           domain='per-texture-vertex')
     return distortion_interpolated
 
-# %% ../nbs/05_analysis.ipynb 15
+# %% ../nbs/05_analysis.ipynb 16
 def compute_per_vertex_angle_distortion(source_vertices, source_faces, target_vertices, target_faces,
                                         evaluate_at='source', cutoff=1e-15):
     """  
@@ -152,7 +154,7 @@ def compute_per_vertex_angle_distortion(source_vertices, source_faces, target_ve
                                                             np.stack(source_vertices.shape[1]*[angle_error]).T)[:,0]
     return angle_error_at_vertices
 
-# %% ../nbs/05_analysis.ipynb 25
+# %% ../nbs/05_analysis.ipynb 26
 def compute_per_face_jacobian(source_vertices, source_faces, target_vertices, target_faces):
     """
     Compute Jacobian factor for map between meshes.
@@ -235,7 +237,7 @@ def compute_per_vertex_jacobian(source_vertices, source_faces, target_vertices, 
                                  for x in jac_per_face.transpose((1,0,2))], axis=1)        
     return jac_per_vertices
 
-# %% ../nbs/05_analysis.ipynb 34
+# %% ../nbs/05_analysis.ipynb 35
 def get_metric_norm(vf, g):
     """Compute norm of vectorfield vf (shape (..., d)) using metric g."""
     return np.sqrt(np.einsum('...i,...ij,...j->...', vf, g, vf))
@@ -269,8 +271,8 @@ def get_induced_metric(mesh):
     g = np.einsum('via,vib->vab', jac, jac)
     return g
 
-# %% ../nbs/05_analysis.ipynb 41
-def tri_grad(vertices, faces, field, grad_matrix=None):
+# %% ../nbs/05_analysis.ipynb 42
+def tri_grad(field, vertices, faces, grad_matrix=None):
     """
     Calculate gradient of function defined on vertices of triangular mesh.
 
@@ -281,14 +283,14 @@ def tri_grad(vertices, faces, field, grad_matrix=None):
 
     Parameters
     ----------
+    field : np.array of shape (#vertices,...)
+        scalar, vector, or tensor field defined at mesh vertices
     vertices : np.array of shape (#vertices, dim)
         vertices.
     faces : np.array of shape (#faces, 3)
         Triangular faces.
-    field : np.array of shape (#vertices,...)
-        scalar, vector, or tensor field defined at mesh vertices
     grad_matrix : scipy.sparse, optional
-        Gradient operator. The default is None (calculate g from vertices, faces).
+        Gradient operator. The default is None (calculate from vertices, faces).
 
     Returns
     -------
@@ -311,3 +313,165 @@ def tri_grad(vertices, faces, field, grad_matrix=None):
     # finally, reshape into original shape
     grad_field = grad_field.reshape(grad_field.shape[:2] + index_shape)
     return grad_field
+
+# %% ../nbs/05_analysis.ipynb 53
+def get_normal_projector(vertices=None, faces=None, normals=None):
+    """
+    Get projection matrix that removes component normal to surface
+    
+    Mathematicall, 1-n.n^T where n is the unit surface normal.
+    Defined per vertex. 
+    
+    Parameters
+    ----------
+    vertices : np.array of shape (#vertices, dim) or None
+        vertices. If None, must supply normals
+    faces : np.array of shape (#faces, 3) or None
+        Triangular faces. If None, must supply normals
+    normals : None or np.array of shape (#vertices, dim)
+        If None, recompute normals from vertices and faces
+    Returns
+    -------
+    np.array of shape (#vertices, dim, dim)
+        Projector
+
+    """
+    if normals is None:
+        normals = igl.per_vertex_normals(vertices, faces)
+        normals = (normals.T/np.linalg.norm(normals, axis=-1)).T
+    return np.eye(normals.shape[1])-np.einsum('vi,vj->vij', normals, normals)
+
+def separate_tangential_normal(field, vertices=None, faces=None, normals=None):
+    """
+    Separate tangential and normal component of field defined at vertices.
+    
+    Vector and rank-2 tensor fields are supported. For a rank-2 tensor,
+    normal-tangential cross components are discarded.
+    
+    Parameters
+    ----------
+    field : np.array of shape (#vertices, dim) or (#vertices, dim, dim)
+        Vector or rank-2 tensor field defined at vertices
+    vertices : np.array of shape (#vertices, dim) or None
+        vertices. If None, must supply normals
+    faces : np.array of shape (#faces, 3) or None
+        Triangular faces. If None, must supply normals
+    normals : None or np.array of shape (#vertices, dim)
+        If None, recompute normals from vertices and faces
+    Returns
+    -------
+    tangential_component : np.array of shape (#vertices, dim) or (#vertices, dim, dim)
+    normal_component : np.array of shape (#vertices, dim) or (#vertices, dim, dim)
+
+    """
+    P = get_normal_projector(vertices, faces, normals)
+    P_orth = np.eye(P.shape[-1]) - P 
+    n_components = len(field.shape) - 1
+    assert n_components in [1, 2], "Must be vector or rank-2 tensor field"
+    if n_components == 1:
+        tangential_component = np.einsum('vij,vj->vi', P, field)
+        normal_component = field - tangential_component
+    elif n_components == 2:
+        tangential_component = np.einsum('vij,vjk,vkl->vil', P, field, P)
+        normal_component = np.einsum('vij,vjk,vkl->vil', P_orth, field, P_orth)
+    return tangential_component, normal_component
+
+# %% ../nbs/05_analysis.ipynb 58
+def get_div(field, vertices, faces, normals=None):
+    """
+    Calculate tangent-plane divergence of vector field defined on vertices of triangular mesh.
+
+    Parameters
+    ----------
+    field : np.array of shape (#vertices, dim)
+        vector field defined at mesh vertices
+    vertices : np.array of shape (#vertices, dim)
+        vertices.
+    faces : np.array of shape (#faces, 3)
+        Triangular faces.
+    normals : np.array of shape (#vertices, dim) or None
+        If None, recompute normals from vertices and faces
+
+    Returns
+    -------
+    np.array of shape (#vertices,)
+        Divergence of vector field.
+
+    """
+    gradient = tri_grad(field, vertices, faces)
+    gradient, _ = separate_tangential_normal(gradient, vertices, faces, normals)
+    gradient_symmetric = (gradient + gradient.transpose((0,2,1)))/2
+    return np.trace(gradient_symmetric, axis1=1, axis2=2)
+
+def get_rot(field, vertices, faces, normals=None):
+    """
+    Calculate tangent-plane rotation of vector field defined on vertices of triangular mesh.
+    
+    This result is a scalar, equal to (Nabla x field).normals
+
+    Parameters
+    ----------
+    field : np.array of shape (#vertices, dim)
+        vector field defined at mesh vertices
+    vertices : np.array of shape (#vertices, dim)
+        vertices.
+    faces : np.array of shape (#faces, 3)
+        Triangular faces.
+    normals : np.array of shape (#vertices, dim) or None
+        If None, recompute normals from vertices and faces
+
+    Returns
+    -------
+    np.array of shape (#vertices,)
+        Curl of vector field. 
+
+    """
+    if normals is None:
+        normals = igl.per_vertex_normals(vertices, faces)
+        normals = (normals.T/np.linalg.norm(normals, axis=-1)).T
+
+    gradient = tri_grad(field, vertices, faces)
+    gradient, _ = separate_tangential_normal(gradient, vertices, faces, normals)
+    gradient_antisymmetric = (gradient - gradient.transpose((0,2,1)))/2
+
+    curl = np.stack([gradient_antisymmetric[:,1,2],
+                     gradient_antisymmetric[:,2,0],
+                     gradient_antisymmetric[:,0,1],], axis=-1)
+    
+    return np.einsum('vi,vi->v', normals, curl)
+
+def get_grad_perp(field, vertices, faces, normals=None):
+    """
+    Calculate the gradient of scalar field, rotated by 90 deg around surface normal.
+    
+    As occurs e.g. when calculating vector field from stream function.
+    
+    Parameters
+    ----------
+    field : np.array of shape (#vertices,)
+        Scalar field defined at mesh vertices
+    vertices : np.array of shape (#vertices, dim)
+        vertices.
+    faces : np.array of shape (#faces, 3)
+        Triangular faces.
+    normals : np.array of shape (#vertices, dim) or None
+        If None, recompute normals from vertices and faces.
+        sign of normals determines sense of rotation.
+
+    Returns
+    -------
+    np.array of shape (#vertices, dim)
+        90-degree rotated gradient of scalar field. 
+
+    """
+    if normals is None:
+        normals = igl.per_vertex_normals(vertices, faces)
+        normals = (normals.T/np.linalg.norm(normals, axis=-1)).T
+    assert len(field.shape) == 1, "Must be scalar field"
+    gradient = tri_grad(field, vertices, faces)
+    gradient, _ = separate_tangential_normal(gradient, vertices, faces, normals)
+    # construct 90 deg rotation
+    quaternion = np.pad(np.sin(np.pi/4)*normals, ((0,0), (1,0)), constant_values=np.cos(np.pi/4))
+    quaternion = (quaternion.T / np.linalg.norm(quaternion, axis=1))
+    R = tcrot.quaternion_to_rot_max(quaternion).T
+    return np.einsum('vij,vj->vi', R, gradient)
