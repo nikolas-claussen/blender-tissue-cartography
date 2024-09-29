@@ -9,7 +9,8 @@ __all__ = ['cartesian_to_spherical', 'spherical_to_cartesian', 'compute_spherica
            'rotation_alignment_brute_force', 'rotation_alignment_refined', 'rotational_alignment']
 
 # %% ../nbs/05b_registration_rotation.ipynb 1
-from . import io as tcio
+from . import mesh as tcmesh
+
 from . import registration as tcreg
 from . import wrapping as tcwrap
 
@@ -388,7 +389,7 @@ def get_icosphere(subdivide=0):
     if subdivide > 0:
         vertices, faces = igl.loop(vertices, faces, number_of_subdivs=subdivide)
     vertices = (vertices.T/np.linalg.norm(vertices, axis=-1)).T
-    return tcio.ObjMesh(vertices=vertices, faces=faces)
+    return tcmesh.ObjMesh(vertices=vertices, faces=faces)
 
 # %% ../nbs/05b_registration_rotation.ipynb 74
 def rotation_alignment_brute_force(sph_harmonics_source, sph_harmonics_target, 

@@ -7,7 +7,7 @@ __all__ = ['compute_per_vertex_area_distortion', 'get_area_distortion_in_UV', 'c
            'get_grad_perp']
 
 # %% ../nbs/03_differential_geometry.ipynb 1
-from . import io as tcio
+from . import mesh as tcmesh
 from . import interpolation as tcinterp
 from . import rotation as tcrot
 
@@ -85,7 +85,7 @@ def get_area_distortion_in_UV(mesh, uv_grid_steps=1024, map_back=True):
     
     Parameters
     ----------
-    mesh : tcio.ObjMesh
+    mesh : tcmesh.ObjMesh
         Input mesh with UV coordinates.
     uv_grid_steps : int, default 256
         Size of UV grid. Determines resolution of result.
@@ -257,7 +257,7 @@ def get_induced_metric(mesh):
     
     Parameters
     ----------
-    mesh : tcio.ObjMesh
+    mesh : tcmesh.ObjMesh
         Mesh. Must have texture map defined
         
     Returns
