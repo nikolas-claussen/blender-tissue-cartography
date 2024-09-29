@@ -8,6 +8,8 @@ __all__ = ['map_to_disk', 'get_rot_mat2d', 'rotational_align_disk', 'wrap_coords
 
 # %% ../nbs/06_harmonic_wrapping.ipynb 1
 from . import io as tcio
+from . import mesh as tcmesh
+
 from . import interpolation as tcinterp
 from . import rotation as tcrot
 from . import diffgeo as tcdfg
@@ -35,7 +37,7 @@ def map_to_disk(mesh, bnd=None, set_uvs=False):
     
     Parameters
     ----------
-    mesh : tcio.ObjMesh
+    mesh : tcmesh.ObjMesh
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
     bnd : np.array of ints or None
@@ -89,10 +91,10 @@ def rotational_align_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv
     
     Parameters
     ----------
-    mesh_source : tcio.ObjMesh
+    mesh_source : tcmesh.ObjMesh
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
-    mesh_target : tcio.ObjMesh
+    mesh_target : tcmesh.ObjMesh
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
     disk_uv_source : np.array or None
@@ -183,10 +185,10 @@ def wrap_coords_via_disk(mesh_source, mesh_target,
     
     Parameters
     ----------
-    mesh_source : tcio.ObjMesh
+    mesh_source : tcmesh.ObjMesh
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
-    mesh_target : tcio.ObjMesh
+    mesh_target : tcmesh.ObjMesh
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
     disk_uv_source : np.array or None
@@ -274,7 +276,7 @@ def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
     
     Parameters
     ----------
-    mesh : tcio.ObjMesh
+    mesh : tcmesh.ObjMesh
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
     outer_boundary : "longest", "shortest" or int
@@ -348,9 +350,9 @@ def wrap_coords_via_disk_cylinder(mesh_source, mesh_target, q=0.01, n_grid=1024)
     
     Parameters
     ----------
-    mesh_source : tcio.ObjMesh
+    mesh_source : tcmesh.ObjMesh
         Mesh. Must be topologically a cylinder and should be triangular.
-    mesh_target : tcio.ObjMesh
+    mesh_target : tcmesh.ObjMesh
         Mesh. Must be topologically a cylinder and should be triangular.
     q : float between 0 and 0.5
         Conformal factors are clipped at this quantile to avoid outliers.
@@ -504,7 +506,7 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
     
     Parameters
     ----------
-    mesh : tcio.ObjMesh
+    mesh : tcmesh.ObjMesh
         Mesh. Must be topologically a sphere, and should be triangular.
     method : str, "harmonic", "LSCM"
         Method for comuting the map from sphere wthout north pole to plane.
@@ -591,10 +593,10 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
     
     Parameters
     ----------
-    mesh_source : tcio.ObjMesh
+    mesh_source : tcmesh.ObjMesh
         Mesh. Must be topologically a sphere (potentially with holes),
         and should be triangular.
-    mesh_target : tcio.ObjMesh
+    mesh_target : tcmesh.ObjMesh
         Mesh. Must be topologically a sphere (potentially with holes),
         and should be triangular.
     coords_sphere_source : np.array or None
@@ -692,10 +694,10 @@ def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, 
     
     Parameters
     ----------
-    mesh_source : tcio.ObjMesh
+    mesh_source : tcmesh.ObjMesh
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
-    mesh_target : tcio.ObjMesh
+    mesh_target : tcmesh.ObjMesh
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
     coords_sphere_source : np.array or None
