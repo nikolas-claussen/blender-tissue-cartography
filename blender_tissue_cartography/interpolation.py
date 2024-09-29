@@ -13,6 +13,8 @@ from scipy import interpolate
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from . import io as tcio
+from . import mesh as tcmesh
+
 import warnings
 import igl
 
@@ -35,7 +37,7 @@ def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, res
     ----------
     image : 4d np.ndarray of shape (channels, n_x, n_y, n_z)
         Image. Axis 0 is channel
-    mesh : tcio.ObjMesh
+    mesh : tcmesh.ObjMesh
         Mesh
     resolution : int, default 256
         Resolution in pixels/micron.
@@ -73,7 +75,7 @@ def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, res
     return slice_image, slice_vertices
 
 # %% ../nbs/02_cartographic_interpolation.ipynb 35
-def get_uv_layout_mask_mask(mesh: tcio.ObjMesh, uv_grid_steps=256):
+def get_uv_layout_mask_mask(mesh: tcmesh.ObjMesh, uv_grid_steps=256):
     """
     Get a layout mask of the UV square: 1 where the UV square is covered by the unwrapped mesh, 0 outside.
     
@@ -81,7 +83,7 @@ def get_uv_layout_mask_mask(mesh: tcio.ObjMesh, uv_grid_steps=256):
     
     Parameters
     ----------
-    mesh : tcio.ObjMesh
+    mesh : tcmesh.ObjMesh
         Mesh with texture_vertices
     uv_grid_steps : int, default 256
         Size of UV grid. Determines resolution of result.
@@ -95,7 +97,7 @@ def get_uv_layout_mask_mask(mesh: tcio.ObjMesh, uv_grid_steps=256):
     fig = plt.figure(figsize=(1,1), dpi=uv_grid_steps, frameon=False)
     ax = plt.gca()
     if not mesh.is_triangular:
-        valid_faces = [[v[1] for v in fc] for fc in mesh.faces if not np.isnan(list(tcio.flatten(fc))).any()]
+        valid_faces = [[v[1] for v in fc] for fc in mesh.faces if not np.isnan(list(tcmesh.flatten(fc))).any()]
         polygons = mpl.collections.PatchCollection([mpl.patches.Polygon([mesh.texture_vertices[v] for v in fc])
                                                     for fc in valid_faces], color="black")
         ax.add_collection(polygons)
@@ -176,7 +178,7 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
     
     Parameters
     ----------
-    mesh : tcio.ObjMesh
+    mesh : tcmesh.ObjMesh
         Input mesh with UV coordinates.
     field : np.array of shape (mesh.texture_vertices.shape[0],...)
         Input field. Can be an array with any number of axes (e.g. scalar or vector field).
@@ -242,7 +244,7 @@ def interpolate_UV_to_per_vertex_field(mesh, field, domain="per-vertex"):
         
     Parameters
     ----------
-    mesh : tcio.ObjMesh
+    mesh : tcmesh.ObjMesh
         Input mesh with UV coordinates.
     field : np.array of shape (uv_grid_steps, uv_grid_steps,...)
         Input field. Can be an array with any number of axes (e.g. scalar or vector field).
@@ -353,7 +355,7 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
     ----------
     image : str or 4d np.array
         Image, either as path to file, or as array. If array, axis 0  is assumed to be the channel axis
-    mesh : str or tcio.ObjMesh
+    mesh : str or tcmesh.ObjMesh
         Mesh, either as path to file, or as ObjMesh object.
     resolution : np.array of shape (3,)
         Image resolution in pixels/micron for the three spatial axes
@@ -377,7 +379,7 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
     if isinstance(image, str):
         image = tcio.adjust_axis_order(tcio.imread(image))
     if isinstance(mesh, str):
-        mesh = tcio.ObjMesh.read_obj(mesh)
+        mesh = tcmesh.ObjMesh.read_obj(mesh)
     u, v = 2*[np.linspace(0,1, uv_grid_steps),]
     U, V = np.meshgrid(u, v)
     interpolated_3d_positions = interpolate_per_vertex_field_to_UV(mesh, mesh.vertices, domain="per-vertex",

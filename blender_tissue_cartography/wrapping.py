@@ -5,6 +5,7 @@ __all__ = ['shrinkwrap_igl']
 
 # %% ../nbs/05c_wrapping.ipynb 1
 from . import io as tcio
+from . import mesh as tcmesh
 from . import registration as tcreg
 from . import smoothing as tcsmooth
 
@@ -30,9 +31,9 @@ def shrinkwrap_igl(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smo
     
     Parameters
     ----------
-    mesh_source : tcio.ObjMesh
+    mesh_source : tcmesh.ObjMesh
         Mesh to be deformed
-    mesh_target : tcio.ObjMesh
+    mesh_target : tcmesh.ObjMesh
         Mesh with target shape
     n_iter_smooth_target : int, default 10
         Taubin smoothing iterations for target
@@ -41,7 +42,7 @@ def shrinkwrap_igl(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smo
 
     Returns
     -------
-    mesh_wrapped : tcio.ObjMesh
+    mesh_wrapped : tcmesh.ObjMesh
 
     """
     if not mesh_target.is_triangular:
@@ -55,7 +56,7 @@ def shrinkwrap_igl(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smo
     distances, indices, points = igl.point_mesh_squared_distance(mesh_source.vertices,
                                                                  target_verts, mesh_target.tris)
     # create wrapped mesh
-    mesh_wrapped = tcio.ObjMesh(points, mesh_source.faces, texture_vertices=mesh_source.texture_vertices,
+    mesh_wrapped = tcmesh.ObjMesh(points, mesh_source.faces, texture_vertices=mesh_source.texture_vertices,
                                 normals=None, name=mesh_source.name)
     mesh_wrapped.set_normals()
     if n_iter_smooth_wrapped > 0:
