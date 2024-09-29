@@ -10,7 +10,7 @@ __all__ = ['map_to_disk', 'get_rot_mat2d', 'rotational_align_disk', 'wrap_coords
 from . import io as tcio
 from . import interpolation as tcinterp
 from . import rotation as tcrot
-from . import analysis as tcanl
+from . import diffgeo as tcdfg
 
 import numpy as np
 from copy import deepcopy
@@ -130,11 +130,11 @@ def rotational_align_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv
     else:
         disk_tris_target = mesh_target.tris
     # compute conformal distortion factors, clip to avoid outliers
-    conformal_factor_source = tcanl.compute_per_vertex_area_distortion(disk_uv_source, disk_tris_source,
+    conformal_factor_source = tcdfg.compute_per_vertex_area_distortion(disk_uv_source, disk_tris_source,
                                                                        mesh_source.vertices, mesh_source.tris,)
     conformal_factor_source = np.clip(conformal_factor_source, np.quantile(conformal_factor_source, q),
                                       np.quantile(conformal_factor_source, 1-q))
-    conformal_factor_target = tcanl.compute_per_vertex_area_distortion(disk_uv_target, disk_tris_target,
+    conformal_factor_target = tcdfg.compute_per_vertex_area_distortion(disk_uv_target, disk_tris_target,
                                                                        mesh_target.vertices, mesh_target.tris)
     conformal_factor_target = np.clip(conformal_factor_target, np.quantile(conformal_factor_target, q),
                                       np.quantile(conformal_factor_target, 1-q))
@@ -645,9 +645,9 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
         tris_sphere_target = mesh_target.tris
 
     # compute the conformal factor
-    conformal_factor_source = tcanl.compute_per_vertex_area_distortion(coords_sphere_source, tris_sphere_source,
+    conformal_factor_source = tcdfg.compute_per_vertex_area_distortion(coords_sphere_source, tris_sphere_source,
                                                                        mesh_source.vertices, mesh_source.tris,)
-    conformal_factor_target = tcanl.compute_per_vertex_area_distortion(coords_sphere_target, tris_sphere_target,
+    conformal_factor_target = tcdfg.compute_per_vertex_area_distortion(coords_sphere_target, tris_sphere_target,
                                                                        mesh_target.vertices, mesh_target.tris)
     # transform to log
     signal_source = np.log(conformal_factor_source)
