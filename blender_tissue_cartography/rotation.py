@@ -442,6 +442,7 @@ def rotation_alignment_brute_force(sph_harmonics_source, sph_harmonics_target,
 
     alpha_0 = 2*np.pi/n_angle
     axes = get_icosphere(subdivide=n_subdiv_axes).vertices
+    axes = axes[axes[:,-1] >= 0] # ax and -ax rotation axes are equivalent
     corr_coeffs = np.zeros((axes.shape[0], n_angle+1), dtype="complex_")
     corr_coeffs_flipped = np.zeros((axes.shape[0], n_angle+1), dtype="complex_")
     sph_harmonics_source_flipped = parity_spherical_harmonics_coeffs(sph_harmonics_source)
