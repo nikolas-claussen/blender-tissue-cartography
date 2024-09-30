@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['flatten', 'pad_list', 'unique', 'index_else_nan', 'invert_dictionary', 'ObjMesh', 'read_other_formats_without_uv',
-           'glue_seams', 'marching_cubes']
+           'glue_seams']
 
 # %% ../nbs/01b_mesh.ipynb 1
 import numpy as np
@@ -420,33 +420,3 @@ def glue_seams(mesh, decimals=None):
                          normals=None, name=mesh.name)
     glued_mesh.set_normals()
     return glued_mesh
-
-# %% ../nbs/01b_mesh.ipynb 25
-def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
-    """
-    Compute triangular mesh of isosurface using marching cubes as implemented by lib|igl.
-    
-    Parameters
-    ----------
-    volume : 3d np.array
-        Array with scalar values from which to compute the isosurface.
-    isovalue: float, default 0.5
-        Isosurface to extract
-    sigma_smoothing: float, default 0
-        If >0, carry out Gaussian smoothing before marching cubes
-
-    Returns
-    -------
-    vertices : np.array of shape (n_vertices, 3)
-        Vertices
-    faces : np.array of shape (n_faces, 3)
-        Triangular faces (each face is a set of indices into the vertices array)
-    """
-    pts_grid = np.stack(np.meshgrid(*[np.arange(i) for i in volume.shape], indexing="ij"),
-                        axis=-1).reshape(-1,3, order="F").astype(float)
-    if sigma_smoothing>0:
-        vals = ndimage.gaussian_filter(volume, sigma=sigma_smoothing).flatten(order="F")
-    else:
-        vals = volume.flatten(order="F")
-    vertices, faces = igl.marching_cubes(vals, pts_grid, *volume.shape, isovalue)
-    return vertices, faces
