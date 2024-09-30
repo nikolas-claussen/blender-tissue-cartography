@@ -14,6 +14,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from . import io as tcio
 from . import mesh as tcmesh
+from . import remesh as tcremesh
+
 
 import warnings
 import igl
