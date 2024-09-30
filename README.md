@@ -5,14 +5,14 @@
 
 ## What this tool does
 
-Tissue cartography is a technique for analyzing 3d microscopy data by
-taking advantage of the laminar, sheet-like organization of many
-biological tissues. Tissue cartography extracts and cartographically
-projects surfaces from volumetric image data. This turns your 3d data
-into 2d data which is much easier to visualize, analyze, and
-computationally process. For more detail, see [Heemskerk & Streichan
-2015](https://doi.org/10.1038/nmeth.3648) and [Mitchell & Cislo
-2023](https://doi.org/10.1038/s41592-023-02081-w).
+Tissue cartography extracts and cartographically projects surfaces from
+volumetric image data. This turns your 3d data into 2d data which is
+much easier to visualize, analyze, and computationally process. Tissue
+cartography is particularly useful in developmental biology, analyzing
+3d microscopy data by taking advantage of the laminar, sheet-like
+organization of many biological tissues. For more detail, see [Heemskerk
+& Streichan 2015](https://doi.org/10.1038/nmeth.3648) and [Mitchell &
+Cislo 2023](https://doi.org/10.1038/s41592-023-02081-w).
 
 `blender_tissue_cartography` is a set of python tools, template analysis
 pipelines, and tutorials to do tissue cartography using the popular 3d
@@ -27,7 +27,7 @@ to use it, I recommend updating regularly via `git pull`.
 
 - Tools for individual recordings are in a reasonably complete state
 - Tools for dynamic recordings/movies are complete, but not fully tested
-- Tutorials to be written: dynamic surfaces, analysis in 3d
+- Tutorials to be written: analysis in 3d
 
 ## Installation
 
@@ -115,7 +115,7 @@ after completing a first round of steps 1-5, you are not satisfied with
 the results, you can go back and improve each step. For example, after
 seeing your data projected onto the 3d mesh as below, you can
 graphically adjust the cartographic projection, for example its
-seams/cuts. See `tutorials/06_iterative_design.ipynb`.
+seams/cuts. See Tutorial 6.
 
 ![image.png](index_files/figure-commonmark/cell-6-1-image.png)
 
@@ -197,6 +197,6 @@ the installation instructions above.
 
 This software is being developed by Nikolas Claussen in the [Streichan
 lab at UCSB](https://streichanlab.physics.ucsb.edu/). Noah Mitchell,
-Susan Wopat, Dong-Yuan Chen, and Matthew Lefebvre contributed example
-data. Sean Komura and Gary Han tested the software. Dillon Cislo
-provided advice on surface-surface registration.
+Susan Wopat, and Matthew Lefebvre contributed example data. Sean Komura
+and Gary Han tested the software. Dillon Cislo provided advice on
+surface-surface registration.
