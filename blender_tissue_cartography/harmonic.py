@@ -518,10 +518,6 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
         Centering algorithm iterations. If 0, no centerting is performed
     alpha : float between 0 and 1
         Learning rate. Lower values make the centering algorithm more stable
-    set_uvs : bool, default False
-        Whether to set spherical coordinates phi, theta as UV coordinates.
-        Will scale by dividing phi, theta by 2pi so they fit in the UV square.
-        Will overwrite existing UV coordinates
     Returns
     -------
     vertices_sphere : np.array
@@ -568,18 +564,12 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
     if n_iter_centering > 0:
         vertices_sphere, _ = center_moebius(mesh.vertices, vertices_sphere, faces_all,
                                             n_iter_centering=n_iter_centering, alpha=alpha)
-    if set_uvs:
-        _, theta, phi = tcrot.cartesian_to_spherical(vertices_sphere)
-        theta = np.clip(theta/(2*np.pi), 0, 1)
-        phi = np.clip(phi/(2*np.pi)+0.5, 0, 1)
-        mesh.faces = [[[v,v] for v in fc] for fc in mesh.tris]
-        mesh.texture_vertices = np.stack([phi, theta], axis=-1)
     if igl.doublearea(vertices_sphere, faces_all).min() <= 0:
         warnings.warn("Warning: some triangle on sphere have 0 or negative area", RuntimeWarning)
         
     return vertices_sphere
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 106
+# %% ../nbs/06_harmonic_wrapping.ipynb 110
 def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coords_sphere_target,
                             allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
     """
@@ -680,7 +670,7 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
 
     return coords_sphere_source @ R_refined.T, R_refined, overlap
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 113
+# %% ../nbs/06_harmonic_wrapping.ipynb 117
 def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, coords_sphere_target=None,
                            method="harmonic", n_iter_centering=10, alpha=0.5,
                            align=True, allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
