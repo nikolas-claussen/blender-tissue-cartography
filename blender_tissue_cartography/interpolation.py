@@ -173,7 +173,7 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
     
     The field can be defined per texture-vertex or per 3d-vertex. Make sure you use the right option!
     
-    Assumes the map $x,y,z \mapsto u,v$ to be invertible. This is not guaranteed - you can create overlapping UV 
+    Assumes the map $x,y,z -> u,v$ to be invertible. This is not guaranteed - you can create overlapping UV 
     coordinates in blender. The provided UV coordinates will be mapped back to [0, 1]^2 if map_back is True.
     Else, coordinates outside [0,1] are ignored.
     
