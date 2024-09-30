@@ -16,7 +16,6 @@ from . import io as tcio
 from . import mesh as tcmesh
 from . import remesh as tcremesh
 
-
 import warnings
 import igl
 
@@ -168,7 +167,7 @@ def interpolate_barycentric(points, vertices, faces, values, distance_threshold=
 
 # %% ../nbs/02_cartographic_interpolation.ipynb 42
 def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid_steps=256, map_back=True,
-                                       distance_threshold=1e-4):
+                                       distance_threshold=1e-4, use_fallback=False):
     """
     Interpolate a field defined per-vertex into the UV square.
     
@@ -193,6 +192,11 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
     distance_threshold : float
         Points at a squared distance > distance_threshold in the UV square are considered
         "outside" the unwrapped mesh and are set to np.nan.
+    use_fallback : bool or 'auto', default 'auto'
+        Ignore mesh connectivity when interpolating. This is to be used as fallback
+        if you have a UV map with lots of flipped triangles (i.e. self-intersections).
+        If 'auto', the fallback option is chose automatically if there are any flipped 
+        triangles.
 
     Returns
     -------
@@ -207,8 +211,18 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
         
     """
     if domain == "per-vertex":
-        field = field[mesh.get_uv_matched_vertex_indices()]
-    if not mesh.is_triangular:
+        field = field[mesh.get_vertex_to_texture_vertex_indices()]
+    flipped_triangles = len(igl.flipped_triangles(mesh.texture_vertices, mesh.texture_tris))
+    if flipped_triangles > 0:
+        warnings.warn("UV map has self-intersections, {} flipped triangles. Try use_fallback=True?".format(
+            flipped_triangles), RuntimeWarning)
+    if use_fallback == 'auto':
+        use_fallback = (flipped_triangles > 0)
+    texture_vertices = np.copy(mesh.texture_vertices)
+    if map_back:
+        outside = (texture_vertices<0) | (texture_vertices > 1)
+        texture_vertices[outside] = (texture_vertices[outside] % 1)
+    if not mesh.is_triangular or use_fallback:
         warnings.warn("Use of non-triangular meshes is discouraged", DeprecationWarning)
         u, v = 2*[np.linspace(0,1, uv_grid_steps),]
         U, V = np.meshgrid(u, v)
@@ -216,14 +230,6 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
         uv_mask = get_uv_layout_mask_mask(mesh, uv_grid_steps=uv_grid_steps)
         interpolated[~uv_mask] = np.nan
         return interpolated
-    flipped_triangles = len(igl.flipped_triangles(mesh.texture_vertices, mesh.texture_tris))
-    if flipped_triangles > 0:
-        warnings.warn("UV map has self-intersections, {} flipped triangles.".format(flipped_triangles),
-                      RuntimeWarning)
-    texture_vertices = np.copy(mesh.texture_vertices)
-    if map_back:
-        outside = (texture_vertices<0) | (texture_vertices > 1)
-        texture_vertices[outside] = (texture_vertices[outside] % 1)
     u, v = 2*[np.linspace(0, 1, uv_grid_steps),]
     UV = np.stack(np.meshgrid(u, v), axis=-1).reshape((-1, 2))
     interpolated = interpolate_barycentric(UV, texture_vertices, mesh.texture_tris, field,
@@ -273,7 +279,7 @@ def interpolate_UV_to_per_vertex_field(mesh, field, domain="per-vertex"):
         return per_texture_vertex
     return mesh.map_per_texture_vertex_to_per_vertex(per_texture_vertex)
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 52
+# %% ../nbs/02_cartographic_interpolation.ipynb 51
 def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resolution):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
@@ -302,9 +308,9 @@ def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resoluti
     
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 60
+# %% ../nbs/02_cartographic_interpolation.ipynb 59
 def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_positions, interpolated_normals,
-                                                 normal_offsets, resolution):
+                                                 normal_offsets, resolution,):
     """ 
     Multilayer-interpolate volumetric image data onto UV coordinate grid.
     
@@ -341,9 +347,9 @@ def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_position
                                   for o in normal_offsets], axis=1)
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 66
+# %% ../nbs/02_cartographic_interpolation.ipynb 65
 def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,), uv_grid_steps=256,
-                                    map_back=True):
+                                    map_back=True, use_fallback='auto'):
     """
     Create multilayer cartographic projections of image using mesh.
     
@@ -368,6 +374,11 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
         Size of UV grid. Determines resolution of result.
     map_back : bool, default True
         Map back the UV coordinates to [0,1]^2. Else, coordinates outside [0,1] are ignored.
+    use_fallback : bool or 'auto', default 'auto'
+        Ignore mesh connectivity when interpolating. This is to be used as fallback
+        if you have a UV map with lots of flipped triangles (i.e. self-intersections).
+        If 'auto', the fallback option is chose automatically if there are any flipped 
+        triangles.
     
     Returns
     -------
@@ -386,10 +397,10 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
     U, V = np.meshgrid(u, v)
     interpolated_3d_positions = interpolate_per_vertex_field_to_UV(mesh, mesh.vertices, domain="per-vertex",
                                                                    uv_grid_steps=uv_grid_steps,
-                                                                   map_back=map_back)
+                                                                   map_back=map_back, use_fallback=use_fallback)
     interpolated_normals = interpolate_per_vertex_field_to_UV(mesh, mesh.normals, domain="per-vertex",
                                                               uv_grid_steps=uv_grid_steps,
-                                                              map_back=map_back,)
+                                                              map_back=map_back, use_fallback=use_fallback)
     interpolated_data = interpolate_volumetric_data_to_uv_multilayer(image,
                                                                      interpolated_3d_positions,
                                                                      interpolated_normals, normal_offsets,
