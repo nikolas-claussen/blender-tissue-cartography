@@ -203,7 +203,7 @@ def compute_per_vertex_jacobian(source_vertices, source_faces, target_vertices, 
     Important: after you apply the per-vertex Jacobian,
     you may still need to permute the result, defined per
     source vertex, so it is defined per target mesh,
-    e.g. using mesh.get_uv_matched_vertex_indices()
+    e.g. using mesh.get_vertex_to_texture_vertex_indices()
     if mapping from 3d to UV.
     
     Example (compute distortion of UV map):
