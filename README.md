@@ -71,11 +71,17 @@ to use it, I recommend updating regularly via `git pull`.
     [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) for
     rendering volumetric `.tif` files in blender
 
+## Documentation
+
+Full documentation (including jupyter tutorials is available here:
+https://nikolas-claussen.github.io/blender-tissue-cartography/
+
 ## Usage
 
-To see how things work, it’s best to start with some fully worked out
-examples, which are provided in the `nbs/Tutorials/` folder. You can
-look at the jupyter notebooks on GitHub without downloading anything.
+Some fully worked out examples are provided in the `nbs/Tutorials/`
+folder. You can look at the jupyter notebooks on
+https://nikolas-claussen.github.io/blender-tissue-cartography/ without
+downloading anything.
 
 To run a tutorial on your computer, follow the installation instructions
 and then [launch
@@ -110,14 +116,7 @@ jupyter computational notebook to run the `blender_tissue_cartography`
 module (left), and blender project with extracted mesh and texture
 (right).
 
-A key idea behind the pipeline is the notion of *iterative design*: if
-after completing the first round of steps 1-5, you are not satisfied
-with the results, you can go back and improve each step. For example,
-after seeing your data projected onto the 3d mesh as below, you can
-graphically adjust the cartographic projection, for example, its
-seams/cuts. See Tutorial 6.
-
-![image.png](index_files/figure-commonmark/cell-6-1-image.png)
+![image.png](index_files/figure-commonmark/cell-7-1-image.png)
 
 In this pipeline, you can edit meshes and cartographic projections
 interactively - you can create a preliminary projection of your data
@@ -125,7 +124,7 @@ automatically, and use it as guidance when editing your cartographic map
 in blender. Here, we edit the “seam” of our cartographic map based on
 the region occupied by cells during zebrafish epiboly (tutorial 6).
 
-![image-2.png](index_files/figure-commonmark/cell-7-1-image-2.png)
+![image-2.png](index_files/figure-commonmark/cell-8-1-image-2.png)
 
 #### Notes for Python beginners
 
