@@ -2,6 +2,18 @@ website:
   sidebar:
     contents:
       - index.ipynb
-      - 00_core.ipynb
       - 00_specs.ipynb
-      - 01_basics.ipynb
+      - 01a_io.ipynb
+      - 01b_mesh.ipynb
+      - 01c_interface_pymeshlab.ipynb
+      - 01d_interface_trimesh.ipynb
+      - 02_cartographic_interpolation.ipynb
+      - 03_differential_geometry.ipynb
+      - 04a_remeshing.ipynb
+      - 04b_remeshing_pymeshlab.ipynb
+      - 04c_smoothing.ipynb
+      - 05a_registration.ipynb
+      - 05b_registration_rotation.ipynb
+      - 05c_wrapping.ipynb
+      - 06_harmonic_wrapping.ipynb
+      - 07_volumetric_rendering.ipynb

@@ -9,7 +9,7 @@ from scipy import stats, spatial, linalg
 import itertools
 import igl
 
-# %% ../nbs/05a_registration.ipynb 19
+# %% ../nbs/05a_registration.ipynb 20
 def package_affine_transformation(matrix, vector):
     """Package matrix transformation & translation into (d+1,d+1) matrix representation of affine transformation."""
     matrix_rep = np.hstack([matrix, vector[:, np.newaxis]])
@@ -134,7 +134,7 @@ def procrustes(source, target, include_scaling=True, include_reflections=True):
     disparity = np.linalg.norm(aligned-target, axis=1).mean()
     return trafo_affine, aligned, disparity
 
-# %% ../nbs/05a_registration.ipynb 38
+# %% ../nbs/05a_registration.ipynb 33
 def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, include_scaling=True, n_samples=1000):
     """
     Apply the iterative closest point algorithm to align point cloud a with

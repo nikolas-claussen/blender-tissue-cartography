@@ -76,7 +76,7 @@ def subdivide_igl(mesh, reglue=True, decimals=None):
         mesh_subdiv = tcmesh.glue_seams(mesh_subdiv, decimals=decimals)
     return mesh_subdiv
 
-# %% ../nbs/04a_remeshing.ipynb 17
+# %% ../nbs/04a_remeshing.ipynb 15
 def make_delaunay(mesh):
     """
     Make mesh triangles less deformed by edge flips. 
@@ -113,7 +113,7 @@ def make_delaunay(mesh):
     mesh_new = tcmesh.glue_seams(mesh_new, decimals=None)
     return mesh_new
 
-# %% ../nbs/04a_remeshing.ipynb 23
+# %% ../nbs/04a_remeshing.ipynb 19
 def qslim(mesh, max_n_faces):
     """
     Simplify mesh by face decimation using the qslim algorithm.
