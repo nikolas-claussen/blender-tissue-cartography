@@ -18,9 +18,9 @@ def convert_to_pymeshlab(mesh: tcmesh.ObjMesh, add_texture_info=None) -> pymeshl
     See https://pymeshlab.readthedocs.io/en/latest/classes/mesh.html
     Note: normal information is recalculated by pymeshlab. Discards any non-triangle faces.
     
-    Texture is saved as a vertex attribute via v_tex_coords_matrix. Note that this discards
+    The texture information is saved as a vertex attribute via v_tex_coords_matrix. Note that this discards
     information since a vertex can have multiple texture coordinates. For this reason,
-    we also save it as wedge_tex_coord_matrix (i.e. per triangle) .
+    we also save it as wedge_tex_coord_matrix (i.e. per triangle).
     
     Parameters
     ----------
@@ -53,8 +53,8 @@ def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=
     """
     Convert pymeshlab mesh to ObjMesh.
     
-    Texture vertices can be reconstructed from face attribute face_tex_vertex_{0/1/2} or from
-    vertex attribute vertex_tex_coord_matrix. Reconstruction from face texture can accomodate
+    Texture vertices can be reconstructed from wedge_tex_coord_matrix (per face) or from the
+    vertex attribute vertex_tex_coord_matrix. Reconstruction from face texture can accommodate
     multiple texture coordinates per vertex (e.g. for UV maps with seams).
     
     Texture vertices are rounded to texture_vertex_decimals decimals

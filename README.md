@@ -14,11 +14,11 @@ organization of many biological tissues. For more detail, see [Heemskerk
 & Streichan 2015](https://doi.org/10.1038/nmeth.3648) and [Mitchell &
 Cislo 2023](https://doi.org/10.1038/s41592-023-02081-w).
 
-`blender_tissue_cartography` is a set of python tools, template analysis
+`blender_tissue_cartography` is a set of Python tools, template analysis
 pipelines, and tutorials to do tissue cartography using the popular 3d
 creation software [blender](https://www.blender.org/). The goal is to
 make tissue cartography as user-friendly as possible using simple,
-modular python code and blender’s graphical user interface.
+modular Python code and blender’s graphical user interface.
 
 ### Work in progress!
 
@@ -49,7 +49,7 @@ to use it, I recommend updating regularly via `git pull`.
     or simply download the code as a .zip file and unpack it (green
     button “Code”).
 
-4.  Create a `conda` environment with all python dependencies and
+4.  Create a `conda` environment with all Python dependencies and
     install the `blender_tissue_cartography` module. Open a command
     window in the `blender-tissue-cartography` directory and type:
 
@@ -57,9 +57,9 @@ to use it, I recommend updating regularly via `git pull`.
     - `conda activate blender_tissue_cartography`
     - `pip install -e .`
 
-5.  (Optional) Install extra python library for `pymeshlab`, required
+5.  (Optional) Install extra Python library for `pymeshlab`, required
     for some advanced functionality (remeshing and surface
-    reconstruction from within python).
+    reconstruction from within Python).
 
     - `pip install pymeshlab` - Note that this package is not available
       on new ARM Apple computers.
@@ -73,7 +73,7 @@ to use it, I recommend updating regularly via `git pull`.
 
 ## Usage
 
-To see how things work, it’s best to start with some fully-worked out
+To see how things work, it’s best to start with some fully worked out
 examples, which are provided in the `tutorials/` folder. You can look at
 the jupyter notebooks on GitHub without downloading anything.
 
@@ -82,11 +82,11 @@ and then [launch
 jupyter](https://docs.jupyter.org/en/latest/running.html) and work
 through the notebooks in the `tutorial` directory in order. If you are
 impatient, jump directly to `tutorials/03_basics_example.ipynb`. I
-recommended being comfortable with running simple python code (you don’t
+recommended being comfortable with running simple Python code (you don’t
 have to do any coding yourself). The basic user interface of blender is
 explained in `tutorials/02_blender_tutorial.ipynb`.
 
-In general, for each tissue cartography project, first create a folder
+In general, for each tissue cartography project, first, create a folder
 to hold your data and results. You run the `blender_tissue_cartography`
 pipeline from a jupyter computational notebook, which can also serve as
 your lab notebook (notes, comments on the data). Use one of the tutorial
@@ -99,47 +99,46 @@ the notebook, you will:
 
 3.  load the mesh into blender to map to unwrap it into the plane
 
-4.  make a cartographic projection of your the 3d data using the
-    unwrapped mesh
+4.  make a cartographic projection of your 3d data using the unwrapped
+    mesh
 
 5.  visualize the results in 3d using blender.
 
-Below is a screenshot to give you an idea of the work flow for the
+Below is a screenshot to give you an idea of the workflow for the
 example *Drosophila* dataset: Volumetric data in ImageJ (center),
 jupyter computational notebook to run the `blender_tissue_cartography`
 module (left), and blender project with extracted mesh and texture
 (right).
 
 A key idea behind the pipeline is the notion of *iterative design*: if
-after completing a first round of steps 1-5, you are not satisfied with
-the results, you can go back and improve each step. For example, after
-seeing your data projected onto the 3d mesh as below, you can
-graphically adjust the cartographic projection, for example its
+after completing the first round of steps 1-5, you are not satisfied
+with the results, you can go back and improve each step. For example,
+after seeing your data projected onto the 3d mesh as below, you can
+graphically adjust the cartographic projection, for example, its
 seams/cuts. See Tutorial 6.
 
 ![image.png](index_files/figure-commonmark/cell-6-1-image.png)
 
-In this pipeline, you have the ability to edit meshes and cartographic
-projections interactively - you can create a preliminary projection of
-your data automatically, and use it as guidance when editing your
-cartographic map in blender. Here, we edit the “seam” of our
-cartographic map based on the region occupied by cells during zebrafish
-epiboly (tutorial 6).
+In this pipeline, you can edit meshes and cartographic projections
+interactively - you can create a preliminary projection of your data
+automatically, and use it as guidance when editing your cartographic map
+in blender. Here, we edit the “seam” of our cartographic map based on
+the region occupied by cells during zebrafish epiboly (tutorial 6).
 
 ![image-2.png](index_files/figure-commonmark/cell-7-1-image-2.png)
 
-#### Notes for python beginners
+#### Notes for Python beginners
 
-- You will need a working python installation (see here: [installing
+- You will need a working Python installation (see here: [installing
   anaconda/miniconda](https://docs.anaconda.com/miniconda/miniconda-install/),
   and know how to [launch jupyter
   notebooks](https://docs.jupyter.org/en/latest/running.html). You will
-  run the computational notebooks run in your browser. Here is a [video
+  run the computational notebooks in your browser. Here is a [video
   tutorial](https://www.youtube.com/watch?v=HW29067qVWk)
 
 - Create a new folder for each tissue cartography project. Do not place
   them into the folder into which you unpacked
-  `blender_tissue_cartography` - otherwise your files will be
+  `blender_tissue_cartography` - otherwise, your files will be
   overwritten if you want to update the software
 
 - The repository contains two sets of notebooks: in the `nbs` folder and
@@ -150,12 +149,12 @@ epiboly (tutorial 6).
   use it as a template.
 
 - You do not need to copy functions into your notebooks manually. If you
-  followed the installation instructions, the code will be installed as
-  a python package, and can be “imported” by python. See tutorials!
+  follow the installation instructions, the code will be installed as a
+  Python package and can be “imported” by Python. See tutorials!
 
 ## Software stack
 
-Note: the python libraries will be installed automatically if you follow
+Note: the Python libraries will be installed automatically if you follow
 the installation instructions above.
 
 ### Required
@@ -176,22 +175,27 @@ the installation instructions above.
 
 ### Optional
 
-- [Meshlab](https://www.meshlab.net/) GUI and python library with
+- [Meshlab](https://www.meshlab.net/) GUI and Python library with
   advanced surface reconstruction tools (required for some workflows).
 
 - Python libraries:
 
   - [PyMeshLab](https://pymeshlab.readthedocs.io/en/latest/index.html)
     Python interface to MeshLab.
-  - [pyFM](https://github.com/RobinMagnet/pyFM) Functional maps for
-    mesh-to-mesh registration (for dynamic data)
   - [nbdev](https://nbdev.fast.ai/tutorials/tutorial.html) for
     notebook-based development, if you want to add your own code
 
-- Blender plugins:
+### Other useful software
 
-  - [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) for
-    rendering volumetric `.tif` files in blender
+- [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) plug-in
+  for rendering volumetric `.tif` files in blender
+- [Boundary First
+  Flattening](https://github.com/GeometryCollective/boundary-first-flattening)
+  advanced tool for creating UV maps with graphical and command line
+  interface
+- [pyFM](https://github.com/RobinMagnet/pyFM) python library for
+  mesh-to-mesh registration (for dynamic data) which may complement the
+  algorithms that ship with `blender_tissue-cartography`
 
 ## Acknowledgements
 

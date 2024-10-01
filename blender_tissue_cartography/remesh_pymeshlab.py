@@ -19,11 +19,11 @@ import pymeshlab
 # %% ../nbs/04b_remeshing_pymeshlab.ipynb 10
 def reconstruct_poisson(points, samplenum=1000, k_neighbor_normals=10, reconstruc_args=None):
     """
-    Reconstruct triangular mesh from point cloud.
+    Reconstruct triangular mesh from a point cloud.
     
     Recommended to use isotropic remeshing after to improve mesh quality (remesh_pymeshlab).
     Wrapper of pymeshlab filter generate_surface_reconstruction_screened_poisson
-    See for pymeshlab.readthedocs.io/en/latest/filter_list.html for its arguments.
+    See pymeshlab.readthedocs.io/en/latest/filter_list.html for its arguments.
     
     Parameters
     ----------
@@ -31,7 +31,7 @@ def reconstruct_poisson(points, samplenum=1000, k_neighbor_normals=10, reconstru
         Point cloud.
     samplenum : int
         Sample number for point cloud simplification. Smaller values
-        lead to more simplification of point cloud and faster processing
+        lead to more simplification of the point cloud and faster processing
     k_neighbor_normals : int
         Nearest neighbors for constructing normal vectors to point cloud
     reglue : bool
@@ -56,13 +56,13 @@ def reconstruct_poisson(points, samplenum=1000, k_neighbor_normals=10, reconstru
     ms.generate_surface_reconstruction_screened_poisson(**reconstruc_args)
     return intmsl.convert_from_pymeshlab(ms.current_mesh())
 
-# %% ../nbs/04b_remeshing_pymeshlab.ipynb 14
+# %% ../nbs/04b_remeshing_pymeshlab.ipynb 13
 def subdivide_pymeshlab(mesh, threshold=1, iterations=3, reglue=True, decimals=None):
     """
     Refine mesh by edge subdivision using pymeshlab.
     
     Subdivides all edges by placing new vertices at edge midpoints. Preserves UV information,
-    by cuts the mesh along seams and (optionally) glueing back after. New texture vertices
+    by cutting the mesh along seams and (optionally) gluing back after. New texture vertices
     are also placed at texture-edge midpoints. 
     
     In contrast to remeshing_igl.subdivide_igl, you can choose to subdivide long edges only,
@@ -81,7 +81,7 @@ def subdivide_pymeshlab(mesh, threshold=1, iterations=3, reglue=True, decimals=N
     reglue : bool
         Glue back after cutting
     decimals : int or None
-        Decimal precision for merging vertices when regluing. If None, estimated from average
+        Decimal precision for merging vertices when regluing. If None, estimate from average
         edge mesh length as -4*log_10(avg length)
 
     Returns
@@ -101,13 +101,13 @@ def subdivide_pymeshlab(mesh, threshold=1, iterations=3, reglue=True, decimals=N
 
     return mesh_subdiv
 
-# %% ../nbs/04b_remeshing_pymeshlab.ipynb 21
+# %% ../nbs/04b_remeshing_pymeshlab.ipynb 19
 def remesh_pymeshlab(mesh, targetlen=1, iterations=10):
     """
     Remesh mesh using pymeshlab.
     
-    This creates a triangulation of triangles which are close to equilateral and
-    everywhere the same shape. Very useful to improve the output of
+    This creates a triangulation where triangles are close to equilateral and
+    everywhere the same size. Very useful to improve the output of
     marching cubes. Uses the meshing_isotropic_explicit_remeshing filter.
     
     This function erases UV information!

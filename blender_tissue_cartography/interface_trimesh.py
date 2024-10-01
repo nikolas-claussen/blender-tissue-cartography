@@ -50,8 +50,8 @@ def convert_from_trimesh(mesh: trimesh.Trimesh, reconstruct_texture_from_faces=T
     """
     Convert trimesh mesh to ObjMesh.
     
-    Texture vertices can be reconstructed from face attribute face_tex or from
-    vertex attribute vertex_tex_coord_matrix. Reconstruction from face texture can accomodate
+    Texture vertices can be reconstructed from face attribute face_tex or from 
+    vertex attribute vertex_tex_coord_matrix. Reconstruction from face texture can accommodate
     multiple texture coordinates per vertex (e.g. for UV maps with seams).
     
     Texture vertices are rounded to texture_vertex_decimals decimals

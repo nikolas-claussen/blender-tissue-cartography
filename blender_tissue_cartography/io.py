@@ -40,8 +40,8 @@ def adjust_axis_order(image, channel_axis=None):
     """
     Adjust axis order of image (numpy array) so that the channel axis is axis 0. 
     
-    If channel axis is not specified, it is infered as the axis with the smallest number of entries.
-    If the image contains a single channel, this function adds a singleton dimension.
+    If the channel axis is not specified, it is inferred as the axis with the smallest number of entries.
+    this function adds a singleton dimension if the image contains a single channel.
     Axis order is otherwise left unchanged. Image must have 3 axes (single channel volumetric)
     or four axes (multichannel volumetric). 
     
@@ -57,7 +57,7 @@ def adjust_axis_order(image, channel_axis=None):
     transposed image: np.ndarray with 4 axes
         Input image, channel now axis 0.
     """
-    assert 2 < len(image.shape) <5 , "image must have 3 or 4 axes"
+    assert 2 < len(image.shape) <5, "image must have 3 or 4 axes"
     if len(image.shape) == 3:
         return image[np.newaxis]
     if channel_axis is None:
@@ -71,7 +71,7 @@ def subsample_image(image, subsampling_factors, use_block_averaging_if_possible=
     
     Reduce image size by given factors along each dimension. The subsampling_factors
     need to be _smaller than 1_. If the image is large,  subsampling can be performed
-    by block averaging, which is a lot faster. In this case, you need to use inverse
+    by block averaging, which is much faster. In this case, you need to use inverse
     integer rescaling factors (e.g. 1/2, 1/3). If the number of pixels is not divisible
     by those factors, the subsampled image is padded by 0.
     
@@ -82,7 +82,7 @@ def subsample_image(image, subsampling_factors, use_block_averaging_if_possible=
     image: np.ndarray
         Multichannel input image. Channel axis must be axis 0. (automatically done by adjust_axis_order).
     subsampling_factors : list or tuple of float or int
-        Subsampling factors along each axis. A factor 1/2 will reduce image size by 2x along that axis.
+        Subsampling factors along each axis. A factor of 1/2 will reduce image size by 2x along that axis.
     use_block_averaging_if_possible : bool, default True
         Use fast block averaging if subsampling_factors are inverses of integers.
 
@@ -109,14 +109,14 @@ def normalize_quantiles(image, quantiles=(0.01, 0.99), channel_axis=None):
     quantiles : tuple
         Image quantile to set to 0 and 1.
     channel_axis : int or None
-        If None, image is assumed to have only a single channel.
+        If None, the image is assumed to have only a single channel.
         If int, indicates the position of the channel axis. 
         Each channel is normalized separately.
     
     Returns
     -------
     image_normalized : np.array
-        Normalized image, same shape as input
+        Normalized image, the same shape as input
     """
     if channel_axis is None:
         image_normalized = image - np.nanquantile(image, quantiles[0])
@@ -137,16 +137,16 @@ def normalize_mean_std(image, channel_axis=None):
     Parameters
     ----------
     image : np.array
-        Multi-dimensional image. First axis needs to be the channel axis.
+        Multi-dimensional image. The first axis needs to be the channel axis.
     channel_axis : int or None
-        If None, image is assumed to have only a single channel.
+        If None, the image is assumed to have only a single channel.
         If int, indicates the position of the channel axis. 
         Each channel is normalized separately.
 
     Returns
     -------
     image_normalized : np.array
-        Normalized image, same shape as input
+        Normalized image, the same shape as input
     """
     if channel_axis is None:
         image_normalized = image - np.nanmean(image)
@@ -223,7 +223,7 @@ def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     Save image as 32bit ImageJ compatible .tif file
     
     If channel_axis is not provided, it is inferred as the shortest axis.
-    If z-axis is provided for a 4d array, it will be set as the default z-axis for ImageJ.
+    If z_axis is provided for a 4d array, it will be set as the default z-axis for ImageJ.
     """
     channel_axis = np.argmin(image.shape) if channel_axis is None else channel_axis
     if len(image.shape) == 3:
@@ -265,9 +265,9 @@ def normalize_quantiles_for_png(image, quantiles=(0.01, 0.99)):
     
 def save_stack_for_blender(image, directory, normalization=(0.01, 0.99)):
     """
-    Save multichannel volumetric image as series of grayscale .png images. Can normalize data if desired.
+    Save multichannel volumetric image as a series of grayscale .png images. Can normalize data if desired.
     
-    This function necessarily converts the image to 8bit. Use a suitable normalization to ensure nothing 
+    This function necessarily converts the image to 8 bit. Use a suitable normalization to ensure nothing 
     is lost.
     
     Parameters
@@ -276,7 +276,7 @@ def save_stack_for_blender(image, directory, normalization=(0.01, 0.99)):
         Axis 0 is assumed to be the channel axis, axis 1 is the slicing axes, i.e. images will correspond to
         slices along axis 1.
     directory : str
-        Path to save data to. Will create directory if it doesn't exist
+        Path to save data to. Will create a directory if it doesn't exist
     normalization : tuple of float, or callable
         Whether to normalize the image before saving it. If None, no normalization is performed. If a
         tuple is given, it will be interpreted as quantiles to set to 0 and 255, respectively (over the

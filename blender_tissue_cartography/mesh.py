@@ -45,7 +45,7 @@ def flatten(lst, max_depth=1000, iter_count=0):
             yield el
             
 def pad_list(lst, length=3, fill_value=np.nan):
-    """Pad end of list with fill_value if shorter than desired length."""
+    """Pad end of list with fill_value if shorter than the desired length."""
     return lst + max([0, (length-len(lst))]) * [fill_value,]
 
 def unique(sequence):
@@ -70,7 +70,7 @@ def invert_dictionary(my_map, assume_unique=False):
     Invert key -> value map defined by a dictionary
     
     If assume_unique is True, key/value pairs are assumed to be unique.
-    Else, a dictionary of list returned. Each entry is a list
+    Else, a dictionary of lists is returned. Each entry is a list
     of keys that map to the given value.
     """
     if assume_unique:
@@ -101,7 +101,7 @@ class ObjMesh:
         - only_vertices = bool. 
     vertices, texture_vertices, normals are np.arrays, faces is a list.
     Each face is either a list of vertex indices (if only_vertices is True), or, if the mesh
-    has texture nformation, a list of vertex/texture vertex index pairs. 
+    has texture information, a list of vertex/texture vertex index pairs. 
     Normals are always defined per-vertex, i.e. self.normals[i] is the normal vector at
     self.vertices[i].   Missing data is represented by np.nan.
     Faces can be any length (triangles, quads, ...). Indices start at 0!
@@ -125,8 +125,8 @@ class ObjMesh:
         Fallback option for meshes containing mixed faces (e.g. triangles and quads),
         or partial UV/normal information, which is not handled by libigl.
 
-        Faces are lists of pairs vertex/texture vertex. If a certain vertex has no texture 
-        associated to it, the entry is np.nan, else it is an index into the vertex/texture arrays
+        Faces are lists of pairs of vertex/texture vertex indices. If a certain vertex has no texture 
+        associated with it, the entry is np.nan, else it is an index into the vertex/texture arrays
         (note: indices of returned faces start at 0!). See https://en.wikipedia.org/wiki/Wavefront_.obj_file.
         
         Intended for .obj files containing a single object only. Will emit a warning if multiple objects
@@ -176,8 +176,8 @@ class ObjMesh:
         """
         Return vertices, texture vertices, normals, and faces from an obj file.
 
-        Faces are lists of pairs vertex/texture vertex. If a certain vertex has no texture 
-        associated to it, the entry is np.nan, else it is an index into the vertex/texture arrays
+        Faces are lists of pairs of vertex/texture vertex indices. If a certain vertex has no texture 
+        associated with it, the entry is np.nan, else it is an index into the vertex/texture arrays
         (note: indices of returned faces start at 0!). See https://en.wikipedia.org/wiki/Wavefront_.obj_file.
         
         Intended for .obj files containing a single object only.
@@ -220,7 +220,7 @@ class ObjMesh:
         filename : str
             filename to save to
         include_uv_and_normals : bool, default True
-            include uv and normal information if available.
+            include UV and normal information if available.
             
         Returns
         -------
@@ -228,7 +228,7 @@ class ObjMesh:
 
         """
         def _int_or_nan_to_str(x):
-            """Convert int/nan to string. np.nan is converted to empty string"""
+            """Convert int/nan to string. np.nan is converted to the empty string"""
             if np.isnan(x):
                 return ''
             return str(x)
@@ -274,7 +274,7 @@ class ObjMesh:
     
     @property
     def is_triangular(self):
-        """Checks if mesh has triangular faces only."""
+        """Check if mesh has triangular faces only."""
         return all([len(fc)==3 for fc in self.faces]) 
             
     @property
@@ -320,8 +320,8 @@ class ObjMesh:
         """
         Get map from 3d vertex index to the corresponding UV vertex index as a dictionary.
         
-        Note: each dict item is a list, since a 3d vertex can map to multiple UV vertices.
-        For vertices that do not have any correspondig UV vertex, the list is empty.
+        Note: each dict value is a list, since a 3d vertex can map to multiple UV vertices.
+        For vertices that do not have any corresponding UV vertex, the list is empty.
         """
         uv_to_vertex = self.get_uv_index_to_vertex_index_map()
         vertex_to_uv = invert_dictionary(uv_to_vertex, assume_unique=False)
@@ -383,12 +383,12 @@ class ObjMesh:
         Apply affine transformation to mesh.
         
         Rotate/shear and translate vertices, rotate/shear and renormalize normals,
-        flip faces if transformation determinant is -1.
+        flip faces if the transformation determinant is -1.
 
         Parameters
         ----------
         trafo : np.array of shape (4,4) or (3,3)
-            Transformation matrix. If (4,4), it is interpreted as affine transformation.
+            Transformation matrix. If (4,4), it is interpreted as an affine transformation.
 
         Returns
         -------
@@ -415,7 +415,7 @@ def read_other_formats_without_uv(filename):
     """
     Return vertices and faces from a non-.obj mesh file format. file.
 
-    Supported formats are: obj, off, stl, wrl, ply, mesh.
+    Supported formats are .obj, .off, .stl, .wrl, .ply, .mesh.
     Will NOT read in normals or texture coordinates. If you have texture
     coordinates, save your mesh as .obj. Will only return triangular faces.
 
@@ -441,14 +441,14 @@ def glue_seams(mesh, decimals=None):
     Merge close vertices.
 
     Useful to undo cutting of meshes along UV seams. Note: the exact order of vertices will
-    not in general be recovered by glueing after cutting.
+    not in general be recovered by gluing after cutting.
 
     Parameters
     ----------
     mesh : ObjMesh
     decimals : int or None, default 10
         Vertices whose positions agree up to 'decimals' decimals are merged. Note: you can use negative values.
-        If None, estimate a value based on shortest edge length in the mesh (-2*log_10(minimum length))
+        If None, estimate a value based on the shortest edge length in the mesh (-2*log_10(minimum length))
 
     Returns
     -------

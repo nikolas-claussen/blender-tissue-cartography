@@ -25,7 +25,7 @@ import matplotlib as mpl
 
 import itertools
 
-# %% ../nbs/05b_registration_rotation.ipynb 8
+# %% ../nbs/05b_registration_rotation.ipynb 7
 def cartesian_to_spherical(arr):
     """
     Convert cartesian coordinates to spherical coordinates.
@@ -67,7 +67,7 @@ def spherical_to_cartesian(r, theta, phi):
     """
     return (r* np.stack([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)])).T
 
-# %% ../nbs/05b_registration_rotation.ipynb 17
+# %% ../nbs/05b_registration_rotation.ipynb 16
 def compute_spherical_harmonics_coeffs(f, phi, theta, weights, max_l):
     """
     Compute spherical harmonic coefficients for a scalar real-valued function defined on the unit sphere.
@@ -108,7 +108,7 @@ def compute_spherical_harmonics_coeffs(f, phi, theta, weights, max_l):
         coeffs[l] = np.copy(vec)
     return coeffs
 
-# %% ../nbs/05b_registration_rotation.ipynb 20
+# %% ../nbs/05b_registration_rotation.ipynb 19
 def spherical_harmonics_to_grid(coeffs, n_grid=256):
     """
     Compute signal on rectangular phi-theta grid given spherical harmonics coefficients.
@@ -138,7 +138,7 @@ def spherical_harmonics_to_grid(coeffs, n_grid=256):
                 reconstructed += (coeff_vec[l+m]*np.conjugate(Y_ml)+coeff_vec[l-m]*Y_ml*(-1)**m)
     return reconstructed
 
-# %% ../nbs/05b_registration_rotation.ipynb 40
+# %% ../nbs/05b_registration_rotation.ipynb 38
 def quaternion_to_rot_max(q):
     """
     Convert unit quaternion into a 3d rotation matrix.
@@ -194,8 +194,8 @@ def multiply_quaternions(q, p):
                       q[0]*p[3]+q[3]*p[0]+q[1]*p[2]-q[2]*p[1]])
     
 def quaternion_power(q, n):
-    """Raise quaternion to integer power, potentially negative"""
-    assert isinstance(n, int), "power n must be integer"
+    """Raise quaternion to an integer power, potentially negative"""
+    assert isinstance(n, int), "power n must be an integer"
     if n == 0:
         return np.array([1,0,0,0])
     if n > 0:
@@ -210,12 +210,12 @@ def quaternion_power(q, n):
         n_iter -= 1
     return res
 
-# %% ../nbs/05b_registration_rotation.ipynb 50
+# %% ../nbs/05b_registration_rotation.ipynb 48
 def get_binomial_matrix(N_max):
     """
     Get N_max*N_max matrix with entries binomial_matrix[i, j] = (i choose j).
     
-    Computed via Pascal's triangle recursion.
+    Computed via Pascal's triangle.
     """
     binomial_matrix = np.zeros((N_max+1, N_max+1))
     binomial_matrix[0,0] = binomial_matrix[1,0] = 1
@@ -224,11 +224,11 @@ def get_binomial_matrix(N_max):
             binomial_matrix[i, j] = binomial_matrix[i-1, j-1]+binomial_matrix[i-1, j]
     return binomial_matrix
 
-# %% ../nbs/05b_registration_rotation.ipynb 53
+# %% ../nbs/05b_registration_rotation.ipynb 51
 def _get_wigner_D_element(Ra, Rb, l, mp, m, binomial_matrix):
     """
     Compute Wigner's D matrix element for a rotation defined by a unit quaternion R,
-    represented as complex pair (R0+iR3), (R2+iR1). Requires pre-computed binomial matrix.
+    represented as complex pair Ra=(R0+iR3), Rb=(R2+iR1). Requires pre-computed binomial matrix.
     
     Following https://spherical.readthedocs.io/en/main/WignerDMatrices/
     """
@@ -261,7 +261,7 @@ def _get_wigner_D_element(Ra, Rb, l, mp, m, binomial_matrix):
         return (-1)**(l-m)*comb_factor*R_factor*choose_factor*power_fac**rho_min
 
 def get_wigner_D_matrix(q, l, binomial_matrix=None):
-    """Get (2*l+1, 2*l+1) Wigner D matrix for angular momentum l and rotation R,
+    """Get (2*l+1, 2*l+1) Wigner D matrix for angular momentum l and rotation q,
     represented by quaternion q"""
     matrix = np.zeros(((2*l+1, 2*l+1)), dtype="complex_")
     Ra, Rb = quaternion_to_complex_pair(q)
@@ -275,7 +275,7 @@ def get_wigner_D_matrix(q, l, binomial_matrix=None):
             matrix[l+mp, l+m] = _get_wigner_D_element(Ra, Rb, l, mp, m, binomial_matrix=binomial_matrix)
     return matrix
 
-# %% ../nbs/05b_registration_rotation.ipynb 60
+# %% ../nbs/05b_registration_rotation.ipynb 58
 def parity_spherical_harmonics_coeffs(coeffs):
     """
     Apply parity operator to spherical harmonics coefficients.
@@ -299,7 +299,7 @@ def parity_spherical_harmonics_coeffs(coeffs):
 
 def rotate_spherical_harmonics_coeffs(R, coeffs):
     """
-    Rotate spherical harmonics by given (improper or proper) rotation matrix.
+    Rotate spherical harmonics by the given (improper or proper) rotation matrix.
     
     Uses Wigner-D matrices. Don't use this function in an optimization context - 
     you can in general save a bunch of time by reusing D-matrices etc.
@@ -327,7 +327,9 @@ def rotate_spherical_harmonics_coeffs(R, coeffs):
 
 def overlap_spherical_harmonics(coeffsA, coeffsB, normalized=False):
     """
-    Compute overlap (L2 inner product) between two sets of spherical harmonics
+    Compute overlap (L2 inner product) between two sets of spherical harmonics.
+
+    Optionally, normalize by the norm of coeffsA, coeffsB.
     """
     max_l = min([max(coeffsA.keys()), max(coeffsB.keys())])
     ls = range(0, max_l)
@@ -338,10 +340,10 @@ def overlap_spherical_harmonics(coeffsA, coeffsB, normalized=False):
         return inner_prod/normalization
     return inner_prod
 
-# %% ../nbs/05b_registration_rotation.ipynb 73
+# %% ../nbs/05b_registration_rotation.ipynb 71
 def get_icosphere(subdivide=0):
     """
-    Return the icosphere triangle mesh with 42 regulary spaced vertices on the unit sphere.
+    Return the icosphere triangle mesh with 42 regularly spaced vertices on the unit sphere.
     
     Optionally, subdivide mesh n times, increasing vertex count by factor 4^n.
     """
@@ -391,15 +393,15 @@ def get_icosphere(subdivide=0):
     vertices = (vertices.T/np.linalg.norm(vertices, axis=-1)).T
     return tcmesh.ObjMesh(vertices=vertices, faces=faces)
 
-# %% ../nbs/05b_registration_rotation.ipynb 74
+# %% ../nbs/05b_registration_rotation.ipynb 72
 def rotation_alignment_brute_force(sph_harmonics_source, sph_harmonics_target, 
                                    max_l=None, n_angle=100, n_subdiv_axes=1, allow_flip=False):
     """
-    Compute rotational alignment between two signals on sphere by brute force.
+    Compute rotational alignment between two signals on the sphere by brute force.
     
     The two signals have to be represented by their spherical harmonics coefficients.
     Uses Wigner-D matrices to calculate the overlap between the two signals
-    for a set of rotations and finds the rotation that maximzes the overlap.
+    for a set of rotations and finds the rotation that maximizes the overlap.
     
     The trial rotations are generated by taking a set of approx. equidistant
     points on the 2d sphere as rotation axes, and a set of equally spaced
@@ -422,7 +424,7 @@ def rotation_alignment_brute_force(sph_harmonics_source, sph_harmonics_target,
     n_angle : int
         Number of trial rotation angles [0,..., 2*pi]
     n_subdiv_axes : int
-        Controls number of trial rotatio axes. Rotation axes are vertices of
+        Controls the number of trial rotation axes. Rotation axes are vertices of
         the icosphere which can be subdivided. There will be roughly
         40*4**n_subdiv_axes trial axes. This parameter has the strongest influence
         on the run time.
@@ -479,10 +481,10 @@ def rotation_alignment_brute_force(sph_harmonics_source, sph_harmonics_target,
         return quaternion_to_rot_max(q_opt), overlap, -quaternion_to_rot_max(q_opt_flipped), overlap_flipped
     return quaternion_to_rot_max(q_opt), overlap
 
-# %% ../nbs/05b_registration_rotation.ipynb 79
+# %% ../nbs/05b_registration_rotation.ipynb 77
 def _get_minus_overlap(q, sph_harmonics_source, sph_harmonics_target, max_l=None, binomial_matrix=None,):
     """
-    Get negative overlap between spherical harmonics, as function of rotation q, for optimization.
+    Get negative overlap between spherical harmonics, as a function of rotation q, for optimization.
     """
     if max_l is None:
         max_l = min([max(sph_harmonics_source.keys()), max(sph_harmonics_target.keys())])    
@@ -500,7 +502,7 @@ def _get_minus_overlap(q, sph_harmonics_source, sph_harmonics_target, max_l=None
 def rotation_alignment_refined(sph_harmonics_source, sph_harmonics_target, R_initial,
                                max_l=None, maxfev=100):
     """
-    Refine rotational alignment between two signals on sphere by optimization.
+    Refine rotational alignment between two signals on the sphere by optimization.
     
     The two signals have to be represented by their spherical harmonics coefficients.
     Uses Wigner-D matrices to calculate the overlap between the two signals
@@ -521,18 +523,18 @@ def rotation_alignment_refined(sph_harmonics_source, sph_harmonics_target, R_ini
         Dictionary, indexed by total angular momentum l=0 ,..., max_l. Each entry is a vector
         of coefficients for the different values of m=-2l,...,2*l. Target signal.
     R_initial : (3, 3) np.array
-        Initial rotation as rotation matrix
+        Initial rotation as a rotation matrix
     max_l : int
         Maximum angular momentum. If None, the maximum value available in the input
         spherical harmonics is used.
     maxfev : int
-        Number of function evaluations during optimization.This parameter has
+        Number of function evaluations during optimization. This parameter has
         the strongest influence on the run time.
     
     Returns
     -------
     optimal_rotation : (3, 3) np.array
-        Best rotation as roation matrix. Will always have the same determinant (i.e. -1, 1)
+        Best rotation as rotation matrix. Will always have the same determinant (i.e. -1, 1)
         as the initial guess.
     overlap : float
         Normalized overlap. 1=perfect alignment.
@@ -554,11 +556,11 @@ def rotation_alignment_refined(sph_harmonics_source, sph_harmonics_target, R_ini
                             options={"maxfev": maxfev})
     return quaternion_to_rot_max(sol.x/np.linalg.norm(sol.x)), -sol.fun
 
-# %% ../nbs/05b_registration_rotation.ipynb 82
+# %% ../nbs/05b_registration_rotation.ipynb 80
 def rotational_alignment(sph_harmonics_source, sph_harmonics_target, allow_flip=False, max_l=None,
                          n_angle=100, n_subdiv_axes=1, maxfev=100,):
     """
-    Rotational alignment between two signals on sphere.
+    Rotational alignment between two signals on the sphere.
     
     The two signals have to be represented by their spherical harmonics coefficients.
     Uses Wigner-D matrices to calculate the overlap between the two signals.
@@ -585,7 +587,7 @@ def rotational_alignment(sph_harmonics_source, sph_harmonics_target, allow_flip=
     n_angle : int
         Number of trial rotation angles [0,..., 2*pi]
     n_subdiv_axes : int
-        Controls number of trial rotation axes. Rotation axes are vertices of
+        Controls the number of trial rotation axes. Rotation axes are vertices of
         the icosphere which can be subdivided. There will be roughly
         40*4**n_subdiv_axes trial axes. This parameter has the strongest influence
         on the run time.
@@ -595,7 +597,7 @@ def rotational_alignment(sph_harmonics_source, sph_harmonics_target, allow_flip=
     Returns
     -------
     optimal_rotation : (3, 3) np.array
-        Best rotation as roation matrix. Will always have the same determinant (i.e. -1, 1)
+        Best rotation as rotation matrix. Will always have the same determinant (i.e. -1, 1)
         as the initial guess.
     overlap : float
         Normalized overlap. 1=perfect alignment.

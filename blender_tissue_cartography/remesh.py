@@ -48,7 +48,7 @@ def subdivide_igl(mesh, reglue=True, decimals=None):
     Refine mesh by edge subdivision using igl.
     
     Subdivides all edges by placing new vertices at edge midpoints. Preserves UV information,
-    by cuts the mesh along seams and (optionally) glueing back after. New texture vertices
+    by cutting the mesh along seams and (optionally) gluing back after. New texture vertices
     are also placed at texture-edge midpoints.
     
     Parameters
@@ -63,7 +63,7 @@ def subdivide_igl(mesh, reglue=True, decimals=None):
     reglue : bool
         Glue back after cutting
     decimals : int or None
-        Decimal precision for merging vertices when regluing. If None, estimated from average
+        Decimal precision for merging vertices when regluing. If None, estimate from average
         edge mesh length as -4*log_10(avg length)
     """
     mesh_cut = mesh.cut_along_seams()
@@ -76,7 +76,7 @@ def subdivide_igl(mesh, reglue=True, decimals=None):
         mesh_subdiv = tcmesh.glue_seams(mesh_subdiv, decimals=decimals)
     return mesh_subdiv
 
-# %% ../nbs/04a_remeshing.ipynb 28
+# %% ../nbs/04a_remeshing.ipynb 17
 def make_delaunay(mesh):
     """
     Make mesh triangles less deformed by edge flips. 
@@ -113,12 +113,12 @@ def make_delaunay(mesh):
     mesh_new = tcmesh.glue_seams(mesh_new, decimals=None)
     return mesh_new
 
-# %% ../nbs/04a_remeshing.ipynb 34
+# %% ../nbs/04a_remeshing.ipynb 23
 def qslim(mesh, max_n_faces):
     """
-    Simplify mesh by face decimation using qslim algorithm.
+    Simplify mesh by face decimation using the qslim algorithm.
     
-    Wrapper of igl.qslim. This _will_ destroy UV mapping information!
+    A wrapper of igl.qslim. This _will_ destroy UV mapping information!
     
     Parameters
     ----------

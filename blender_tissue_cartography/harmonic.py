@@ -24,14 +24,14 @@ from skimage import registration, transform
 
 import matplotlib as mpl
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 11
+# %% ../nbs/06_harmonic_wrapping.ipynb 10
 def map_to_disk(mesh, bnd=None, set_uvs=False):
     """
     Map mesh to unit disk by computing harmonic UV coordinates.
     
     The longest boundary loop of the mesh is mapped to the unit circle.
     Follows https://libigl.github.io/libigl-python-bindings/tut-chapter4/.
-    Note: the disk is centerd at (1/2, 1/2).
+    Note: the disk is centered at (1/2, 1/2).
     
     The disk rotation angle is arbitrary
     
@@ -72,21 +72,21 @@ def map_to_disk(mesh, bnd=None, set_uvs=False):
     
     return uv
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 16
+# %% ../nbs/06_harmonic_wrapping.ipynb 15
 def get_rot_mat2d(phi):
-    """Get 2d rotation matrix with angle phi"""
+    """Get 2d rotation matrix with angle phi."""
     return np.array([[np.cos(phi), np.sin(phi)],[-np.sin(phi), np.cos(phi)]])
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 26
+# %% ../nbs/06_harmonic_wrapping.ipynb 25
 def rotational_align_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv_target=None,
                           allow_flip=True, q=0.01, n_grid=1024):
     """
-    Rotationally align two UV map to the disk by the conformal factor.
+    Rotationally align two UV maps to the disk by the conformal factor.
     
     Computes aligned UV coordinates. Assumes that the UV
     coordinates are in [0,1]^2. This works by computing
     the conformal factor (how much triangle size changes as it is
-    mapped to the plane), and finding the optimal rotation to align
+    mapped to the plane, and finding the optimal rotation to align
     the conformal factors via phase correlation.
     
     Parameters
@@ -98,10 +98,10 @@ def rotational_align_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
     disk_uv_source : np.array or None
-        Disk coordinates for each vertex in source mesh. Optional.
+        Disk coordinates for each vertex in the source mesh. Optional.
         If None, the UV coordinates of mesh_source are used.
     disk_uv_target : np.array or None
-        Disk coordinates for each vertex in target mesh. Optional.
+        Disk coordinates for each vertex in the target mesh. Optional.
         If None, the UV coordinates of disk_uv_target are used.
     allow_flip : bool
         Whether to allow flips (improper rotations). If a flip
@@ -173,12 +173,12 @@ def rotational_align_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv
     new_texture_vertices += np.array([0.5,0.5])
     return new_texture_vertices, rot_mat, 1-error
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 31
+# %% ../nbs/06_harmonic_wrapping.ipynb 30
 def wrap_coords_via_disk(mesh_source, mesh_target,
                          disk_uv_source=None, disk_uv_target=None,
                          align=True, q=0.01, n_grid=1024):
     """
-    Map 3d coords of source mesh to target mesh via a disk parametrization.
+    Map 3d coordinates of source mesh to target mesh via a disk parametrization.
     
     Disk parametrization can be provided or computed on the fly via harmonic coordinates.
     If desired, the two disks are also rotationally aligned.
@@ -192,7 +192,7 @@ def wrap_coords_via_disk(mesh_source, mesh_target,
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
     disk_uv_source : np.array or None
-        Disk coordinates for each vertex in source mesh. Optional.
+        Disk coordinates for each vertex in the source mesh. Optional.
         If None, computed via map_to_disk.
     disk_uv_target : np.array or None
         Disk coordinates for each vertex in target mesh. Optional.
@@ -211,7 +211,7 @@ def wrap_coords_via_disk(mesh_source, mesh_target,
         New 3d vertex coordinates for mesh_source, lying on the surface
         defined by mesh_target
     overlap : float
-        Only returned if align is True. Measure of geometry overlap. 1 = perfect alignment
+        Only returned if align is True. A measure of geometry overlap. 1 = perfect alignment
     """
     # compute harmonic map to disk
     if disk_uv_source is None:
@@ -232,9 +232,9 @@ def wrap_coords_via_disk(mesh_source, mesh_target,
         return new_coords, overlap
     return new_coords
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 38
+# %% ../nbs/06_harmonic_wrapping.ipynb 37
 def polygon_area(pts):
-    """Poygon area via shoe-lace formula. Assuming no self-intersection. pts.shape is (..., 2)"""
+    """ Polygon area via shoe-lace formula. Assuming no self-intersection. pts.shape is (..., 2)"""
     return np.sum(pts[...,0]*np.roll(pts[...,1], 1, axis=0) - np.roll(pts[...,0], 1, axis=0)*pts[...,1], axis=0)/2
 
 def polygon_centroid(pts):
@@ -259,18 +259,18 @@ def moebius_disk(pts, b):
     z_transformed = (z+b)/(1+np.conjugate(b)*z)
     return complex_to_xy(z_transformed)
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 48
+# %% ../nbs/06_harmonic_wrapping.ipynb 47
 def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
                          second_boundary=None, set_uvs=False, return_filled=False):
     """
     Map cylinder mesh to unit disk by computing harmonic UV coordinates.
     
-    One boundary loop of the mesh is mapped to the circle with diameter 1/2.
+    One boundary loop of the mesh is mapped to the circle with a diameter 1/2.
     The second boundary is filled by adding an extra vertex at its center,
     which is mapped to the disk center.  
     
-    Which of the two circular boundaries is mapped to the inner resp.
-    outer circle is set by the option outer_boundary.
+    Which of the two circular boundaries is mapped to the center resp.
+    the outer circle is set by the option outer_boundary.
     
     The disk rotation angle is arbitrary.
     
@@ -280,7 +280,7 @@ def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
     outer_boundary : "longest", "shortest" or int
-        Which boundary to map to the unit circle. If "longest"/"shortest", 
+        Boundary to map to the unit circle. If "longest"/"shortest", 
         the longer/shorter one is mapped to the unit circle. If int,
         the boundary containing the vertex defined by the int is used.
     first_boundary : np.array of ints or None
@@ -296,11 +296,11 @@ def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
     -------
     uv : np.array
         2d vertex coordinates mapping the mesh to the unit disk in [0,1]^1.
-        If filled_vertices is True, last entry is the coordinate of the added point.
+        If filled_vertices is True, the last entry is the coordinate of the added point.
     filled_vertices : np.array
         3d vertices with extra vertex to fill second boundary
     filled_faces : np.array
-        Faces with added faces to fill second boundary.
+        Faces with added faces to fill the second boundary.
     
     """
     if not mesh.is_triangular:
@@ -334,17 +334,16 @@ def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
         return uv, filled_vertices, filled_tris
     return uv[:-1]
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 57
+# %% ../nbs/06_harmonic_wrapping.ipynb 56
 def wrap_coords_via_disk_cylinder(mesh_source, mesh_target, q=0.01, n_grid=1024):
     """
-    Map 3d coords of source mesh to target mesh via a annulus parametrization.
+    Map 3d coordinates of source mesh to target mesh via an annulus parametrization.
     
     Annulus parametrization can be provided or computed on the fly via harmonic coordinates.
     If desired, the two disks are also rotationally aligned. Meshes must be cylindrical.
-    Two choices exist for mapping a cylinder to the plane (depending ob which boundary)
-    circle is mapped to the inner resp. out boundary of the annulus). If no
-    parametrization is provided, both options are tried, and the one leading
-    to better alignment is used.
+    Two choices exist for mapping a cylinder to the plane (depending on which boundary
+    circle is mapped to the disk boundary resp. center). Both options are tried,
+    and the one leading to better alignment is used.
     
     If you already have a map to the disk, use wrap_coords_via_disk instead.
     
@@ -397,13 +396,13 @@ def wrap_coords_via_disk_cylinder(mesh_source, mesh_target, q=0.01, n_grid=1024)
                                                   distance_threshold=np.inf)
     return new_coords, overlap
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 68
+# %% ../nbs/06_harmonic_wrapping.ipynb 66
 @tcio.deprecated
 def find_conformal_boundary_conditions(vertices_disk, faces_disk, bnd, tol=1e-2):
     """
-    Find boundary condition for map to disk most compatible with conformal map.
+    Find boundary conditions for a map to disk most compatible with a conformal map.
     
-    Uses stupid method - direct optimization. Not to be used beyond beyond boundaries 
+    Uses a stupid method - direct optimization. Not to be used beyond beyond boundaries 
     more than a few vertices long.
     
     To do: look at https://arxiv.org/pdf/1704.06873
@@ -422,10 +421,10 @@ def find_conformal_boundary_conditions(vertices_disk, faces_disk, bnd, tol=1e-2)
     bnd_final = np.stack([np.sin(sol.x), np.cos(sol.x)], axis=-1)
     return bnd_final
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 74
+# %% ../nbs/06_harmonic_wrapping.ipynb 72
 def stereographic_plane_to_sphere(uv):
     """
-    Stererographic projection from plane to unit sphere from north pole (0,0,1).
+    Stereographic projection from plane to the unit sphere from the north pole (0,0,1).
     
     See https://en.wikipedia.org/wiki/Stereographic_projection.
     Convention: plane is at z=0, unit sphere centered at origin.
@@ -435,19 +434,19 @@ def stereographic_plane_to_sphere(uv):
     
 def stereographic_sphere_to_plane(pts):
     """
-    Stererographic projection from unit sphere to plane from north pole (0,0,1).
+    Stereographic projection from unit sphere to plane from the north pole (0,0,1).
     
     See https://en.wikipedia.org/wiki/Stereographic_projection.
-    Convention: plane is at z=0, unit sphere centered at origin.
+    Convention: the plane is at z=0, unit sphere centered at the origin.
     pts should be an array of shape (..., 3)
     """
     assert np.allclose(np.linalg.norm(pts, axis=1), 1, rtol=1e-03, atol=1e-04), "Points not on unit sphere!"
     return (np.stack([pts[:,0], pts[:,1]], axis=0)/(1-pts[:,2])).T
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 78
+# %% ../nbs/06_harmonic_wrapping.ipynb 76
 def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alpha=0.5):
     """
-    Apply Moeboius inversions to minimize area distortion of map from mesh to sphere.
+    Apply Moeboius inversions to minimize area distortion of a map from mesh to sphere.
     
     Implementation of Algorithm 1 from:
     https://www.cs.cmu.edu/~kmcrane/Projects/MobiusRegistration/paper.pdf
@@ -457,9 +456,9 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
     vertices_3d : np.array of shape (n_verts, 3)
         3d mesh vertices
     vertices_sphere : np.array of shape (n_verts, 3)
-        Initial vertex positions on unit shpere
-    tris : np.array of shape (n_faces, 3) and dtype int
-        Faces of triangular mesh
+        Initial vertex positions on unit sphere
+    tris : np.array of shape (n_faces, 3) and type int
+        Faces of a triangular mesh
     n_iter_centering : int
         Centering algorithm iterations.
     alpha : float between 0 and 1
@@ -471,7 +470,7 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
         Centered sphere coordinates
     com_norm : float
         Distance of sphere vertex center of mass from origin. Low values
-        indicate convergence of algorithm.
+        indicate convergence of the algorithm.
     """
     As = igl.doublearea(vertices_3d, tris)
     As /= As.sum()
@@ -489,12 +488,12 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
         Vs = ((1-np.linalg.norm(c)**2)*(Vs+c).T /np.linalg.norm(Vs+c, axis=1)**2).T + c
     return Vs, np.linalg.norm(mu)
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 87
+# %% ../nbs/06_harmonic_wrapping.ipynb 85
 def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha=0.5, set_uvs=False):
     """
-    Compute conformal map of mesh to unit sphere.
+    Compute a map of mesh to the unit sphere.
     
-    First, remove one vertex (last one by default), and map the resulting disk-topology
+    First, remove one vertex (the last one), and map the resulting disk-topology
     mesh to the plane using least squares conformal maps. Then map the plane to
     the sphere using stereographic projection.
     
@@ -509,13 +508,13 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
     mesh : tcmesh.ObjMesh
         Mesh. Must be topologically a sphere, and should be triangular.
     method : str, "harmonic", "LSCM"
-        Method for comuting the map from sphere wthout north pole to plane.
+        Method for computing the map from mesh without the north pole to the plane.
         Recommended: harmonic.
     R_max :  float
         Maximum radius to consider when computing inverse stereographic
         projection. If you get weird results, try a lower value.
     n_iter_centering : int
-        Centering algorithm iterations. If 0, no centerting is performed
+        Centering algorithm iterations. If 0, no centering is performed
     alpha : float between 0 and 1
         Learning rate. Lower values make the centering algorithm more stable
     Returns
@@ -549,7 +548,7 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
     areas = (areas/areas.mean())
     def get_distoration(R):
         """
-        Measure area distortion as function of mesh -> plane scale factor.
+        Measure area distortion as a function of mesh -> plane scale factor.
         """
         coords_sphere = np.vstack([stereographic_plane_to_sphere(R*uv), np.array([0,0,1])])
         areas_sphere = igl.doublearea(coords_sphere, faces_all)
@@ -569,15 +568,15 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
         
     return vertices_sphere
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 110
+# %% ../nbs/06_harmonic_wrapping.ipynb 106
 def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coords_sphere_target,
                             allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
     """
-    Rotationally align two UV map to the sphere by the conformal factor.
+    Rotationally align two UV maps to the sphere by the conformal factor.
     
     Computes aligned spherical coordinates. Rotational alignment works by computing
     the conformal factor (how much triangle size changes as it is
-    mapped to the sphere), and optimizing over rotations to find the one
+    mapped to the sphere) and optimizing over rotations to find the one
     which leads to the best alignment. This works via an expansion in
     spherical harmonics. See tcrot.rotational_alignment
     
@@ -590,11 +589,11 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
         Mesh. Must be topologically a sphere (potentially with holes),
         and should be triangular.
     coords_sphere_source : np.array or None
-        Sphere coordinates for each vertex in source mesh.
+        Sphere coordinates for each vertex in the source mesh.
         If None, the UV coordinates are interpreted as angles 2*pi*u=phi,
         2*pi*v=theta.
     coords_sphere_target : np.array or None
-        Sphere coordinates for each vertex in source mesh.
+        Sphere coordinates for each vertex in the source mesh.
         If None, the UV coordinates are interpreted as angles 2*pi*u=phi,
         2*pi*v=theta.
     allow_flip : bool
@@ -605,7 +604,7 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
     n_angle : int
         Number of trial rotation angles [0,..., 2*pi]
     n_subdiv_axes : int
-        Controls number of trial rotation axes. Rotation axes are vertices of
+        Controls the number of trial rotation axes. Rotation axes are vertices of
         the icosphere which can be subdivided. There will be roughly
         40*4**n_subdiv_axes trial axes. This parameter has the strongest influence
         on the run time.
@@ -670,12 +669,12 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
 
     return coords_sphere_source @ R_refined.T, R_refined, overlap
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 117
+# %% ../nbs/06_harmonic_wrapping.ipynb 113
 def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, coords_sphere_target=None,
                            method="harmonic", n_iter_centering=10, alpha=0.5,
                            align=True, allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
     """
-    Map 3d coords of source mesh to target mesh via a sphere parametrization.
+    Map 3d coordinates of source mesh to target mesh via a sphere parametrization.
     
     Sphere parametrizations can be provided or computed on the fly using the least-area
     distorting conformal map to the sphere (see map_to_sphere). If desired, the two
@@ -691,17 +690,17 @@ def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, 
         Mesh. Must be topologically a disk (potentially with holes),
         and should be triangular.
     coords_sphere_source : np.array or None
-        Sphere coordinates for each vertex in source mesh. Optional.
+        Sphere coordinates for each vertex in the source mesh. Optional.
         If None, computed via map_to_sphere.
     coords_sphere_target : np.array or None
-        Sphere coordinates for each vertex in target mesh. Optional.
+        Sphere coordinates for each vertex in the target mesh. Optional.
         If None, computed via map_to_sphere.
     method : str, "harmonic" or "LSCM"
         Method for comuting the map from sphere \ north pole to plane
     n_iter_centering : int
-        Centering algorithm iterations for computing map to sphere. If 0, no centerting is performed
+        Centering algorithm iterations for computing map to the sphere. If 0, no centering is performed
     alpha : float between 0 and 1
-        Learning rate for computing map to sphere. Lower values make the centering algorithm more stable.
+        Learning rate for computing map to the sphere. Lower values make the centering algorithm more stable.
     align : bool, default True
         Whether to rotationally align the parametrizations. If False, they are used as-is.
     allow_flip : bool
@@ -712,7 +711,7 @@ def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, 
     n_angle : int
         Number of trial rotation angles [0,..., 2*pi]
     n_subdiv_axes : int
-        Controls number of trial rotation axes. Rotation axes are vertices of
+        Controls the number of trial rotation axes. Rotation axes are vertices of
         the icosphere which can be subdivided. There will be roughly
         40*4**n_subdiv_axes trial axes. This parameter has the strongest influence
         on the run time.
