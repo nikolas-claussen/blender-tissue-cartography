@@ -80,6 +80,14 @@ def invert_dictionary(my_map, assume_unique=False):
         inv_map[v] = inv_map.get(v, []) + [k]
     return inv_map
 
+def _match_normals_to_vertices(vs, ns, fs):
+    """Internal helper function for reading in meshes. fs = [(vertex, texture, normal)]"""
+    vn_dict = {v: [] for v in range(vs.shape[0])}
+    for v, _, n in flatten(fs, max_depth=1):
+        if not np.isnan(n):
+            vn_dict[v].append(n)
+    return np.stack([ns[vn_dict[i]].mean(axis=0) for i in range(vs.shape[0])], axis=0)
+
 # %% ../nbs/01b_mesh.ipynb 8
 class ObjMesh:
     """
@@ -108,11 +116,14 @@ class ObjMesh:
         self.vertices, self.faces = (vertices, faces)
         self.texture_vertices, self.normals = (texture_vertices, normals)
         self.name = None
-
+       
     @staticmethod
-    def read_obj(filename):
+    def read_obj_fallback(filename):
         """
         Return vertices, texture vertices, normals, and faces from an obj file.
+        
+        Fallback option for meshes containing mixed faces (e.g. triangles and quads),
+        or partial UV/normal information, which is not handled by libigl.
 
         Faces are lists of pairs vertex/texture vertex. If a certain vertex has no texture 
         associated to it, the entry is np.nan, else it is an index into the vertex/texture arrays
@@ -146,19 +157,57 @@ class ObjMesh:
         fs = [ln.split()[1:] for ln in lines if ln.startswith("f ")]
         fs = [[pad_list([_str_to_int_or_nan(y)-1 for y in x.split("/")], length=3, fill_value=np.nan)
                for x in f] for f in fs]
-        if vts.shape == (0,) and ns.shape == (0,): # if there is no texture information
+        if ns.shape == (0,):
+            ns = None
+        else: # match up normals to vertices
+            ns = _match_normals_to_vertices(vs, ns, fs)
+        if vts.shape == (0,): # if there is no texture information
             fs = [[v[0] for v in f] for f in fs]
-            mesh = ObjMesh(vs, fs, texture_vertices=None, normals=None, name=name)
+            mesh = ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=name)
         else: 
-            # match up normals to vertices
-            v_n_pairs = [np.nan for v in range(vs.shape[0])]
-            for v, _, n in flatten(fs, max_depth=1):
-                v_n_pairs[v] = n
-            ns = index_else_nan(ns, np.array(v_n_pairs))
-            ns = (ns.T/np.linalg.norm(ns, axis=1)).T
             fs = [[v[:2] for v in f] for f in fs]
             mesh = ObjMesh(vs, fs, texture_vertices=vts, normals=ns, name=name)
+        if not mesh.is_triangular:
+            warnings.warn(f"Warning: non-triangular meshes are deprecated", DeprecationWarning)
         return mesh
+    
+    @staticmethod  
+    def read_obj(filename):
+        """
+        Return vertices, texture vertices, normals, and faces from an obj file.
+
+        Faces are lists of pairs vertex/texture vertex. If a certain vertex has no texture 
+        associated to it, the entry is np.nan, else it is an index into the vertex/texture arrays
+        (note: indices of returned faces start at 0!). See https://en.wikipedia.org/wiki/Wavefront_.obj_file.
+        
+        Intended for .obj files containing a single object only.
+
+        Parameters
+        ----------
+        filename : str
+            filename
+        Returns
+        -------
+        mesh: ObjMesh
+        """
+        try:
+            vertices, texture_vertices, normals, faces, texture_faces, normal_faces = igl.read_obj(filename)
+            if normals.shape[0] == 0:
+                obj_normals = None
+            else:
+                obj_normals = igl.average_onto_vertices(vertices, faces, normals[normal_faces].mean(axis=1))
+            if texture_faces.shape[0] == 0:
+                obj_texture_vertices = None
+                obj_faces = faces
+            else:
+                obj_texture_vertices = texture_vertices
+                obj_faces = np.stack([faces, texture_faces], axis=2).tolist()
+            mesh = ObjMesh(vertices, obj_faces, obj_texture_vertices, obj_normals)
+            if not mesh.is_triangular:
+                warnings.warn(f"Warning: non-triangular meshes are deprecated", DeprecationWarning)
+            return mesh 
+        except ValueError:
+            return ObjMesh.read_obj_fallback(filename)
         
     def write_obj(self, filename, include_uv_and_normals=True):
         """
@@ -281,7 +330,7 @@ class ObjMesh:
             vertex_to_uv[m] = []
         return vertex_to_uv
         
-    def get_vertex_to_texture_vertex_indices(self): # to do: rename
+    def get_vertex_to_texture_vertex_indices(self):
         """
         Get an array of indices into 3d vertices that map them to the corresponding texture vertices.
         
@@ -386,7 +435,7 @@ def read_other_formats_without_uv(filename):
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
-# %% ../nbs/01b_mesh.ipynb 17
+# %% ../nbs/01b_mesh.ipynb 30
 def glue_seams(mesh, decimals=None):
     """
     Merge close vertices.
