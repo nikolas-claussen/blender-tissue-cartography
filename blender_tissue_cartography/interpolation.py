@@ -23,7 +23,7 @@ import igl
 def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, resolution,
                                        get_normals=True, width=3):
     """
-    Get mesh vertices and normals for diagnostic cross-section overlay plot.
+    Get mesh vertices and normals for diagnostic cross-section overlay plots.
     
     Usage example:
         slice_image, slice_vertices, slice_normals = get_cross_section_vertices_normals(1, 100,
@@ -32,7 +32,7 @@ def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, res
         plt.quiver(*slice_vertices.T, *slice_normals.T, color="tab:red")
         plt.imshow(slice_image[0], vmax=10000, origin="lower")
     
-    Note: `origin="lower"` in plt.imshow() is essential for a correctly oriented plot in python!!
+    Note: `origin="lower"` in plt.imshow() is essential for a correctly oriented plot in Python!!
         
     Parameters
     ----------
@@ -43,22 +43,22 @@ def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, res
     resolution : int, default 256
         Resolution in pixels/micron.
     slice_index : int
-        Index along sliced axis
+        Index along the sliced axis
     slice_axis : int, 0,1,2
         Axis along which to slice image array
     get_normals : bool, default True
         Whether to return normals also
     width : float
-        Width of slice for vertex selection, in micron
+        Width of slice for vertex selection, in microns
     
     Returns
     -------
     slice_image : 3d np.array 
         Slice of image. Axis 0 is channel
     slice_vertices : 2d  np.array
-        Projected vertices in slice. Second axis is the coordinate one.
+        Projected vertices in the slice. The second axis is the coordinate one.
     slice_normals : 2d  np.array (..., 2)
-        Projected normals in slice. Second axis is the coordinate one.
+        Projected normals in slice. The second axis is the coordinate one.
 
     """
     slice_image = image.take(indices=slice_index, axis=slice_axis+1).transpose((0,2,1))
@@ -75,7 +75,7 @@ def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, res
     slice_vertices = slice_vertices.take(indices=[i for i in range(3) if i != slice_axis], axis=1)
     return slice_image, slice_vertices
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 35
+# %% ../nbs/02_cartographic_interpolation.ipynb 34
 def get_uv_layout_mask_mask(mesh: tcmesh.ObjMesh, uv_grid_steps=256):
     """
     Get a layout mask of the UV square: 1 where the UV square is covered by the unwrapped mesh, 0 outside.
@@ -117,14 +117,14 @@ def get_uv_layout_mask_mask(mesh: tcmesh.ObjMesh, uv_grid_steps=256):
     
     return uv_mask.astype(bool)
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 39
+# %% ../nbs/02_cartographic_interpolation.ipynb 38
 def interpolate_barycentric(points, vertices, faces, values, distance_threshold=np.inf):
     """
     Interpolate values defined on triangular mesh vertices onto points using barycentric interpolation.
     
     Can handle triangular meshes in both 3d and 2d. Points that do not lie on the triangular mesh
     are projected onto the closest point. Points more distant than the distance_threshold
-    will be set to np.nan. The data defined on the triangular mesh must be defined per-vertex
+    will be set to np.nan. The data defined on the triangular mesh must be defined per vertex
     and can have any number of axes (scalars, vectors, tensors, ...).
     
     This function can also be used to transfer values defined on one mesh to another mesh's
@@ -155,7 +155,7 @@ def interpolate_barycentric(points, vertices, faces, values, distance_threshold=
         vertices = np.pad(vertices, ((0,0), (0,1)))
         points = np.pad(points, ((0,0), (0,1)))
 
-    # find closest points on mesh
+    # find the closest points on the mesh
     squared_distances, indices, points = igl.point_mesh_squared_distance(points, vertices, faces)
     hit_tris = faces[indices]
     # barycentric coordinates of the hit points. need small hack for data type issue 
@@ -165,16 +165,19 @@ def interpolate_barycentric(points, vertices, faces, values, distance_threshold=
     interpolated[squared_distances>distance_threshold] = np.nan
     return interpolated
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 42
+# %% ../nbs/02_cartographic_interpolation.ipynb 41
 def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid_steps=256, map_back=True,
                                        distance_threshold=1e-4, use_fallback=False):
     """
     Interpolate a field defined per-vertex into the UV square.
     
-    The field can be defined per texture-vertex or per 3d-vertex. Make sure you use the right option!
+    The field can be defined per texture-vertex or per 3D-vertex. Make sure you use the right option!
     
-    Assumes the map $x,y,z -> u,v$ to be invertible. This is not guaranteed - you can create overlapping UV 
-    coordinates in blender. The provided UV coordinates will be mapped back to [0, 1]^2 if map_back is True.
+    Assumes the map x,y,z -> u,v to be invertible. This is not guaranteed - you can create overlapping UV 
+    coordinates in Blender.     Raises RuntimeWarning if any of the triangles in the UV map are flipped,
+    indicating self-intersections.
+    
+    The provided UV coordinates will be mapped back to [0, 1]**2 if map_back is True.
     Else, coordinates outside [0,1] are ignored.
     
     Parameters
@@ -188,27 +191,22 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
     uv_grid_steps : int, default 256
         Size of UV grid. Determines resolution of result.
     map_back : bool, default True
-        Map back the UV coordinates to [0,1]^2. Else, coordinates outside [0,1] are ignored.
+        Map back the UV coordinates to [0,1]**2. Else, coordinates outside [0,1] are ignored.
     distance_threshold : float
         Points at a squared distance > distance_threshold in the UV square are considered
         "outside" the unwrapped mesh and are set to np.nan.
     use_fallback : bool or 'auto', default 'auto'
-        Ignore mesh connectivity when interpolating. This is to be used as fallback
+        Ignore mesh connectivity when interpolating. This is to be used as a fallback
         if you have a UV map with lots of flipped triangles (i.e. self-intersections).
-        If 'auto', the fallback option is chose automatically if there are any flipped 
+        If 'auto', the fallback option is chosen automatically if there are any flipped 
         triangles.
 
     Returns
     -------
     interpolated : np.array of shape (uv_grid_steps, uv_grid_steps, ...)
-        Field across [0,1]^2 UV grid, with uniform step size. UV positions that don't
+        Field across [0,1]**2 UV grid, with a uniform step size. UV positions that don't
         correspond to any value are set to np.nan.
-    
-    Raises
-    ------
-    RuntimeWarning
-        If any of the triangles in the UV map are flipped, indicating self-intersections.
-        
+            
     """
     if domain == "per-vertex":
         field = field[mesh.get_vertex_to_texture_vertex_indices()]
@@ -237,18 +235,18 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
     interpolated = interpolated.reshape((uv_grid_steps, uv_grid_steps,)+field.shape[1:])[::-1]
     return interpolated
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 50
+# %% ../nbs/02_cartographic_interpolation.ipynb 49
 def interpolate_UV_to_per_vertex_field(mesh, field, domain="per-vertex"):
     """
     Interpolate a field defined by gridded values across UV square onto mesh vertices.
     
     This is useful for downstream geometric analysis. For example, you compute
-    a vector field on a grid of the UV square, and now want to get its values
+    a vector field on a grid of the UV square and now want to get its values
     at the mesh vertices for geometric analysis.
     
     There may be some np.nans at the mesh boundary!
     
-    The result can be defined per texture-vertex or per 3d-vertex. Make sure you use the right option!
+    The result can be defined per texture-vertex or per 3D-vertex. Make sure you use the right option!
         
     Parameters
     ----------
@@ -265,7 +263,7 @@ def interpolate_UV_to_per_vertex_field(mesh, field, domain="per-vertex"):
     Returns
     -------
     np.array of shape (n_vertices, ...)
-        Field evaluted at mesh vertices.
+        Field evaluated at mesh vertices.
             
     """
     assert field.shape[0] == field.shape[1], "Input shape must be square"
@@ -279,7 +277,7 @@ def interpolate_UV_to_per_vertex_field(mesh, field, domain="per-vertex"):
         return per_texture_vertex
     return mesh.map_per_texture_vertex_to_per_vertex(per_texture_vertex)
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 51
+# %% ../nbs/02_cartographic_interpolation.ipynb 50
 def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resolution):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
@@ -308,7 +306,7 @@ def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resoluti
     
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 59
+# %% ../nbs/02_cartographic_interpolation.ipynb 58
 def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_positions, interpolated_normals,
                                                  normal_offsets, resolution,):
     """ 
@@ -338,7 +336,7 @@ def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_position
     Returns
     -------
     interpolated_data : np.array of shape (n_channels, n_layers, uv_grid_steps, uv_grid_steps)
-        3d volumetric data multulayer-interpolated onto UV grid.
+        3d volumetric data multilayer-interpolated onto UV grid.
     
     """
     interpolated_normals = (interpolated_normals.T / np.linalg.norm(interpolated_normals, axis=-1).T).T
@@ -347,13 +345,13 @@ def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_position
                                   for o in normal_offsets], axis=1)
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 65
+# %% ../nbs/02_cartographic_interpolation.ipynb 64
 def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,), uv_grid_steps=256,
                                     map_back=True, use_fallback='auto'):
     """
-    Create multilayer cartographic projections of image using mesh.
+    Create multilayer cartographic projections of an image using mesh.
     
-    Computes multiple layers along surface normal, with given normal offset (in microns). 0 offset
+    Computes multiple layers along the surface normal, with given normal offsets (in microns). 0 offset
     corresponds to no shift away from the mesh. Also computes 3d positions (in microns)
     and surface normals interpolated onto the UV grid.
     
@@ -362,7 +360,7 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
     Parameters
     ----------
     image : str or 4d np.array
-        Image, either as path to file, or as array. If array, axis 0  is assumed to be the channel axis
+        Image, either as a path to a file or as an array. If array, axis 0  is assumed to be the channel axis
     mesh : str or tcmesh.ObjMesh
         Mesh, either as path to file, or as ObjMesh object.
     resolution : np.array of shape (3,)
@@ -375,19 +373,19 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
     map_back : bool, default True
         Map back the UV coordinates to [0,1]^2. Else, coordinates outside [0,1] are ignored.
     use_fallback : bool or 'auto', default 'auto'
-        Ignore mesh connectivity when interpolating. This is to be used as fallback
+        Ignore mesh connectivity when interpolating. This is to be used as a fallback
         if you have a UV map with lots of flipped triangles (i.e. self-intersections).
-        If 'auto', the fallback option is chose automatically if there are any flipped 
+        If 'auto', the fallback option is chosen automatically if there are any flipped 
         triangles.
     
     Returns
     -------
     interpolated_data : np.array of shape (n_channels, n_layers, uv_grid_steps, uv_grid_steps)
-        3d volumetric data multulayer-interpolated across [0,1]^2 UV grid, with uniform step size.
+        3d volumetric data multilayer-interpolated across [0,1]^2 UV grid, with uniform step size.
     interpolated_3d_positions : np.array of shape (uv_grid_steps, uv_grid_steps, 3)
         3d positions across [0,1]^2 UV grid, with uniform step size. 
     interpolated_normals : np.array of shape (uv_grid_steps, uv_grid_steps, 3)
-        Normals across [0,1]^2 UV grid, with uniform step size.
+        Normals across [0,1]^2 UV grid, with a uniform step size.
     """
     if isinstance(image, str):
         image = tcio.adjust_axis_order(tcio.imread(image))

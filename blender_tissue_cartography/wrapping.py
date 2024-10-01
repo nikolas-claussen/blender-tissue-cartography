@@ -21,8 +21,8 @@ def shrinkwrap_igl(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smo
     """
     Shrink-wrap the source mesh onto the target mesh using trimesh.
     
-    Sets the vertex positions of mesh_source to the closes point on the surface of mesh_target (not necessarily
-    a vertex). Optionally, smoothes the target mesh and the wrapped mesh for smoother results using a Taubin
+    Sets the vertex positions of mesh_source to the closest point on the surface of mesh_target (not necessarily
+    a vertex). Optionally, smooth the target mesh and the wrapped mesh for smoother results using a Taubin
     filter (recommended). Gives out a warning if the shrink-wrapping flips any vertex normals, which can
     indicate problems.
     
@@ -34,7 +34,7 @@ def shrinkwrap_igl(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smo
     mesh_source : tcmesh.ObjMesh
         Mesh to be deformed
     mesh_target : tcmesh.ObjMesh
-        Mesh with target shape
+        Mesh with the target shape
     n_iter_smooth_target : int, default 10
         Taubin smoothing iterations for target
     n_iter_smooth_wrapped : int, default 10

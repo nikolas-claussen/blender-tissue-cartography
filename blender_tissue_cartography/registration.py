@@ -36,7 +36,7 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
     
     Align by matching centroids and axes of inertia tensor. Since the inertia tensor is invariant
     under reflections along its principal axes, all 2^3 reflections are tried and (a) the one leading
-    to best agreement with the target or (b) the one corresponding to the least amount of rotation
+    to the best agreement with the target or (b) the one corresponding to the least amount of rotation
     is chosen. This is controlled using the choose_minimal_rotation argument.
     
     Parameters
@@ -47,7 +47,7 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
         Point cloud to align to.
     q : float, optional, default 0
         Quantile for outlier removal. Removes points with coordinates outside (qth, (1-1)qth) quantile from
-        calculation of intertia tensor and centroid
+        calculation of inertia tensor and centroid
     scale : bool, default True
         Whether to allow scale transformation (True) or rotations only (False)
     shear : bool, default False
@@ -56,7 +56,7 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
         Number of samples of source to use when estimating distances.
     choose_minimal_rotation : bool, default False
         Whether to chose the rotation matrix closest to the identity. If False, the rotation matrix
-        (possibly with det=-1) leading to best alignment with the target is chosen.
+        (possibly with det=-1) leading to the best alignment with the target is chosen.
 
     Returns
     -------
@@ -104,7 +104,7 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
     affine_matrix_rep = np.round(package_affine_transformation(trafo_matrix, trafo_translate),decimals=2)
     return affine_matrix_rep, aligned
 
-# %% ../nbs/05a_registration.ipynb 33
+# %% ../nbs/05a_registration.ipynb 31
 def procrustes(source, target, include_scaling=True, include_reflections=True):
     """
     Wrapper around igl.procrustes
@@ -122,7 +122,7 @@ def procrustes(source, target, include_scaling=True, include_reflections=True):
     trafo_affine : array_like
         (4,4) array representing the affine transformation from source to target.
     aligned : array_like
-        The orientation of source that best fits target.
+        The orientation of the source that best fits the target.
     disparity : float
         np.linalg.norm(aligned-target, axis=1).mean()
     """
@@ -134,14 +134,14 @@ def procrustes(source, target, include_scaling=True, include_reflections=True):
     disparity = np.linalg.norm(aligned-target, axis=1).mean()
     return trafo_affine, aligned, disparity
 
-# %% ../nbs/05a_registration.ipynb 40
+# %% ../nbs/05a_registration.ipynb 38
 def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, include_scaling=True, n_samples=1000):
     """
     Apply the iterative closest point algorithm to align point cloud a with
     point cloud b. Will only produce reasonable results if the
     initial transformation is roughly correct. Initial transformation can be
     found by applying Procrustes' analysis to a suitable set of landmark
-    points (often picked manually), or by inertia+centroid based alignment,
+    points (often picked manually), or by inertia+centroid-based alignment,
     implemented in align_by_centroid_and_intertia.
 
     Parameters
@@ -153,13 +153,13 @@ def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, include
     initial : (4,4) float
       Initial transformation.
     threshold : float
-      Stop when change in cost is less than threshold
+      Stop when the change in cost is less than threshold
     max_iterations : int
       Maximum number of iterations
     include_scaling : bool, optional
-      Whether to allow dilations. If False, orthogonal procrustes is used
+      Whether to allow dilations. If False, orthogonal Procrustes is used
     n_samples : int or None
-        If not None, n_samples sample points are randomly chosen from source array for distance computation
+        If not None, n_samples sample points are randomly chosen from the source array for distance computation
     
     Returns
     ----------

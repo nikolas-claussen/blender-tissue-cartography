@@ -22,7 +22,7 @@ from scipy import sparse, linalg
 def compute_per_vertex_area_distortion(source_vertices, source_faces, target_vertices, target_faces,
                                        evaluate_at='source', cutoff=1e-15):
     """
-    Compute area distortion factor for map between meshes.
+    Compute area distortion factor for a map between meshes.
     
     The result is evaluated at the vertices of the source or target mesh.
     Faces must be such that faces[i] is mapped to target_faces[i].
@@ -111,7 +111,7 @@ def get_area_distortion_in_UV(mesh, uv_grid_steps=1024, map_back=True):
 def compute_per_vertex_angle_distortion(source_vertices, source_faces, target_vertices, target_faces,
                                         evaluate_at='source', cutoff=1e-15):
     """  
-    Compute angle distortion for map between meshes.
+    Compute angle distortion for a map between meshes.
     
     The result is evaluated at the vertices of the source or target mesh.
     Faces must be such that faces[i] is mapped to target_faces[i].
@@ -140,7 +140,7 @@ def compute_per_vertex_angle_distortion(source_vertices, source_faces, target_ve
     Returns
     -------
     area_ratio_at_vertices : np.array
-        Area distortion factor (source area / target area) evaluated on source or target mesh vertices.
+        Area distortion factor (source area/target area) evaluated on source or target mesh vertices.
     """
     source_angles = igl.internal_angles(source_vertices, source_faces)
     target_angles = igl.internal_angles(target_vertices, target_faces)
@@ -156,7 +156,7 @@ def compute_per_vertex_angle_distortion(source_vertices, source_faces, target_ve
 # %% ../nbs/03_differential_geometry.ipynb 24
 def compute_per_face_jacobian(source_vertices, source_faces, target_vertices, target_faces):
     """
-    Compute Jacobian factor for map between meshes.
+    Compute Jacobian factor for a map between meshes.
     
     Faces must be such that faces[i] is mapped to target_faces[i].
     This function computes the Jacobian mapping tangent vectors of the 
@@ -193,7 +193,7 @@ def compute_per_face_jacobian(source_vertices, source_faces, target_vertices, ta
 def compute_per_vertex_jacobian(source_vertices, source_faces, target_vertices, target_faces,
                                 evaluate_at='source'):
     """
-    Compute Jacobian factor for map between meshes.
+    Compute Jacobian factor for a map between meshes.
     
     Faces must be such that faces[i] is mapped to target_faces[i].
     This function computes the Jacobian mapping tangent vectors of the 
@@ -273,7 +273,7 @@ def get_induced_metric(mesh):
 # %% ../nbs/03_differential_geometry.ipynb 40
 def tri_grad(field, vertices, faces, grad_matrix=None):
     """
-    Calculate gradient of function defined on vertices of triangular mesh.
+    Calculate the gradient of a function defined on vertices of a triangular mesh.
 
     If a vector or tensor field is passed, the gradient is applied
     to each component individually.
@@ -316,9 +316,9 @@ def tri_grad(field, vertices, faces, grad_matrix=None):
 # %% ../nbs/03_differential_geometry.ipynb 51
 def get_normal_projector(vertices=None, faces=None, normals=None):
     """
-    Get projection matrix that removes component normal to surface
+    Get projection matrix that removes components normal to the surface
     
-    Mathematicall, 1-n.n^T where n is the unit surface normal.
+    Mathematically, 1-n.n^T where n is the unit surface normal.
     Defined per vertex. 
     
     Parameters
@@ -342,7 +342,7 @@ def get_normal_projector(vertices=None, faces=None, normals=None):
 
 def separate_tangential_normal(field, vertices=None, faces=None, normals=None):
     """
-    Separate tangential and normal component of field defined at vertices.
+    Separate tangential and normal components of fa ield defined at vertices.
     
     Vector and rank-2 tensor fields are supported. For a rank-2 tensor,
     normal-tangential cross components are discarded.
@@ -441,7 +441,7 @@ def get_rot(field, vertices, faces, normals=None):
 
 def get_grad_perp(field, vertices, faces, normals=None):
     """
-    Calculate the gradient of scalar field, rotated by 90 deg around surface normal.
+    Calculate the gradient of a scalar field, rotated by 90 deg around the surface normal.
     
     As occurs e.g. when calculating vector field from stream function.
     
