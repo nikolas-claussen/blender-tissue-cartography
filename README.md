@@ -23,7 +23,7 @@ modular Python code and blender’s graphical user interface.
 ### Work in progress!
 
 This project is a work in progress and will change rapidly. If you want
-to use it, I recommend updating regularly via `git pull`.
+to use it, I recommend updating regularly.
 
 - Tools for individual recordings are in a reasonably complete state
 - Tools for dynamic recordings/movies are complete, but not fully tested
