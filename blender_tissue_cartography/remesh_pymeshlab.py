@@ -101,7 +101,7 @@ def subdivide_pymeshlab(mesh, threshold=1, iterations=3, reglue=True, decimals=N
 
     return mesh_subdiv
 
-# %% ../nbs/04b_remeshing_pymeshlab.ipynb 19
+# %% ../nbs/04b_remeshing_pymeshlab.ipynb 18
 def remesh_pymeshlab(mesh, targetlen=1, iterations=10):
     """
     Remesh mesh using pymeshlab.

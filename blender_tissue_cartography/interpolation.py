@@ -6,7 +6,7 @@ __all__ = ['get_cross_section_vertices_normals', 'get_uv_layout_mask_mask', 'int
            'interpolate_volumetric_data_to_uv', 'interpolate_volumetric_data_to_uv_multilayer',
            'create_cartographic_projections']
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 1
+# %% ../nbs/02_cartographic_interpolation.ipynb 2
 import numpy as np
 from skimage import transform
 from scipy import interpolate
@@ -19,7 +19,7 @@ from . import remesh as tcremesh
 import warnings
 import igl
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 23
+# %% ../nbs/02_cartographic_interpolation.ipynb 22
 def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, resolution,
                                        get_normals=True, width=3):
     """
@@ -75,7 +75,7 @@ def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, res
     slice_vertices = slice_vertices.take(indices=[i for i in range(3) if i != slice_axis], axis=1)
     return slice_image, slice_vertices
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 34
+# %% ../nbs/02_cartographic_interpolation.ipynb 33
 def get_uv_layout_mask_mask(mesh: tcmesh.ObjMesh, uv_grid_steps=256):
     """
     Get a layout mask of the UV square: 1 where the UV square is covered by the unwrapped mesh, 0 outside.
@@ -117,7 +117,7 @@ def get_uv_layout_mask_mask(mesh: tcmesh.ObjMesh, uv_grid_steps=256):
     
     return uv_mask.astype(bool)
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 38
+# %% ../nbs/02_cartographic_interpolation.ipynb 36
 def interpolate_barycentric(points, vertices, faces, values, distance_threshold=np.inf):
     """
     Interpolate values defined on triangular mesh vertices onto points using barycentric interpolation.
@@ -165,7 +165,7 @@ def interpolate_barycentric(points, vertices, faces, values, distance_threshold=
     interpolated[squared_distances>distance_threshold] = np.nan
     return interpolated
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 41
+# %% ../nbs/02_cartographic_interpolation.ipynb 39
 def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid_steps=256, map_back=True,
                                        distance_threshold=1e-4, use_fallback=False):
     """
@@ -235,7 +235,7 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
     interpolated = interpolated.reshape((uv_grid_steps, uv_grid_steps,)+field.shape[1:])[::-1]
     return interpolated
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 49
+# %% ../nbs/02_cartographic_interpolation.ipynb 43
 def interpolate_UV_to_per_vertex_field(mesh, field, domain="per-vertex"):
     """
     Interpolate a field defined by gridded values across UV square onto mesh vertices.
@@ -277,7 +277,7 @@ def interpolate_UV_to_per_vertex_field(mesh, field, domain="per-vertex"):
         return per_texture_vertex
     return mesh.map_per_texture_vertex_to_per_vertex(per_texture_vertex)
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 50
+# %% ../nbs/02_cartographic_interpolation.ipynb 44
 def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resolution):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
@@ -306,7 +306,7 @@ def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resoluti
     
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 58
+# %% ../nbs/02_cartographic_interpolation.ipynb 52
 def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_positions, interpolated_normals,
                                                  normal_offsets, resolution,):
     """ 
@@ -345,7 +345,7 @@ def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_position
                                   for o in normal_offsets], axis=1)
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 64
+# %% ../nbs/02_cartographic_interpolation.ipynb 58
 def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,), uv_grid_steps=256,
                                     map_back=True, use_fallback='auto'):
     """

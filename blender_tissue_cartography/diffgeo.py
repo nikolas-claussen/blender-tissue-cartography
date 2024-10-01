@@ -6,7 +6,7 @@ __all__ = ['compute_per_vertex_area_distortion', 'get_area_distortion_in_UV', 'c
            'get_induced_metric', 'tri_grad', 'get_normal_projector', 'separate_tangential_normal', 'get_div', 'get_rot',
            'get_grad_perp']
 
-# %% ../nbs/03_differential_geometry.ipynb 1
+# %% ../nbs/03_differential_geometry.ipynb 2
 from . import mesh as tcmesh
 from . import interpolation as tcinterp
 from . import rotation as tcrot
@@ -153,7 +153,7 @@ def compute_per_vertex_angle_distortion(source_vertices, source_faces, target_ve
                                                             np.stack(source_vertices.shape[1]*[angle_error]).T)[:,0]
     return angle_error_at_vertices
 
-# %% ../nbs/03_differential_geometry.ipynb 24
+# %% ../nbs/03_differential_geometry.ipynb 20
 def compute_per_face_jacobian(source_vertices, source_faces, target_vertices, target_faces):
     """
     Compute Jacobian factor for a map between meshes.
@@ -236,7 +236,7 @@ def compute_per_vertex_jacobian(source_vertices, source_faces, target_vertices, 
                                  for x in jac_per_face.transpose((1,0,2))], axis=1)        
     return jac_per_vertices
 
-# %% ../nbs/03_differential_geometry.ipynb 33
+# %% ../nbs/03_differential_geometry.ipynb 27
 def get_metric_norm(vf, g):
     """Compute norm of vectorfield vf (shape (..., d)) using metric g."""
     return np.sqrt(np.einsum('...i,...ij,...j->...', vf, g, vf))
@@ -270,7 +270,7 @@ def get_induced_metric(mesh):
     g = np.einsum('via,vib->vab', jac, jac)
     return g
 
-# %% ../nbs/03_differential_geometry.ipynb 40
+# %% ../nbs/03_differential_geometry.ipynb 34
 def tri_grad(field, vertices, faces, grad_matrix=None):
     """
     Calculate the gradient of a function defined on vertices of a triangular mesh.
@@ -313,7 +313,7 @@ def tri_grad(field, vertices, faces, grad_matrix=None):
     grad_field = grad_field.reshape(grad_field.shape[:2] + index_shape)
     return grad_field
 
-# %% ../nbs/03_differential_geometry.ipynb 51
+# %% ../nbs/03_differential_geometry.ipynb 44
 def get_normal_projector(vertices=None, faces=None, normals=None):
     """
     Get projection matrix that removes components normal to the surface
@@ -375,7 +375,7 @@ def separate_tangential_normal(field, vertices=None, faces=None, normals=None):
         normal_component = np.einsum('vij,vjk,vkl->vil', P_orth, field, P_orth)
     return tangential_component, normal_component
 
-# %% ../nbs/03_differential_geometry.ipynb 56
+# %% ../nbs/03_differential_geometry.ipynb 49
 def get_div(field, vertices, faces, normals=None):
     """
     Calculate tangent-plane divergence of vector field defined on vertices of triangular mesh.

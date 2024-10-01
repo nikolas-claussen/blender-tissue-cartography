@@ -4,7 +4,7 @@
 __all__ = ['flatten', 'pad_list', 'unique', 'index_else_nan', 'invert_dictionary', 'ObjMesh', 'read_other_formats_without_uv',
            'glue_seams']
 
-# %% ../nbs/01b_mesh.ipynb 1
+# %% ../nbs/01b_mesh.ipynb 2
 import numpy as np
 from typing import Iterable
 import os
@@ -161,6 +161,7 @@ class ObjMesh:
             ns = None
         else: # match up normals to vertices
             ns = _match_normals_to_vertices(vs, ns, fs)
+            ns = (ns.T / np.linalg.norm(ns, axis=-1)).T
         if vts.shape == (0,): # if there is no texture information
             fs = [[v[0] for v in f] for f in fs]
             mesh = ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=name)
@@ -196,6 +197,7 @@ class ObjMesh:
                 obj_normals = None
             else:
                 obj_normals = igl.average_onto_vertices(vertices, faces, normals[normal_faces].mean(axis=1))
+                obj_normals = (obj_normals.T / np.linalg.norm(obj_normals, axis=-1)).T
             if texture_faces.shape[0] == 0:
                 obj_texture_vertices = None
                 obj_faces = faces
@@ -435,7 +437,7 @@ def read_other_formats_without_uv(filename):
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
-# %% ../nbs/01b_mesh.ipynb 30
+# %% ../nbs/01b_mesh.ipynb 25
 def glue_seams(mesh, decimals=None):
     """
     Merge close vertices.
