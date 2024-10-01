@@ -15,12 +15,12 @@ import igl
 
 from scipy import sparse
 
-# %% ../nbs/04c_smoothing.ipynb 9
+# %% ../nbs/04c_smoothing.ipynb 8
 def get_uniform_laplacian(tris, normalize=True):
     """
-    Get uniform Laplacian (purely connectivity based) as sparse matrix.
+    Get uniform Laplacian (purely connectivity-based) as a sparse matrix.
     
-    If normalize, the diagonal = -1. Else, diagonal equals number of neighbors.
+    If normalize, the diagonal = -1. Else, the diagonal equals the number of neighbors.
     """
     a = igl.adjacency_matrix(tris)
     a_sum = np.squeeze(np.asarray(a.sum(axis=1)))
@@ -29,7 +29,7 @@ def get_uniform_laplacian(tris, normalize=True):
         return sparse.diags(1/a_sum)@(a - a_diag)
     return (a - a_diag)
 
-# %% ../nbs/04c_smoothing.ipynb 10
+# %% ../nbs/04c_smoothing.ipynb 9
 def smooth_laplacian(mesh: tcmesh.ObjMesh, lamb=0.5, n_iter=10, method="explicit", boundary="fixed") -> tcmesh.ObjMesh:
     """
     Smooth mesh vertex positions using Laplacian filter.
@@ -45,9 +45,9 @@ def smooth_laplacian(mesh: tcmesh.ObjMesh, lamb=0.5, n_iter=10, method="explicit
     n_iter : int
         Filter iterations
     method : str, default "explicit"
-        Can use explicit (fast, simple) or implicit (slow, more accurate) method.
+        Can use "explicit" (fast, simple) or "implicit" (slow, more accurate) methods.
     boundary : str, "fixed" or "free"
-        Whether to allow mesh boundary to move
+        Whether to allow mesh boundaries to move
 
     Returns
     -------
@@ -79,12 +79,12 @@ def smooth_laplacian(mesh: tcmesh.ObjMesh, lamb=0.5, n_iter=10, method="explicit
     mesh_smoothed.set_normals()
     return mesh_smoothed
 
-# %% ../nbs/04c_smoothing.ipynb 16
+# %% ../nbs/04c_smoothing.ipynb 15
 def smooth_taubin(mesh: tcmesh.ObjMesh, lamb=0.5, nu=0.53, n_iter=10,) -> tcmesh.ObjMesh:
     """
     Smooth using Taubin filter (like Laplacian, but avoids shrinkage).
     
-    Assumes mesh is triangular. See   "Improved Laplacian Smoothing of Noisy Surface Meshes"
+    Assumes mesh is triangular. See "Improved Laplacian Smoothing of Noisy Surface Meshes"
     J. Vollmer, R. Mencl, and H. Muller.
     
     Parameters
@@ -116,12 +116,12 @@ def smooth_taubin(mesh: tcmesh.ObjMesh, lamb=0.5, nu=0.53, n_iter=10,) -> tcmesh
     mesh_smoothed.set_normals()
     return mesh_smoothed
 
-# %% ../nbs/04c_smoothing.ipynb 20
+# %% ../nbs/04c_smoothing.ipynb 19
 def smooth_laplacian_texture(mesh: tcmesh.ObjMesh, lamb=0.5, n_iter=10, boundary="fixed") -> tcmesh.ObjMesh:
     """
     Smooth mesh texture positions using Laplacian filter.
     
-    This function is very helpful to fix UV maps with flipped triangles, as detected by
+    This function is very helpful in fixing UV maps with flipped triangles, as detected by
     igl.flipped_triangles. Assumes mesh is triangular.
     
     Parameters
@@ -156,14 +156,14 @@ def smooth_laplacian_texture(mesh: tcmesh.ObjMesh, lamb=0.5, n_iter=10, boundary
                                  normals=mesh.normals, name=mesh.name)
     return mesh_smoothed
 
-# %% ../nbs/04c_smoothing.ipynb 26
+# %% ../nbs/04c_smoothing.ipynb 22
 def smooth_laplacian_on_surface(mesh: tcmesh.ObjMesh, n_iter=10, lamb=0.5, n_iter_laplace=10,
                                 boundary="fixed") -> tcmesh.ObjMesh:
     """
-    Smooth mesh vertex positions using Laplacian filter and project vertices back to original surface.
+    Smooth mesh vertex positions using Laplacian filter and project vertices back to the original surface.
     
-    Alternates between Laplacian smoothing and projecting back to original surface. Uses
-    explicit method for Laplactian smoothing
+    Alternates between Laplacian smoothing and projecting back to the original surface. Uses
+    explicit method for Laplacian smoothing
     
     Parameters
     ----------
@@ -174,9 +174,9 @@ def smooth_laplacian_on_surface(mesh: tcmesh.ObjMesh, n_iter=10, lamb=0.5, n_ite
     lamb : float, default 0.5
         Filter strength. Higher = more smoothing.
     n_iter_laplace : int
-        Laplace filter iterations. If reprojection messes upt your mesh, decrease this number.
+        Laplace filter iterations. If reprojection messes up your mesh, decrease this number.
     boundary : str, "fixed" or "free"
-        Whether to allow mesh boundary to move
+        Whether to allow mesh boundaries to move
 
     Returns
     -------
