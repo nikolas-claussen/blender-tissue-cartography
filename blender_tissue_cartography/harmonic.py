@@ -24,7 +24,7 @@ from skimage import registration, transform
 
 import matplotlib as mpl
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 9
+# %% ../nbs/06_harmonic_wrapping.ipynb 7
 def map_to_disk(mesh, bnd=None, set_uvs=False):
     """
     Map mesh to unit disk by computing harmonic UV coordinates.
@@ -72,12 +72,12 @@ def map_to_disk(mesh, bnd=None, set_uvs=False):
     
     return uv
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 14
+# %% ../nbs/06_harmonic_wrapping.ipynb 12
 def get_rot_mat2d(phi):
     """Get 2d rotation matrix with angle phi."""
     return np.array([[np.cos(phi), np.sin(phi)],[-np.sin(phi), np.cos(phi)]])
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 22
+# %% ../nbs/06_harmonic_wrapping.ipynb 20
 def rotational_align_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv_target=None,
                           allow_flip=True, q=0.01, n_grid=1024):
     """
@@ -173,7 +173,7 @@ def rotational_align_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv
     new_texture_vertices += np.array([0.5,0.5])
     return new_texture_vertices, rot_mat, 1-error
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 27
+# %% ../nbs/06_harmonic_wrapping.ipynb 25
 def wrap_coords_via_disk(mesh_source, mesh_target,
                          disk_uv_source=None, disk_uv_target=None,
                          align=True, q=0.01, n_grid=1024):
@@ -232,7 +232,7 @@ def wrap_coords_via_disk(mesh_source, mesh_target,
         return new_coords, overlap
     return new_coords
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 33
+# %% ../nbs/06_harmonic_wrapping.ipynb 31
 def polygon_area(pts):
     """ Polygon area via shoe-lace formula. Assuming no self-intersection. pts.shape is (..., 2)"""
     return np.sum(pts[...,0]*np.roll(pts[...,1], 1, axis=0) - np.roll(pts[...,0], 1, axis=0)*pts[...,1], axis=0)/2
@@ -259,7 +259,7 @@ def moebius_disk(pts, b):
     z_transformed = (z+b)/(1+np.conjugate(b)*z)
     return complex_to_xy(z_transformed)
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 43
+# %% ../nbs/06_harmonic_wrapping.ipynb 41
 def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
                          second_boundary=None, set_uvs=False, return_filled=False):
     """
@@ -334,7 +334,7 @@ def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
         return uv, filled_vertices, filled_tris
     return uv[:-1]
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 52
+# %% ../nbs/06_harmonic_wrapping.ipynb 50
 def wrap_coords_via_disk_cylinder(mesh_source, mesh_target, q=0.01, n_grid=1024):
     """
     Map 3d coordinates of source mesh to target mesh via an annulus parametrization.
@@ -396,7 +396,7 @@ def wrap_coords_via_disk_cylinder(mesh_source, mesh_target, q=0.01, n_grid=1024)
                                                   distance_threshold=np.inf)
     return new_coords, overlap
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 66
+# %% ../nbs/06_harmonic_wrapping.ipynb 64
 def stereographic_plane_to_sphere(uv):
     """
     Stereographic projection from plane to the unit sphere from the north pole (0,0,1).
@@ -418,7 +418,7 @@ def stereographic_sphere_to_plane(pts):
     assert np.allclose(np.linalg.norm(pts, axis=1), 1, rtol=1e-03, atol=1e-04), "Points not on unit sphere!"
     return (np.stack([pts[:,0], pts[:,1]], axis=0)/(1-pts[:,2])).T
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 69
+# %% ../nbs/06_harmonic_wrapping.ipynb 67
 def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alpha=0.5):
     """
     Apply Moeboius inversions to minimize area distortion of a map from mesh to sphere.
@@ -463,7 +463,7 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
         Vs = ((1-np.linalg.norm(c)**2)*(Vs+c).T /np.linalg.norm(Vs+c, axis=1)**2).T + c
     return Vs, np.linalg.norm(mu)
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 75
+# %% ../nbs/06_harmonic_wrapping.ipynb 73
 def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha=0.5, set_uvs=False):
     """
     Compute a map of mesh to the unit sphere.
@@ -543,7 +543,7 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
         
     return vertices_sphere
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 87
+# %% ../nbs/06_harmonic_wrapping.ipynb 85
 def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coords_sphere_target,
                             allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
     """
@@ -644,7 +644,7 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
 
     return coords_sphere_source @ R_refined.T, R_refined, overlap
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 93
+# %% ../nbs/06_harmonic_wrapping.ipynb 91
 def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, coords_sphere_target=None,
                            method="harmonic", n_iter_centering=10, alpha=0.5,
                            align=True, allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
