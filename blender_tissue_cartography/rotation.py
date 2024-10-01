@@ -8,7 +8,7 @@ __all__ = ['cartesian_to_spherical', 'spherical_to_cartesian', 'compute_spherica
            'rotate_spherical_harmonics_coeffs', 'overlap_spherical_harmonics', 'get_icosphere',
            'rotation_alignment_brute_force', 'rotation_alignment_refined', 'rotational_alignment']
 
-# %% ../nbs/05b_registration_rotation.ipynb 1
+# %% ../nbs/05b_registration_rotation.ipynb 2
 from . import mesh as tcmesh
 
 from . import registration as tcreg

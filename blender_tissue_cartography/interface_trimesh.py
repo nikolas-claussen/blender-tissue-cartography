@@ -3,13 +3,13 @@
 # %% auto 0
 __all__ = ['convert_to_trimesh', 'convert_from_trimesh']
 
-# %% ../nbs/01d_interface_trimesh.ipynb 1
+# %% ../nbs/01d_interface_trimesh.ipynb 2
 from . import mesh as tcmesh
 
 import numpy as np
 import trimesh
 
-# %% ../nbs/01d_interface_trimesh.ipynb 7
+# %% ../nbs/01d_interface_trimesh.ipynb 4
 def convert_to_trimesh(mesh: tcmesh.ObjMesh, add_texture_info=None) -> trimesh.Trimesh:
     """
     Convert tcmesh.ObjMesh to trimesh.Trimesh
@@ -44,7 +44,7 @@ def convert_to_trimesh(mesh: tcmesh.ObjMesh, add_texture_info=None) -> trimesh.T
     converted.face_tex = tcmesh.index_else_nan(mesh.texture_vertices, mesh.texture_tris)
     return converted
 
-# %% ../nbs/01d_interface_trimesh.ipynb 14
+# %% ../nbs/01d_interface_trimesh.ipynb 8
 def convert_from_trimesh(mesh: trimesh.Trimesh, reconstruct_texture_from_faces=True,
                            texture_vertex_decimals=10) -> tcmesh.ObjMesh:
     """

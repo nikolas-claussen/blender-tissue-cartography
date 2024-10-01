@@ -4,7 +4,7 @@
 __all__ = ['deprecated', 'adjust_axis_order', 'subsample_image', 'normalize_quantiles', 'normalize_mean_std', 'write_h5',
            'read_h5', 'save_dict_to_json', 'save_for_imageJ', 'normalize_quantiles_for_png', 'save_stack_for_blender']
 
-# %% ../nbs/01a_io.ipynb 1
+# %% ../nbs/01a_io.ipynb 2
 import numpy as np
 from scipy import ndimage
 from skimage import transform
@@ -20,7 +20,7 @@ import functools
 
 import igl
 
-# %% ../nbs/01a_io.ipynb 3
+# %% ../nbs/01a_io.ipynb 4
 def deprecated(func):
     """This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emitted

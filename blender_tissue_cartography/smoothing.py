@@ -4,7 +4,7 @@
 __all__ = ['get_uniform_laplacian', 'smooth_laplacian', 'smooth_taubin', 'smooth_laplacian_texture',
            'smooth_laplacian_on_surface']
 
-# %% ../nbs/04c_smoothing.ipynb 1
+# %% ../nbs/04c_smoothing.ipynb 2
 from . import mesh as tcmesh
 from . import registration as tcreg
 
@@ -79,7 +79,7 @@ def smooth_laplacian(mesh: tcmesh.ObjMesh, lamb=0.5, n_iter=10, method="explicit
     mesh_smoothed.set_normals()
     return mesh_smoothed
 
-# %% ../nbs/04c_smoothing.ipynb 15
+# %% ../nbs/04c_smoothing.ipynb 13
 def smooth_taubin(mesh: tcmesh.ObjMesh, lamb=0.5, nu=0.53, n_iter=10,) -> tcmesh.ObjMesh:
     """
     Smooth using Taubin filter (like Laplacian, but avoids shrinkage).
@@ -116,7 +116,7 @@ def smooth_taubin(mesh: tcmesh.ObjMesh, lamb=0.5, nu=0.53, n_iter=10,) -> tcmesh
     mesh_smoothed.set_normals()
     return mesh_smoothed
 
-# %% ../nbs/04c_smoothing.ipynb 19
+# %% ../nbs/04c_smoothing.ipynb 16
 def smooth_laplacian_texture(mesh: tcmesh.ObjMesh, lamb=0.5, n_iter=10, boundary="fixed") -> tcmesh.ObjMesh:
     """
     Smooth mesh texture positions using Laplacian filter.
@@ -156,7 +156,7 @@ def smooth_laplacian_texture(mesh: tcmesh.ObjMesh, lamb=0.5, n_iter=10, boundary
                                  normals=mesh.normals, name=mesh.name)
     return mesh_smoothed
 
-# %% ../nbs/04c_smoothing.ipynb 22
+# %% ../nbs/04c_smoothing.ipynb 19
 def smooth_laplacian_on_surface(mesh: tcmesh.ObjMesh, n_iter=10, lamb=0.5, n_iter_laplace=10,
                                 boundary="fixed") -> tcmesh.ObjMesh:
     """
