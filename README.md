@@ -36,7 +36,7 @@ to use it, I recommend updating regularly via `git pull`.
     [Meshlab](https://www.meshlab.net/) (optional), and
     [Blender](https://www.blender.org/).
 
-2.  Install python via
+2.  Install Python via
     [anaconda/miniconda](https://docs.anaconda.com/miniconda/miniconda-install/),
     if you haven’t already.
 
@@ -44,12 +44,32 @@ to use it, I recommend updating regularly via `git pull`.
       [mamba](https://mamba.readthedocs.io/en/latest/index.html), a
       `conda` replacement which is much faster.
 
-3.  [Clone this github
+3.  Install `blender_tissue_cartography`:
+
+    - run `pip install blender-tissue-cartography` in a command window.
+
+4.  (Optional) Install extra Python library for `pymeshlab`, required
+    for some advanced functionality (remeshing and surface
+    reconstruction from within Python). Note that this package is not
+    available on new ARM Apple computers.
+
+    - run `pip install pymeshlab` in a command window
+
+5.  (Optional) Install the Blender plugin
+    [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) for
+    rendering volumetric `.tif` files in blender
+
+This project is hosted on pip here:
+https://pypi.org/project/blender-tissue-cartography/
+
+### Developer installation
+
+1.  [Clone this github
     repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository),
     or simply download the code as a .zip file and unpack it (green
     button “Code”).
 
-4.  Create a `conda` environment with all Python dependencies and
+2.  Create a `conda` environment with all Python dependencies and
     install the `blender_tissue_cartography` module. Open a command
     window in the `blender-tissue-cartography` directory and type:
 
@@ -57,19 +77,14 @@ to use it, I recommend updating regularly via `git pull`.
     - `conda activate blender_tissue_cartography`
     - `pip install -e .`
 
-5.  (Optional) Install extra Python library for `pymeshlab`, required
+3.  (Optional) Install extra Python library for `pymeshlab`, required
     for some advanced functionality (remeshing and surface
     reconstruction from within Python).
 
     - `pip install pymeshlab` - Note that this package is not available
       on new ARM Apple computers.
 
-6.  (Optional) If you plan on developing/extending the code, install
-    [nbdev](https://nbdev.fast.ai/)
-
-7.  (Optional) Install the Blender plugin
-    [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) for
-    rendering volumetric `.tif` files in blender
+4.  Install [nbdev](https://nbdev.fast.ai/)
 
 ## Documentation
 
