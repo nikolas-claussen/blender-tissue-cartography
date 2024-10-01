@@ -74,17 +74,17 @@ to use it, I recommend updating regularly via `git pull`.
 ## Usage
 
 To see how things work, it’s best to start with some fully worked out
-examples, which are provided in the `tutorials/` folder. You can look at
-the jupyter notebooks on GitHub without downloading anything.
+examples, which are provided in the `nbs/Tutorials/` folder. You can
+look at the jupyter notebooks on GitHub without downloading anything.
 
 To run a tutorial on your computer, follow the installation instructions
 and then [launch
 jupyter](https://docs.jupyter.org/en/latest/running.html) and work
 through the notebooks in the `tutorial` directory in order. If you are
-impatient, jump directly to `tutorials/03_basics_example.ipynb`. I
+impatient, jump directly to `nbs/Tutorials/03_basics_example.ipynb`. I
 recommended being comfortable with running simple Python code (you don’t
 have to do any coding yourself). The basic user interface of blender is
-explained in `tutorials/02_blender_tutorial.ipynb`.
+explained in `nbs/Tutorials/02_blender_tutorial.ipynb`.
 
 In general, for each tissue cartography project, first, create a folder
 to hold your data and results. You run the `blender_tissue_cartography`
@@ -142,11 +142,11 @@ the region occupied by cells during zebrafish epiboly (tutorial 6).
   overwritten if you want to update the software
 
 - The repository contains two sets of notebooks: in the `nbs` folder and
-  in the `tutorial` folder. The `nbs`-notebooks are for developing the
-  code. If you don’t want to develop/adapt the code to your needs, you
-  don’t need to look at them. Copy a notebook from the `tutorial`
-  folder - e.g. `03_basics_example.ipynb` - into your project folder to
-  use it as a template.
+  in the `nbs/Tutorials` folder. The `nbs`-notebooks are for developing
+  the code. If you don’t want to develop/adapt the code to your needs,
+  you don’t need to look at them. Copy a notebook from the
+  `nbs/Tutorials` folder - e.g. `03_basics_example.ipynb` - into your
+  project folder to use it as a template.
 
 - You do not need to copy functions into your notebooks manually. If you
   follow the installation instructions, the code will be installed as a
