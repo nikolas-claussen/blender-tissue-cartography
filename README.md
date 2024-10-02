@@ -93,27 +93,12 @@ https://nikolas-claussen.github.io/blender-tissue-cartography/
 
 ## Usage
 
-Some fully worked out examples are provided in the `nbs/Tutorials/`
-folder on
-[GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography).
-You can download the code as a .zip file and unpack it (green button
-“Code”). You can look at the jupyter notebooks on [the documentation
-webpage](https://nikolas-claussen.github.io/blender-tissue-cartography)
-without downloading anything. To run a tutorial on your computer, follow
-the installation instructions and then [launch
-jupyter](https://docs.jupyter.org/en/latest/running.html) and work
-through the notebooks in the `tutorial` directory in order. If you are
-impatient, jump directly to `nbs/Tutorials/03_basics_example.ipynb`. I
-recommended being comfortable with running simple Python code (you don’t
-have to do any coding yourself). The basic user interface of blender is
-explained in `nbs/Tutorials/02_blender_tutorial.ipynb`.
-
-In general, for each tissue cartography project, first, create a folder
-to hold your data and results. You run the `blender_tissue_cartography`
-pipeline from a jupyter computational notebook, which can also serve as
-your lab notebook (notes, comments on the data). Use one of the tutorial
-jupyter notebooks as a template with instructions. As you work through
-the notebook, you will:
+For a tissue cartography project, first, create a folder to hold your
+data and results. You run the `blender_tissue_cartography` pipeline from
+a jupyter computational notebook, which can also serve as your lab
+notebook (notes, comments on the data). Use one of the tutorial jupyter
+notebooks as a template with instructions. As you work through the
+notebook, you will:
 
 1.  create a segmentation of your 3d data
 
@@ -131,6 +116,21 @@ example *Drosophila* dataset: Volumetric data in ImageJ (center),
 jupyter computational notebook to run the `blender_tissue_cartography`
 module (left), and blender project with extracted mesh and texture
 (right).
+
+Some fully worked-out examples are provided in the `nbs/Tutorials/`
+folder on
+[GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography).
+You can download the code as a .zip file and unpack it (green button
+“Code”). You can look at the jupyter notebooks on [the documentation
+webpage](https://nikolas-claussen.github.io/blender-tissue-cartography)
+without downloading anything. To run a tutorial on your computer, follow
+the installation instructions and then [launch
+jupyter](https://docs.jupyter.org/en/latest/running.html) and work
+through the notebooks in the `Tutorials` directory in order. If you are
+impatient, jump directly to `nbs/Tutorials/03_basics_example.ipynb`. I
+recommended being comfortable with running simple Python code (you don’t
+have to do any coding yourself). The basic user interface of blender is
+explained in `nbs/Tutorials/02_blender_tutorial.ipynb`.
 
 ![image.png](index_files/figure-commonmark/cell-7-1-image.png)
 
