@@ -47,7 +47,7 @@ def convert_to_pymeshlab(mesh: tcmesh.ObjMesh, add_texture_info=None) -> pymeshl
                                w_tex_coords_matrix=wedge_coords)
     return converted
 
-# %% ../nbs/01c_interface_pymeshlab.ipynb 13
+# %% ../nbs/01c_interface_pymeshlab.ipynb 12
 def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=True,
                            texture_vertex_decimals=10) -> tcmesh.ObjMesh:
     """
@@ -57,7 +57,19 @@ def convert_from_pymeshlab(mesh: pymeshlab.Mesh, reconstruct_texture_from_faces=
     vertex attribute vertex_tex_coord_matrix. Reconstruction from face texture can accommodate
     multiple texture coordinates per vertex (e.g. for UV maps with seams).
     
-    Texture vertices are rounded to texture_vertex_decimals decimals
+    Parameters
+    ----------
+    mesh : pymeshlab.Mesh
+    reconstruct_texture_from_faces : bool
+        Whether to reconstruct texture information from per-face data (True), or
+        per-vertex data (False)
+    texture_vertex_decimals : int
+        Texture vertices are rounded to texture_vertex_decimals decimals.
+
+    Returns
+    -------
+    tcmesh.ObjMesh
+
     """
     vertices = mesh.vertex_matrix()
     normals = mesh.vertex_normal_matrix()

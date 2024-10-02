@@ -4,7 +4,7 @@
 __all__ = ['flatten', 'pad_list', 'unique', 'index_else_nan', 'invert_dictionary', 'ObjMesh', 'read_other_formats_without_uv',
            'glue_seams']
 
-# %% ../nbs/01b_mesh.ipynb 2
+# %% ../nbs/01b_mesh.ipynb 4
 import numpy as np
 from typing import Iterable
 import os
@@ -13,7 +13,7 @@ import warnings
 
 import igl
 
-# %% ../nbs/01b_mesh.ipynb 7
+# %% ../nbs/01b_mesh.ipynb 6
 def flatten(lst, max_depth=1000, iter_count=0):
     """
     Flatten a list of lists into a list.
@@ -93,23 +93,42 @@ class ObjMesh:
     """
     Simple class for reading, holding, transforming, and saving 3d polygonal meshes in the .obj format.
     See https://en.wikipedia.org/wiki/Wavefront_.obj_file.
-    Attributes
-        - vertices = [(x_0, y_0, z_0), ... ]
-        - texture_vertices = [(u_0, v_0), ...] or None
-        - normals = [(nx_0, ny_0, nz_0), ...] or None
-        - faces = [f0, ...]
-        - only_vertices = bool. 
-    vertices, texture_vertices, normals are np.arrays, faces is a list.
-    Each face is either a list of vertex indices (if only_vertices is True), or, if the mesh
-    has texture information, a list of vertex/texture vertex index pairs. 
+
+    An ObjMesh comprises vertices and faces, describing a surface in 3d, 
+    (optionally) per-vertex normals, and (optionally), texture vertices and
+    texture faces that describe how the surface is mapped to 2d.
+    
+    Vertices, texture_vertices, normals are np.arrays, faces is a list.
+    Each face is either a list of vertex indices, or, if the mesh
+    has texture information, a list of vertex/texture vertex index pairs, describing
+    which face maps to which texture face. Note: the number of texture vertices and
+    vertices is not necessarily equal!
+    
     Normals are always defined per-vertex, i.e. self.normals[i] is the normal vector at
     self.vertices[i].   Missing data is represented by np.nan.
     Faces can be any length (triangles, quads, ...). Indices start at 0!
     
-    The methods self.get_uv_index_to_vertex_index_map(), self.get_uv_matched_vertex_indices()
-    can be used to map data from 3d to UV, for instance for cartographic interpolation:
-    self.vertices[self.get_vertex_to_texture_vertex_indices()] will give you the 3d coordinates
-    at each texture vertex point in 2d.
+    **Attributes**
+    
+    vertices : np.array of shape (#vertices, dimension).
+    
+    texture_vertices : np.array of shape (#texture vertices, 2) or None
+
+    normals : np.array of shape (#vertices, dimension) or None
+    
+    faces : List[List[int]] or List[List[(int, int]]]
+
+    **Property methods (use like attributes)**
+
+    only_vertices : bool, whether mesh has texture information
+    
+    is_triangular : bool
+                
+    tris : np.array of shape (#triangular faces, 3). Triangular 3d faces
+        
+    texture_tris : np.array of shape (#triangular faces, 3). Triangular texture faces.
+    Note: undefined texture faces are represented by [0, 0, 0]
+    
     """
     
     def __init__(self, vertices, faces, texture_vertices=None, normals=None, name=None):
@@ -268,6 +287,7 @@ class ObjMesh:
     
     @property
     def only_vertices(self):
+        """Check if mesh has any texture information"""
         if self.texture_vertices is None:
             assert all([not isinstance(v, Iterable) for v in flatten(self.faces, max_depth=1)]), \
                 "If texture_vertices is None, faces must be lists of vertex indices only"
@@ -290,8 +310,8 @@ class ObjMesh:
     def texture_tris(self):
         """Get all texture triangles in mesh as a numpy array. Entries are texture_vertex indices."""
         if self.only_vertices:
-            return np.array([np.nan for fc in self.faces if len(fc)==3])
-        return np.array([[v[1] for v in fc] for fc in self.faces if len(fc)==3])
+            return np.array([[0,0,0] for fc in self.faces if len(fc)==3])
+        return np.nan_to_num(np.array([[v[1] for v in fc] for fc in self.faces if len(fc)==3])).astype(int)
     
     @property
     def vertex_textures(self):
@@ -412,7 +432,7 @@ class ObjMesh:
             newmesh.faces = [fc[::-1] for fc in self.faces]
         return newmesh
 
-# %% ../nbs/01b_mesh.ipynb 9
+# %% ../nbs/01b_mesh.ipynb 17
 def read_other_formats_without_uv(filename):
     """
     Return vertices and faces from a non-.obj mesh file format. file.
@@ -437,7 +457,7 @@ def read_other_formats_without_uv(filename):
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
-# %% ../nbs/01b_mesh.ipynb 25
+# %% ../nbs/01b_mesh.ipynb 32
 def glue_seams(mesh, decimals=None):
     """
     Merge close vertices.

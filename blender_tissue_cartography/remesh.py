@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['marching_cubes', 'subdivide_igl', 'make_delaunay', 'qslim']
 
-# %% ../nbs/04a_remeshing.ipynb 2
+# %% ../nbs/04a_remeshing.ipynb 3
 from . import mesh as tcmesh
 
 from scipy import ndimage
@@ -12,7 +12,7 @@ import igl
 
 import warnings
 
-# %% ../nbs/04a_remeshing.ipynb 5
+# %% ../nbs/04a_remeshing.ipynb 6
 def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     """
     Compute triangular mesh of isosurface using marching cubes as implemented by lib|igl.
@@ -28,10 +28,11 @@ def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
 
     Returns
     -------
-    vertices : np.array of shape (n_vertices, 3)
-        Vertices
-    faces : np.array of shape (n_faces, 3)
-        Triangular faces (each face is a set of indices into the vertices array)
+    np.array, np.array
+        vertices : np.array of shape (n_vertices, 3)
+            Vertices
+        faces : np.array of shape (n_faces, 3)
+            Triangular faces (each face is a set of indices into the vertices array)
     """
     pts_grid = np.stack(np.meshgrid(*[np.arange(i) for i in volume.shape], indexing="ij"),
                         axis=-1).reshape(-1,3, order="F").astype(float)
@@ -42,7 +43,7 @@ def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
     vertices, faces = igl.marching_cubes(vals, pts_grid, *volume.shape, isovalue)
     return vertices, faces
 
-# %% ../nbs/04a_remeshing.ipynb 11
+# %% ../nbs/04a_remeshing.ipynb 12
 def subdivide_igl(mesh, reglue=True, decimals=None):
     """
     Refine mesh by edge subdivision using igl.
@@ -55,16 +56,16 @@ def subdivide_igl(mesh, reglue=True, decimals=None):
     ----------
     mesh : ObjMesh
         Initial mesh.
-
-    Returns
-    -------
-    mesh_subdiv : ObjMesh
-        Subdivided mesh.
     reglue : bool
         Glue back after cutting
     decimals : int or None
         Decimal precision for merging vertices when regluing. If None, estimate from average
         edge mesh length as -4*log_10(avg length)
+
+    Returns
+    -------
+    mesh_subdiv : ObjMesh
+        Subdivided mesh.
     """
     mesh_cut = mesh.cut_along_seams()
     new_vertices, new_faces = igl.upsample(mesh_cut.vertices, mesh_cut.tris, number_of_subdivs=1)
@@ -76,7 +77,7 @@ def subdivide_igl(mesh, reglue=True, decimals=None):
         mesh_subdiv = tcmesh.glue_seams(mesh_subdiv, decimals=decimals)
     return mesh_subdiv
 
-# %% ../nbs/04a_remeshing.ipynb 15
+# %% ../nbs/04a_remeshing.ipynb 16
 def make_delaunay(mesh):
     """
     Make mesh triangles less deformed by edge flips. 
@@ -113,7 +114,7 @@ def make_delaunay(mesh):
     mesh_new = tcmesh.glue_seams(mesh_new, decimals=None)
     return mesh_new
 
-# %% ../nbs/04a_remeshing.ipynb 19
+# %% ../nbs/04a_remeshing.ipynb 20
 def qslim(mesh, max_n_faces):
     """
     Simplify mesh by face decimation using the qslim algorithm.

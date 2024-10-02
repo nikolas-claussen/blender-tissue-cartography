@@ -6,7 +6,7 @@ __all__ = ['map_to_disk', 'get_rot_mat2d', 'rotational_align_disk', 'wrap_coords
            'stereographic_plane_to_sphere', 'stereographic_sphere_to_plane', 'center_moebius', 'map_to_sphere',
            'rotational_align_sphere', 'wrap_coords_via_sphere']
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 2
+# %% ../nbs/06_harmonic_wrapping.ipynb 3
 from . import io as tcio
 from . import mesh as tcmesh
 
@@ -24,7 +24,7 @@ from skimage import registration, transform
 
 import matplotlib as mpl
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 7
+# %% ../nbs/06_harmonic_wrapping.ipynb 8
 def map_to_disk(mesh, bnd=None, set_uvs=False):
     """
     Map mesh to unit disk by computing harmonic UV coordinates.
@@ -72,12 +72,12 @@ def map_to_disk(mesh, bnd=None, set_uvs=False):
     
     return uv
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 12
+# %% ../nbs/06_harmonic_wrapping.ipynb 13
 def get_rot_mat2d(phi):
     """Get 2d rotation matrix with angle phi."""
     return np.array([[np.cos(phi), np.sin(phi)],[-np.sin(phi), np.cos(phi)]])
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 20
+# %% ../nbs/06_harmonic_wrapping.ipynb 21
 def rotational_align_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv_target=None,
                           allow_flip=True, q=0.01, n_grid=1024):
     """
@@ -113,12 +113,13 @@ def rotational_align_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv
     
     Returns
     -------
-    new_texture_vertices_mesh_source : np.array
-        Rotationally aligned texture vertices
-    rot_mat : np.array of shape (2,2)
-        Rotation matrix
-    overlap : float
-        Overlap between aligned conformal factors. 1 = perfect alignment.
+    np.array, np.array, float
+        new_texture_vertices_mesh_source : np.array
+            Rotationally aligned texture vertices
+        rot_mat : np.array of shape (2,2)
+            Rotation matrix
+        overlap : float
+            Overlap between aligned conformal factors. 1 = perfect alignment.
     
     """
     if disk_uv_source is None:
@@ -173,7 +174,7 @@ def rotational_align_disk(mesh_source, mesh_target, disk_uv_source=None, disk_uv
     new_texture_vertices += np.array([0.5,0.5])
     return new_texture_vertices, rot_mat, 1-error
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 25
+# %% ../nbs/06_harmonic_wrapping.ipynb 26
 def wrap_coords_via_disk(mesh_source, mesh_target,
                          disk_uv_source=None, disk_uv_target=None,
                          align=True, q=0.01, n_grid=1024):
@@ -207,11 +208,12 @@ def wrap_coords_via_disk(mesh_source, mesh_target,
     
     Returns
     -------
-    new_coords : np.array
-        New 3d vertex coordinates for mesh_source, lying on the surface
-        defined by mesh_target
-    overlap : float
-        Only returned if align is True. A measure of geometry overlap. 1 = perfect alignment
+    np.array, float
+        new_coords : np.array
+            New 3d vertex coordinates for mesh_source, lying on the surface
+            defined by mesh_target
+        overlap : float
+            Only returned if align is True. A measure of geometry overlap. 1 = perfect alignment
     """
     # compute harmonic map to disk
     if disk_uv_source is None:
@@ -232,7 +234,7 @@ def wrap_coords_via_disk(mesh_source, mesh_target,
         return new_coords, overlap
     return new_coords
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 31
+# %% ../nbs/06_harmonic_wrapping.ipynb 32
 def polygon_area(pts):
     """ Polygon area via shoe-lace formula. Assuming no self-intersection. pts.shape is (..., 2)"""
     return np.sum(pts[...,0]*np.roll(pts[...,1], 1, axis=0) - np.roll(pts[...,0], 1, axis=0)*pts[...,1], axis=0)/2
@@ -259,7 +261,7 @@ def moebius_disk(pts, b):
     z_transformed = (z+b)/(1+np.conjugate(b)*z)
     return complex_to_xy(z_transformed)
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 41
+# %% ../nbs/06_harmonic_wrapping.ipynb 42
 def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
                          second_boundary=None, set_uvs=False, return_filled=False):
     """
@@ -294,13 +296,14 @@ def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
     
     Returns
     -------
-    uv : np.array
-        2d vertex coordinates mapping the mesh to the unit disk in [0,1]^1.
-        If filled_vertices is True, the last entry is the coordinate of the added point.
-    filled_vertices : np.array
-        3d vertices with extra vertex to fill second boundary
-    filled_faces : np.array
-        Faces with added faces to fill the second boundary.
+    np.array, np.array, np.array
+        uv : np.array
+            2d vertex coordinates mapping the mesh to the unit disk in [0,1]^1.
+            If filled_vertices is True, the last entry is the coordinate of the added point.
+        filled_vertices : np.array
+            3d vertices with extra vertex to fill second boundary
+        filled_faces : np.array
+            Faces with added faces to fill the second boundary.
     
     """
     if not mesh.is_triangular:
@@ -334,7 +337,7 @@ def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
         return uv, filled_vertices, filled_tris
     return uv[:-1]
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 50
+# %% ../nbs/06_harmonic_wrapping.ipynb 51
 def wrap_coords_via_disk_cylinder(mesh_source, mesh_target, q=0.01, n_grid=1024):
     """
     Map 3d coordinates of source mesh to target mesh via an annulus parametrization.
@@ -361,11 +364,12 @@ def wrap_coords_via_disk_cylinder(mesh_source, mesh_target, q=0.01, n_grid=1024)
     
     Returns
     -------
-    new_coords : np.array
-        New 3d vertex coordinates for mesh_source, lying on the surface
-        defined by mesh_target
-    overlap : float
-        Measure of geometry overlap. 1 = perfect alignment
+    np.array, float
+        new_coords : np.array
+            New 3d vertex coordinates for mesh_source, lying on the surface
+            defined by mesh_target
+        overlap : float
+            Measure of geometry overlap. 1 = perfect alignment
     """
     # compute harmonic map to annulus. For the source mesh, try both cylinders
     disk_uv_source_a = map_cylinder_to_disk(mesh_source, outer_boundary="longest",
@@ -396,7 +400,7 @@ def wrap_coords_via_disk_cylinder(mesh_source, mesh_target, q=0.01, n_grid=1024)
                                                   distance_threshold=np.inf)
     return new_coords, overlap
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 64
+# %% ../nbs/06_harmonic_wrapping.ipynb 65
 def stereographic_plane_to_sphere(uv):
     """
     Stereographic projection from plane to the unit sphere from the north pole (0,0,1).
@@ -418,7 +422,7 @@ def stereographic_sphere_to_plane(pts):
     assert np.allclose(np.linalg.norm(pts, axis=1), 1, rtol=1e-03, atol=1e-04), "Points not on unit sphere!"
     return (np.stack([pts[:,0], pts[:,1]], axis=0)/(1-pts[:,2])).T
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 67
+# %% ../nbs/06_harmonic_wrapping.ipynb 68
 def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alpha=0.5):
     """
     Apply Moeboius inversions to minimize area distortion of a map from mesh to sphere.
@@ -441,11 +445,12 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
     
     Returns
     -------
-    vertices_sphere_centered : np.array of shape (n_verts, 3)
-        Centered sphere coordinates
-    com_norm : float
-        Distance of sphere vertex center of mass from origin. Low values
-        indicate convergence of the algorithm.
+    np.array, float
+        vertices_sphere_centered : np.array of shape (n_verts, 3)
+            Centered sphere coordinates
+        com_norm : float
+            Distance of sphere vertex center of mass from origin. Low values
+            indicate convergence of the algorithm.
     """
     As = igl.doublearea(vertices_3d, tris)
     As /= As.sum()
@@ -463,7 +468,7 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
         Vs = ((1-np.linalg.norm(c)**2)*(Vs+c).T /np.linalg.norm(Vs+c, axis=1)**2).T + c
     return Vs, np.linalg.norm(mu)
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 73
+# %% ../nbs/06_harmonic_wrapping.ipynb 74
 def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha=0.5, set_uvs=False):
     """
     Compute a map of mesh to the unit sphere.
@@ -543,7 +548,7 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
         
     return vertices_sphere
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 85
+# %% ../nbs/06_harmonic_wrapping.ipynb 86
 def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coords_sphere_target,
                             allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
     """
@@ -588,12 +593,13 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
     
     Returns
     -------
-    coords_sphere_source_rotated : np.array
-        Rotationally aligned sphere vertices
-    rot_mat : np.array of shape (3,3)
-        Rotation matrix
-    overlap  : float
-        How well the conformal factors overlap. 1 = perfect overlap.
+    np.array, np.array, float
+        coords_sphere_source_rotated : np.array
+            Rotationally aligned sphere vertices
+        rot_mat : np.array of shape (3,3)
+            Rotation matrix
+        overlap  : float
+            How well the conformal factors overlap. 1 = perfect overlap.
     
     """
     if coords_sphere_source is None:
@@ -644,7 +650,7 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
 
     return coords_sphere_source @ R_refined.T, R_refined, overlap
 
-# %% ../nbs/06_harmonic_wrapping.ipynb 91
+# %% ../nbs/06_harmonic_wrapping.ipynb 92
 def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, coords_sphere_target=None,
                            method="harmonic", n_iter_centering=10, alpha=0.5,
                            align=True, allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
@@ -695,12 +701,13 @@ def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, 
 
     Returns
     -------
-    new_coords : np.array
-        New 3d vertex coordinates for mesh_source, lying on the surface
-        defined by mesh_target
-    overlap : np.array
-        Overlap of conformal factor (area distortion) on sphere of the two meshes. Only returned if align is True.
-        1 indicates perfect overlap.
+    np.array, float
+        new_coords : np.array
+            New 3d vertex coordinates for mesh_source, lying on the surface
+            defined by mesh_target
+        overlap : np.array
+            Overlap of conformal factor (area distortion) on sphere of the two meshes. Only returned if align is True.
+            1 indicates perfect overlap.
     """
     # compute harmonic map to disk
     if coords_sphere_source is None:

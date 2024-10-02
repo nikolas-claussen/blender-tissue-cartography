@@ -4,7 +4,7 @@
 __all__ = ['deprecated', 'adjust_axis_order', 'subsample_image', 'normalize_quantiles', 'normalize_mean_std', 'write_h5',
            'read_h5', 'save_dict_to_json', 'save_for_imageJ', 'normalize_quantiles_for_png', 'save_stack_for_blender']
 
-# %% ../nbs/01a_io.ipynb 2
+# %% ../nbs/01a_io.ipynb 3
 import numpy as np
 from scipy import ndimage
 from skimage import transform
@@ -20,11 +20,13 @@ import functools
 
 import igl
 
-# %% ../nbs/01a_io.ipynb 4
+# %% ../nbs/01a_io.ipynb 5
 def deprecated(func):
-    """This is a decorator which can be used to mark functions
+    """
+    This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emitted
-    when the function is used."""
+    when the function is used.
+    """
     @functools.wraps(func)
     def new_func(*args, **kwargs):
         warnings.simplefilter('always', DeprecationWarning)  # turn off filter
@@ -35,7 +37,7 @@ def deprecated(func):
         return func(*args, **kwargs)
     return new_func
 
-# %% ../nbs/01a_io.ipynb 6
+# %% ../nbs/01a_io.ipynb 7
 def adjust_axis_order(image, channel_axis=None):
     """
     Adjust axis order of image (numpy array) so that the channel axis is axis 0. 
@@ -64,7 +66,7 @@ def adjust_axis_order(image, channel_axis=None):
         channel_axis = np.argmin(image.shape)
     return np.moveaxis(image, channel_axis, 0)
 
-# %% ../nbs/01a_io.ipynb 9
+# %% ../nbs/01a_io.ipynb 11
 def subsample_image(image, subsampling_factors, use_block_averaging_if_possible=True):
     """
     Subsample (downscale) image by given factors.
@@ -191,7 +193,7 @@ def read_h5(filename):
         arr = f[sorted(f.keys())[0]][()] 
     return arr
 
-# %% ../nbs/01a_io.ipynb 18
+# %% ../nbs/01a_io.ipynb 20
 def save_dict_to_json(filename, dictionary):
     """
     Save dictionary to .json file.
@@ -217,7 +219,7 @@ def save_dict_to_json(filename, dictionary):
         json.dump(serializable_dictionary, f)
     return None
 
-# %% ../nbs/01a_io.ipynb 20
+# %% ../nbs/01a_io.ipynb 21
 def save_for_imageJ(filename, image, z_axis=None, channel_axis=None):
     """
     Save image as 32bit ImageJ compatible .tif file

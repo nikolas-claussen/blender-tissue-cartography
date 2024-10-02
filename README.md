@@ -49,8 +49,7 @@ to use it, I recommend updating regularly.
     - run `pip install blender-tissue-cartography` in a command window.
 
 4.  (Optional) Install extra Python library for `pymeshlab`, required
-    for some advanced functionality (remeshing and surface
-    reconstruction from within Python). Note that this package is not
+    for some advanced (re)meshing functionality. This package is not
     available on new ARM Apple computers.
 
     - run `pip install pymeshlab` in a command window
@@ -59,15 +58,16 @@ to use it, I recommend updating regularly.
     [MicroscopyNodes](https://github.com/oanegros/MicroscopyNodes) for
     rendering volumetric `.tif` files in blender
 
-This project is hosted on pip here:
-https://pypi.org/project/blender-tissue-cartography/
+The project is hosted on
+[pip](https://pypi.org/project/blender-tissue-cartography/), with source
+code on
+[GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography).
 
 ### Developer installation
 
-1.  [Clone this github
-    repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository),
-    or simply download the code as a .zip file and unpack it (green
-    button “Code”).
+1.  [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
+    the [github
+    repository](https://github.com/nikolas-claussen/blender-tissue-cartography).
 
 2.  Create a `conda` environment with all Python dependencies and
     install the `blender_tissue_cartography` module. Open a command
@@ -94,12 +94,13 @@ https://nikolas-claussen.github.io/blender-tissue-cartography/
 ## Usage
 
 Some fully worked out examples are provided in the `nbs/Tutorials/`
-folder. You can look at the jupyter notebooks on
-https://nikolas-claussen.github.io/blender-tissue-cartography/ without
-downloading anything.
-
-To run a tutorial on your computer, follow the installation instructions
-and then [launch
+folder on
+[GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography).
+You can download the code as a .zip file and unpack it (green button
+“Code”). You can look at the jupyter notebooks on [the documentation
+webpage](https://nikolas-claussen.github.io/blender-tissue-cartography)
+without downloading anything. To run a tutorial on your computer, follow
+the installation instructions and then [launch
 jupyter](https://docs.jupyter.org/en/latest/running.html) and work
 through the notebooks in the `tutorial` directory in order. If you are
 impatient, jump directly to `nbs/Tutorials/03_basics_example.ipynb`. I
