@@ -54,7 +54,18 @@ def convert_from_trimesh(mesh: trimesh.Trimesh, reconstruct_texture_from_faces=T
     vertex attribute vertex_tex_coord_matrix. Reconstruction from face texture can accommodate
     multiple texture coordinates per vertex (e.g. for UV maps with seams).
     
-    Texture vertices are rounded to texture_vertex_decimals decimals
+    Parameters
+    ----------
+    mesh : trimesh.Mesh
+    reconstruct_texture_from_faces : bool
+        Whether to reconstruct texture information from per-face data (True), or
+        per-vertex data (False)
+    texture_vertex_decimals : int
+        Texture vertices are rounded to texture_vertex_decimals decimals.
+
+    Returns
+    -------
+    tcmesh.ObjMesh
     """
     vertices = mesh.vertices
     normals = mesh.vertex_normals
