@@ -9,7 +9,7 @@ from scipy import stats, spatial, linalg
 import itertools
 import igl
 
-# %% ../nbs/05a_registration.ipynb 20
+# %% ../nbs/05a_registration.ipynb 17
 def package_affine_transformation(matrix, vector):
     """Package matrix transformation & translation into (d+1,d+1) matrix representation of affine transformation."""
     matrix_rep = np.hstack([matrix, vector[:, np.newaxis]])
@@ -60,10 +60,11 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
 
     Returns
     -------
-    affine_matrix_rep : np.array of shape (4, 4)
-        Affine transformation source -> target
-    aligned : np.array of shape (n_source, 3)
-        Aligned coordinates
+    np.array, np.array
+        affine_matrix_rep : np.array of shape (4, 4)
+            Affine transformation source -> target
+        aligned : np.array of shape (n_source, 3)
+            Aligned coordinates
     """
     target_centroid = stats.trim_mean(target, q, axis=0)
     target_inertia = get_inertia(target, q=q)
@@ -104,7 +105,7 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
     affine_matrix_rep = np.round(package_affine_transformation(trafo_matrix, trafo_translate),decimals=2)
     return affine_matrix_rep, aligned
 
-# %% ../nbs/05a_registration.ipynb 31
+# %% ../nbs/05a_registration.ipynb 28
 def procrustes(source, target, include_scaling=True, include_reflections=True):
     """
     Wrapper around igl.procrustes
@@ -119,12 +120,13 @@ def procrustes(source, target, include_scaling=True, include_reflections=True):
 
     Returns
     -------
-    trafo_affine : array_like
-        (4,4) array representing the affine transformation from source to target.
-    aligned : array_like
-        The orientation of the source that best fits the target.
-    disparity : float
-        np.linalg.norm(aligned-target, axis=1).mean()
+    np.array, np.array, float
+        trafo_affine : np.array
+            (4,4) array representing the affine transformation from source to target.
+        aligned : np.array
+            The orientation of the source that best fits the target.
+        disparity : float
+            np.linalg.norm(aligned-target, axis=1).mean()
     """
     scale_igl, rot_igl, translate_igl = igl.procrustes(source, target,
                                                        include_scaling=include_scaling,
@@ -134,7 +136,7 @@ def procrustes(source, target, include_scaling=True, include_reflections=True):
     disparity = np.linalg.norm(aligned-target, axis=1).mean()
     return trafo_affine, aligned, disparity
 
-# %% ../nbs/05a_registration.ipynb 33
+# %% ../nbs/05a_registration.ipynb 30
 def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, include_scaling=True, n_samples=1000):
     """
     Apply the iterative closest point algorithm to align point cloud a with
@@ -163,12 +165,13 @@ def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, include
     
     Returns
     ----------
-    matrix : (4,4) float
-      The transformation matrix sending a to b
-    transformed : (n,3) float
-      The image of a under the transformation
-    cost : float
-      The cost of the transformation
+    np.array, np.array, float
+        matrix : (4,4) np.array
+          The transformation matrix sending a to b
+        transformed : (n,3) np.array
+          The image of a under the transformation
+        cost : float
+          The cost of the transformation
     """
     # initialize transform matrix
     total_matrix = np.eye(4) if initial is None else initial

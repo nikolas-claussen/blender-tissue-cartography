@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['shrinkwrap_igl']
 
-# %% ../nbs/05c_wrapping.ipynb 2
+# %% ../nbs/05c_wrapping.ipynb 3
 from . import io as tcio
 from . import mesh as tcmesh
 from . import registration as tcreg
@@ -16,7 +16,7 @@ import igl
 
 from scipy import sparse
 
-# %% ../nbs/05c_wrapping.ipynb 20
+# %% ../nbs/05c_wrapping.ipynb 21
 def shrinkwrap_igl(mesh_source, mesh_target, n_iter_smooth_target=10, n_iter_smooth_wrapped=10):
     """
     Shrink-wrap the source mesh onto the target mesh using trimesh.

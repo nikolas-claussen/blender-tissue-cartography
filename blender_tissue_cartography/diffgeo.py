@@ -6,7 +6,7 @@ __all__ = ['compute_per_vertex_area_distortion', 'get_area_distortion_in_UV', 'c
            'get_induced_metric', 'tri_grad', 'get_normal_projector', 'separate_tangential_normal', 'get_div', 'get_rot',
            'get_grad_perp']
 
-# %% ../nbs/03_differential_geometry.ipynb 2
+# %% ../nbs/03_differential_geometry.ipynb 3
 from . import mesh as tcmesh
 from . import interpolation as tcinterp
 from . import rotation as tcrot
@@ -18,7 +18,7 @@ import igl
 
 from scipy import sparse, linalg
 
-# %% ../nbs/03_differential_geometry.ipynb 6
+# %% ../nbs/03_differential_geometry.ipynb 7
 def compute_per_vertex_area_distortion(source_vertices, source_faces, target_vertices, target_faces,
                                        evaluate_at='source', cutoff=1e-15):
     """
@@ -33,8 +33,10 @@ def compute_per_vertex_area_distortion(source_vertices, source_faces, target_ver
     for averages.
     
     Example (compute distortion of UV map):
+    `
     compute_per_vertex_area_distortion(mesh.texture_vertices, mesh.texture_tris,
                                        mesh.vertices, mesh.tris)
+    `
     
     Parameters
     ----------
@@ -51,10 +53,11 @@ def compute_per_vertex_area_distortion(source_vertices, source_faces, target_ver
         mesh vertices.
     cutoff : float
         Numerical cutoff for small target areas (avoid 0 division error)
+    
     Returns
     -------
     area_ratio_at_vertices : np.array
-        Area distortion factor (source area / target area) evaluated on source or target mesh vertices.
+        Area distortion factor (source area/target area) evaluated on source or target mesh vertices.
     """
     areas_source = igl.doublearea(source_vertices, source_faces)
     areas_target = igl.doublearea(target_vertices, target_faces)
@@ -69,7 +72,7 @@ def compute_per_vertex_area_distortion(source_vertices, source_faces, target_ver
                                                            np.stack(source_vertices.shape[1]*[area_ratio]).T)[:,0]
     return area_ratio_at_vertices
 
-# %% ../nbs/03_differential_geometry.ipynb 7
+# %% ../nbs/03_differential_geometry.ipynb 8
 def get_area_distortion_in_UV(mesh, uv_grid_steps=1024, map_back=True):
     """
     Get area distortion of UV map, interpolated across the UV square.
@@ -107,7 +110,7 @@ def get_area_distortion_in_UV(mesh, uv_grid_steps=1024, map_back=True):
                                                                           domain='per-texture-vertex')
     return distortion_interpolated
 
-# %% ../nbs/03_differential_geometry.ipynb 14
+# %% ../nbs/03_differential_geometry.ipynb 15
 def compute_per_vertex_angle_distortion(source_vertices, source_faces, target_vertices, target_faces,
                                         evaluate_at='source', cutoff=1e-15):
     """  
@@ -121,8 +124,10 @@ def compute_per_vertex_angle_distortion(source_vertices, source_faces, target_ve
     This can be used to visualize map distortion.
     
     Example (compute distortion of UV map):
+    `
     compute_per_vertex_angle_distortion(mesh.texture_vertices, mesh.texture_tris,
                                         mesh.vertices, mesh.tris)
+    `
     
     Parameters
     ----------
@@ -137,6 +142,7 @@ def compute_per_vertex_angle_distortion(source_vertices, source_faces, target_ve
     evaluate_at : str, 'source' or 'target'
         Whether to evaluate the result at the source or target
         mesh vertices.
+    
     Returns
     -------
     area_ratio_at_vertices : np.array
@@ -153,7 +159,7 @@ def compute_per_vertex_angle_distortion(source_vertices, source_faces, target_ve
                                                             np.stack(source_vertices.shape[1]*[angle_error]).T)[:,0]
     return angle_error_at_vertices
 
-# %% ../nbs/03_differential_geometry.ipynb 20
+# %% ../nbs/03_differential_geometry.ipynb 21
 def compute_per_face_jacobian(source_vertices, source_faces, target_vertices, target_faces):
     """
     Compute Jacobian factor for a map between meshes.
@@ -164,8 +170,10 @@ def compute_per_face_jacobian(source_vertices, source_faces, target_vertices, ta
     The result is evaluated at the mesh faces.
 
     Example (compute distortion of UV map):
+    `
     compute_per_vertex_jacobian(mesh.texture_vertices, mesh.texture_tris
                                 mesh.vertices, mesh.tris)
+    `
     
     Parameters
     ----------
@@ -177,6 +185,7 @@ def compute_per_face_jacobian(source_vertices, source_faces, target_vertices, ta
         Target mesh vertices.
     target_faces : np.array of shape (..., 3)
         Target mesh faces. Must be triangular.
+    
     Returns
     -------
     Jacobian : np.array
@@ -207,8 +216,10 @@ def compute_per_vertex_jacobian(source_vertices, source_faces, target_vertices, 
     if mapping from 3d to UV.
     
     Example (compute distortion of UV map):
+    `
     compute_per_vertex_jacobian(mesh.texture_vertices, mesh.texture_tris
                                 mesh.vertices, mesh.tris)
+    `
     
     Parameters
     ----------
@@ -236,13 +247,13 @@ def compute_per_vertex_jacobian(source_vertices, source_faces, target_vertices, 
                                  for x in jac_per_face.transpose((1,0,2))], axis=1)        
     return jac_per_vertices
 
-# %% ../nbs/03_differential_geometry.ipynb 27
+# %% ../nbs/03_differential_geometry.ipynb 28
 def get_metric_norm(vf, g):
-    """Compute norm of vectorfield vf (shape (..., d)) using metric g."""
+    """Compute norm of vector field vf (shape (..., d)) using metric g (shape (..., d, d))."""
     return np.sqrt(np.einsum('...i,...ij,...j->...', vf, g, vf))
 
 def get_metric_angle(vf1, vf2, g):
-    """Compute angle in radians between two vector fields (shape (..., d)) in degrees using metric g."""
+    """Compute angle in radians between two vector fields (shape (..., d)) in degrees using metric g (shape (..., d, d))."""
     norm1 = get_metric_norm(vf1, g)
     norm2 = get_metric_norm(vf2, g)
     inner = np.einsum('...i,...ij,...j->...', vf1, g, vf2)
@@ -270,7 +281,7 @@ def get_induced_metric(mesh):
     g = np.einsum('via,vib->vab', jac, jac)
     return g
 
-# %% ../nbs/03_differential_geometry.ipynb 34
+# %% ../nbs/03_differential_geometry.ipynb 35
 def tri_grad(field, vertices, faces, grad_matrix=None):
     """
     Calculate the gradient of a function defined on vertices of a triangular mesh.
@@ -313,7 +324,7 @@ def tri_grad(field, vertices, faces, grad_matrix=None):
     grad_field = grad_field.reshape(grad_field.shape[:2] + index_shape)
     return grad_field
 
-# %% ../nbs/03_differential_geometry.ipynb 44
+# %% ../nbs/03_differential_geometry.ipynb 45
 def get_normal_projector(vertices=None, faces=None, normals=None):
     """
     Get projection matrix that removes components normal to the surface
@@ -329,6 +340,7 @@ def get_normal_projector(vertices=None, faces=None, normals=None):
         Triangular faces. If None, must supply normals
     normals : None or np.array of shape (#vertices, dim)
         If None, recompute normals from vertices and faces
+
     Returns
     -------
     np.array of shape (#vertices, dim, dim)
@@ -340,9 +352,10 @@ def get_normal_projector(vertices=None, faces=None, normals=None):
         normals = (normals.T/np.linalg.norm(normals, axis=-1)).T
     return np.eye(normals.shape[1])-np.einsum('vi,vj->vij', normals, normals)
 
+# %% ../nbs/03_differential_geometry.ipynb 46
 def separate_tangential_normal(field, vertices=None, faces=None, normals=None):
     """
-    Separate tangential and normal components of fa ield defined at vertices.
+    Separate tangential and normal components of field defined at vertices.
     
     Vector and rank-2 tensor fields are supported. For a rank-2 tensor,
     normal-tangential cross components are discarded.
@@ -357,10 +370,12 @@ def separate_tangential_normal(field, vertices=None, faces=None, normals=None):
         Triangular faces. If None, must supply normals
     normals : None or np.array of shape (#vertices, dim)
         If None, recompute normals from vertices and faces
+
     Returns
     -------
-    tangential_component : np.array of shape (#vertices, dim) or (#vertices, dim, dim)
-    normal_component : np.array of shape (#vertices, dim) or (#vertices, dim, dim)
+    np.array, np.array
+        tangential_component : np.array of shape (#vertices, dim) or (#vertices, dim, dim)
+        normal_component : np.array of shape (#vertices, dim) or (#vertices, dim, dim)
 
     """
     P = get_normal_projector(vertices, faces, normals)
@@ -375,7 +390,7 @@ def separate_tangential_normal(field, vertices=None, faces=None, normals=None):
         normal_component = np.einsum('vij,vjk,vkl->vil', P_orth, field, P_orth)
     return tangential_component, normal_component
 
-# %% ../nbs/03_differential_geometry.ipynb 49
+# %% ../nbs/03_differential_geometry.ipynb 51
 def get_div(field, vertices, faces, normals=None):
     """
     Calculate tangent-plane divergence of vector field defined on vertices of triangular mesh.

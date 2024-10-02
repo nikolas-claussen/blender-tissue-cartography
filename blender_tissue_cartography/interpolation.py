@@ -26,11 +26,14 @@ def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, res
     Get mesh vertices and normals for diagnostic cross-section overlay plots.
     
     Usage example:
+    
+        `
         slice_image, slice_vertices, slice_normals = get_cross_section_vertices_normals(1, 100,
                                     image, mesh, metadata_dict["resolution_in_microns"])
         plt.scatter(*slice_vertices.T, s=5, c="tab:red")
         plt.quiver(*slice_vertices.T, *slice_normals.T, color="tab:red")
         plt.imshow(slice_image[0], vmax=10000, origin="lower")
+        `
     
     Note: `origin="lower"` in plt.imshow() is essential for a correctly oriented plot in Python!!
         
@@ -53,14 +56,13 @@ def get_cross_section_vertices_normals(slice_axis, slice_index, image, mesh, res
     
     Returns
     -------
-    slice_image : 3d np.array 
-        Slice of image. Axis 0 is channel
-    slice_vertices : 2d  np.array
-        Projected vertices in the slice. The second axis is the coordinate one.
-    slice_normals : 2d  np.array (..., 2)
-        Projected normals in slice. The second axis is the coordinate one.
-
-    """
+    np.array, np.array, np.array
+        slice_image : np.array 
+            Slice of image. Axis 0 is channel
+        slice_vertices : np.array
+            Projected vertices in the slice. The second axis is the coordinate one.
+        slice_normals : 2d  np.array (..., 2)
+            Projected normals in slice. The second axis is the coordinate one."""
     slice_image = image.take(indices=slice_index, axis=slice_axis+1).transpose((0,2,1))
     slice_coordinate = slice_index*resolution[slice_axis]
     if get_normals:
@@ -117,14 +119,14 @@ def get_uv_layout_mask_mask(mesh: tcmesh.ObjMesh, uv_grid_steps=256):
     
     return uv_mask.astype(bool)
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 36
+# %% ../nbs/02_cartographic_interpolation.ipynb 35
 def interpolate_barycentric(points, vertices, faces, values, distance_threshold=np.inf):
     """
     Interpolate values defined on triangular mesh vertices onto points using barycentric interpolation.
     
-    Can handle triangular meshes in both 3d and 2d. Points that do not lie on the triangular mesh
+    Can handle triangular meshes in both 3d and 2d. Points not on the triangular mesh
     are projected onto the closest point. Points more distant than the distance_threshold
-    will be set to np.nan. The data defined on the triangular mesh must be defined per vertex
+    will be set to np.nan. The data on the triangular mesh must be defined per vertex
     and can have any number of axes (scalars, vectors, tensors, ...).
     
     This function can also be used to transfer values defined on one mesh to another mesh's
@@ -165,7 +167,7 @@ def interpolate_barycentric(points, vertices, faces, values, distance_threshold=
     interpolated[squared_distances>distance_threshold] = np.nan
     return interpolated
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 39
+# %% ../nbs/02_cartographic_interpolation.ipynb 38
 def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid_steps=256, map_back=True,
                                        distance_threshold=1e-4, use_fallback=False):
     """
@@ -235,7 +237,7 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
     interpolated = interpolated.reshape((uv_grid_steps, uv_grid_steps,)+field.shape[1:])[::-1]
     return interpolated
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 43
+# %% ../nbs/02_cartographic_interpolation.ipynb 42
 def interpolate_UV_to_per_vertex_field(mesh, field, domain="per-vertex"):
     """
     Interpolate a field defined by gridded values across UV square onto mesh vertices.
@@ -277,7 +279,7 @@ def interpolate_UV_to_per_vertex_field(mesh, field, domain="per-vertex"):
         return per_texture_vertex
     return mesh.map_per_texture_vertex_to_per_vertex(per_texture_vertex)
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 44
+# %% ../nbs/02_cartographic_interpolation.ipynb 43
 def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resolution):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
@@ -306,7 +308,7 @@ def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resoluti
     
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 52
+# %% ../nbs/02_cartographic_interpolation.ipynb 51
 def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_positions, interpolated_normals,
                                                  normal_offsets, resolution,):
     """ 
@@ -345,7 +347,7 @@ def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_position
                                   for o in normal_offsets], axis=1)
     return interpolated_data
 
-# %% ../nbs/02_cartographic_interpolation.ipynb 58
+# %% ../nbs/02_cartographic_interpolation.ipynb 57
 def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,), uv_grid_steps=256,
                                     map_back=True, use_fallback='auto'):
     """
@@ -380,12 +382,13 @@ def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,)
     
     Returns
     -------
-    interpolated_data : np.array of shape (n_channels, n_layers, uv_grid_steps, uv_grid_steps)
-        3d volumetric data multilayer-interpolated across [0,1]^2 UV grid, with uniform step size.
-    interpolated_3d_positions : np.array of shape (uv_grid_steps, uv_grid_steps, 3)
-        3d positions across [0,1]^2 UV grid, with uniform step size. 
-    interpolated_normals : np.array of shape (uv_grid_steps, uv_grid_steps, 3)
-        Normals across [0,1]^2 UV grid, with a uniform step size.
+    np.array, np.array, np.array
+        interpolated_data : np.array of shape (n_channels, n_layers, uv_grid_steps, uv_grid_steps)
+            3d volumetric data multilayer-interpolated across [0,1]^2 UV grid, with uniform step size.
+        interpolated_3d_positions : np.array of shape (uv_grid_steps, uv_grid_steps, 3)
+            3d positions across [0,1]^2 UV grid, with uniform step size. 
+        interpolated_normals : np.array of shape (uv_grid_steps, uv_grid_steps, 3)
+            Normals across [0,1]^2 UV grid, with a uniform step size.
     """
     if isinstance(image, str):
         image = tcio.adjust_axis_order(tcio.imread(image))
