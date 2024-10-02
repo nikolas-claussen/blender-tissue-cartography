@@ -88,7 +88,7 @@ code on
 
 ## Documentation
 
-Full documentation (including jupyter tutorials is available here:
+Full documentation (including jupyter tutorials) is available here:
 https://nikolas-claussen.github.io/blender-tissue-cartography/
 
 ## Usage
