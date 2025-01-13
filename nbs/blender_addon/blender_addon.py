@@ -723,7 +723,7 @@ class SlicePlaneOperator(bpy.types.Operator):
         slice_img = get_slice_image(data, resolution, axis=context.scene.slice_axis,
                                     position=context.scene.slice_position)
         slice_img = normalize_quantiles(slice_img, quantiles=(0.01, 0.99),
-                                         channel_axis=0, clip=True, data_type=None)     
+                                        channel_axis=0, clip=True, data_type=None)     
         create_material_from_array(slice_plane, slice_img[context.scene.slice_channel], material_name=f"SliceMaterial_{context.scene.slice_axis}_{context.scene.slice_position}")  
         return {'FINISHED'}
 
