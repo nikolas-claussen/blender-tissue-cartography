@@ -158,3 +158,6 @@ checklink/cookies.txt
 #*.blend
 #*.obj
 
+# large .blend file from tissue cartography
+nbs/blender_addon/blender_addon.blend
+

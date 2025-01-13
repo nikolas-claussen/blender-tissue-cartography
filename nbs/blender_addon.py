@@ -542,7 +542,7 @@ def create_vertex_color_material(object, material_name="VertexColorMaterial"):
         object.data.materials[0] = material
     else:
         object.data.materials.append(material)
-    obj.active_material = material
+    object.active_material = material
     return None
 
 
@@ -581,8 +581,8 @@ class LoadTIFFOperator(Operator):
                              hide=False)
             box.display_type = 'WIRE'
             # attach the data to the box
-            box["resolution"] = resolution_array
-            box["3D_data"] = (data.tolist, data.shape) # data will be converted to list, so need to save its shape
+            box["resolution"] = resolution_array.tolist()
+            box["3D_data"] = (data.tolist(), data.shape) # data will be converted to list, so need to save its shape
             
         except Exception as e:
             self.report({'ERROR'}, f"Failed to load TIFF file: {e}")
@@ -630,6 +630,7 @@ class CreateProjectionOperator(Operator):
 
         # texture bake normals and world positions
         loop_uvs, loop_normals, loop_world_positions = get_uv_normal_world_per_loop(obj, filter_unique=True)
+        
         baked_normals = bake_per_loop_values_to_uv(loop_uvs, loop_normals, 
                                                    image_resolution=projection_resolution)
         baked_normals = (baked_normals.T/np.linalg.norm(baked_normals.T, axis=0)).T
@@ -646,6 +647,8 @@ class CreateProjectionOperator(Operator):
                                                 baked_world_positions, 
                                                 context.scene.tissue_cartography_resolution_array,
                                                 baked_normals, normal_offsets=offsets_array)
+        print(obj.name)
+        print("all nans?", np.mean(np.isnan(baked_data)))
         # set results as attributes of the mesh
         obj["baked_data"] = (baked_data.tolist(), baked_data.shape)
         obj["baked_normals"] = (baked_normals.tolist(), baked_normals.shape)
