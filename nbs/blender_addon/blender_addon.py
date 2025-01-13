@@ -647,12 +647,10 @@ class CreateProjectionOperator(Operator):
                                                 baked_world_positions, 
                                                 context.scene.tissue_cartography_resolution_array,
                                                 baked_normals, normal_offsets=offsets_array)
-        print(obj.name)
-        print("all nans?", np.mean(np.isnan(baked_data)))
         # set results as attributes of the mesh
-        obj["baked_data"] = (baked_data.tolist(), baked_data.shape)
-        obj["baked_normals"] = (baked_normals.tolist(), baked_normals.shape)
-        obj["baked_world_positions"] = (baked_world_positions.tolist(), baked_world_positions.shape)
+        obj["baked_data"] = (baked_data.flatten(), baked_data.shape)
+        obj["baked_normals"] = (baked_normals.flatten(), baked_normals.shape)
+        obj["baked_world_positions"] = (baked_world_positions.flatten(), baked_world_positions.shape)
 
         # create texture
         create_material_from_multilayer_array(obj, baked_data, material_name="ProjectedMaterial")
