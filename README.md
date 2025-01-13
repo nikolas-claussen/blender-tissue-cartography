@@ -14,22 +14,42 @@ organization of many biological tissues. For more detail, see [Heemskerk
 & Streichan 2015](https://doi.org/10.1038/nmeth.3648) and [Mitchell &
 Cislo 2023](https://doi.org/10.1038/s41592-023-02081-w).
 
-`blender_tissue_cartography` is a set of Python tools, template analysis
-pipelines, and tutorials to do tissue cartography using the popular 3d
-creation software [blender](https://www.blender.org/). The goal is to
-make tissue cartography as user-friendly as possible using simple,
-modular Python code and blender’s graphical user interface.
+`blender_tissue_cartography` is an add-on, a python package and a set of
+template analysis pipelines/tutorials to do tissue cartography using the
+popular 3d creation software [blender](https://www.blender.org/). The
+goal is to make tissue cartography as user-friendly as possible using
+simple, modular Python code and blender’s graphical user interface.
 
 ### Work in progress!
 
-This project is a work in progress and will change rapidly. If you want
-to use it, I recommend updating regularly.
-
-- Tools for individual recordings are in a reasonably complete state
-- Tools for dynamic recordings/movies are complete, but not fully tested
-- Tutorials to be written: analysis in 3d
+This project is a work in progress and may change rapidly.
 
 ## Installation
+
+`blender_tissue_cartography` comprises both an add-on that allows you to
+do tissue cartography purely within Blender, as well as a python library
+for (semi-) automatized pipelines.
+
+### Blender add-on
+
+1.  Install required non-python programs: [Fiji](https://fiji.sc/)
+    (optional), [Ilastik](https://www.ilastik.org/),
+    [Meshlab](https://www.meshlab.net/) (optional), and [Blender
+    4.3](https://www.blender.org/).
+
+2.  From the
+    [GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography),
+    download the file
+    `blender_tissue_cartography/blender_tissue_cartography_addon.py`.
+
+3.  [Install the
+    add-on](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html):
+    Click “Edit -\> Preferences -\> Add-ons -\> Add-on Settings -\>
+    Install from disk” and select `blender_tissue_cartography_addon.py`.
+
+4.  Restart Blender.
+
+### Python library
 
 1.  Install required non-python programs: [Fiji](https://fiji.sc/)
     (optional), [Ilastik](https://www.ilastik.org/),
@@ -39,10 +59,6 @@ to use it, I recommend updating regularly.
 2.  Install Python via
     [anaconda/miniconda](https://docs.anaconda.com/miniconda/miniconda-install/),
     if you haven’t already.
-
-    - If `conda` is unbearably slow for you, install
-      [mamba](https://mamba.readthedocs.io/en/latest/index.html), a
-      `conda` replacement which is much faster.
 
 3.  Install `blender_tissue_cartography`:
 
@@ -88,17 +104,20 @@ code on
 
 ## Documentation
 
-Full documentation (including jupyter tutorials) is available here:
+Full documentation (including tutorials) is available here:
 https://nikolas-claussen.github.io/blender-tissue-cartography/
 
 ## Usage
 
-For a tissue cartography project, first, create a folder to hold your
-data and results. You run the `blender_tissue_cartography` pipeline from
-a jupyter computational notebook, which can also serve as your lab
-notebook (notes, comments on the data). Use one of the tutorial jupyter
-notebooks as a template with instructions. As you work through the
-notebook, you will:
+For a complete tutorial, see the [documentation
+website](https://nikolas-claussen.github.io/blender-tissue-cartography/).
+
+### Python library
+
+You run the `blender_tissue_cartography` pipeline from a jupyter
+computational notebook, which can also serve as your lab notebook
+(notes, comments on the data). Use one of the tutorial jupyter notebooks
+as a template with instructions. As you work through the notebook, you:
 
 1.  create a segmentation of your 3d data
 
@@ -116,6 +135,15 @@ example *Drosophila* dataset: Volumetric data in ImageJ (center),
 jupyter computational notebook to run the `blender_tissue_cartography`
 module (left), and blender project with extracted mesh and texture
 (right).
+
+### Blender add-on
+
+The Blender add-on allows you to carry out steps 3-5 entirely within
+Blender. To use it, you first load a mesh (created in step 2) into
+blender. The add-on then allows you to load 3D data into blender,
+visualize it, and make cartographic projections.
+
+### Tutorials
 
 Some fully worked-out examples are provided in the `nbs/Tutorials/`
 folder on
