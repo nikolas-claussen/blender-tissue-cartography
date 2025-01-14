@@ -17,14 +17,17 @@ website:
       - 05c_wrapping.ipynb
       - 06_harmonic_wrapping.ipynb
       - 07_volumetric_rendering.ipynb
+      - 08_blender_addon_notes.ipynb
       - section: Tutorials
         contents:
           - Tutorials/00_tissue_cartography.ipynb
           - Tutorials/01_segmentation_with_ilastik.ipynb
           - Tutorials/02_blender_tutorial.ipynb
-          - Tutorials/03_basic_example.ipynb
-          - Tutorials/04_UV_maps_with_seams.ipynb
-          - Tutorials/05_improving_UV_maps.ipynb
-          - Tutorials/06_advanced_segmentation_and_meshing.ipynb
-          - Tutorials/07_multiple_recordings_and_reference_meshes.ipynb
-          - Tutorials/08_movies_and_dynamic_surfaces.ipynb
+          - Tutorials/03_blender_addon_tutorial.ipynb
+          - Tutorials/04_basic_example.ipynb
+          - Tutorials/05_UV_maps_with_seams.ipynb
+          - Tutorials/06_improving_UV_maps.ipynb
+          - Tutorials/07_advanced_segmentation_and_meshing.ipynb
+          - Tutorials/08_multiple_recordings_and_reference_meshes.ipynb
+          - Tutorials/09_movies_and_dynamic_surfaces.ipynb
+          - Tutorials/10_analysis_in_3d.ipynb

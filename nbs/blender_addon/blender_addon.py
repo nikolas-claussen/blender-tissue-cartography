@@ -11,6 +11,7 @@ from pathlib import Path
 import numpy as np
 import tifffile
 from scipy import interpolate, ndimage
+from skimage import measure
 
 ### I/O and image handling
 
@@ -546,6 +547,27 @@ def create_vertex_color_material(object, material_name="VertexColorMaterial"):
     return None
 
 
+### Marching cubes
+
+
+def create_mesh_from_numpy(name, verts, faces):
+    """
+    Creates a Blender mesh object from NumPy arrays of vertices and faces.
+    
+    :param name: Name of the new mesh object.
+    :param verts: NumPy array of shape (n, 3) containing vertex coordinates.
+    :param faces: NumPy array of shape (m, 3 or 4) containing face indices.
+    :return: The created mesh object.
+    """
+    mesh = bpy.data.meshes.new(name)
+    obj = bpy.data.objects.new(name, mesh)
+    # Link the object to the scene
+    bpy.context.collection.objects.link(obj)
+    mesh.from_pydata(verts.tolist(), [], faces.tolist())
+    mesh.update()
+    return obj
+
+
 ### Operators defining the user interface of the add-on
 
 
@@ -555,7 +577,7 @@ class LoadTIFFOperator(Operator):
     bl_label = "Load TIFF File"
 
     def execute(self, context):
-        file_path = context.scene.tissue_cartography_file
+        file_path = bpy.path.abspath(context.scene.tissue_cartography_file)
         resolution = context.scene.tissue_cartography_resolution
 
         # Load resolution as a NumPy array
@@ -577,7 +599,7 @@ class LoadTIFFOperator(Operator):
             bpy.types.Scene.tissue_cartography_resolution_array = resolution_array
             # create a bounding box mesh to represent the data
             box = create_box(*(np.array(data.shape[1:])*resolution_array),
-                             name=f"{Path(file_path).name}_BoundingBox",
+                             name=f"{Path(file_path).stem}_BoundingBox",
                              hide=False)
             box.display_type = 'WIRE'
             # attach the data to the box
@@ -590,6 +612,41 @@ class LoadTIFFOperator(Operator):
 
         return {'FINISHED'}
 
+
+class LoadSegmentationTIFFOperator(Operator):
+    """Load segmentation .tif file and resolution, and create a mesh from binary segmentation."""
+    bl_idname = "scene.load_segmentation"
+    bl_label = "Load Segmentation TIFF File"
+
+    def execute(self, context):
+        # Load resolution as a NumPy array
+        resolution_array = np.array(context.scene.tissue_cartography_segmentation_resolution)
+
+        # Load TIFF file as a NumPy array
+        file_path = bpy.path.abspath(context.scene.tissue_cartography_segmentation_file)
+        if not (file_path.lower().endswith(".tiff") or file_path.lower().endswith(".tif")):
+            self.report({'ERROR'}, "Selected file is not a TIFF")
+            return {'CANCELLED'}
+        try:
+            data = tifffile.imread(file_path)
+            assert len(data.shape) == 3, "Data must be volumetric!"
+            self.report({'INFO'}, f"TIFF file loaded with shape {data.shape}")
+            # smooth and normalize the segmentation
+            data = (data-data.min())/(data.max()-data.min())
+            sigma = context.scene.tissue_cartography_segmentation_sigma
+            data_smoothed = ndimage.gaussian_filter(data, sigma=sigma/resolution_array)
+            # compute mesh using marching cubes, and convert to mesh
+            verts, faces, _, _ = measure.marching_cubes(data_smoothed,
+                                                        level=0.5, spacing=(1.0,1.0,1.0))
+            verts = verts * resolution_array
+            create_mesh_from_numpy(f"{Path(file_path).stem}_mesh", verts, faces)
+            
+        except Exception as e:
+            self.report({'ERROR'}, f"Failed to load segmentation: {e}")
+            return {'CANCELLED'}
+
+        return {'FINISHED'}
+    
 
 class CreateProjectionOperator(Operator):
     """
@@ -849,6 +906,13 @@ class TissueCartographyPanel(Panel):
         layout.prop(scene, "tissue_cartography_resolution")
         layout.operator("scene.load_tiff", text="Load .tiff file")
         layout.separator()
+        
+        layout.prop(scene, "tissue_cartography_segmentation_file")
+        layout.prop(scene, "tissue_cartography_segmentation_resolution")
+        layout.prop(scene, "tissue_cartography_segmentation_sigma")
+        layout.operator("scene.load_segmentation", text="Get mesh from binary segmentation .tiff file")
+        layout.separator()
+        
         layout.prop(scene, "tissue_cartography_offsets")
         layout.prop(scene, "projection_resolution")
         layout.operator("scene.create_projection", text="Create Projection")
@@ -871,12 +935,14 @@ def register():
     """Add the add-on to the blender user interface"""
     bpy.utils.register_class(TissueCartographyPanel)
     bpy.utils.register_class(LoadTIFFOperator)
+    bpy.utils.register_class(LoadSegmentationTIFFOperator)
     bpy.utils.register_class(CreateProjectionOperator)
     bpy.utils.register_class(SaveProjectionOperator)
     bpy.utils.register_class(SlicePlaneOperator)
     bpy.utils.register_class(VertexShaderInitializeOperator)
     bpy.utils.register_class(VertexShaderRefreshOperator)
     bpy.utils.register_class(HelpPopupOperator)
+    
     
     bpy.types.Scene.tissue_cartography_file = StringProperty(
         name="File Path",
@@ -889,6 +955,25 @@ def register():
         size=3,
         default=(1.0, 1.0, 1.0),
     )
+    
+    bpy.types.Scene.tissue_cartography_segmentation_file = StringProperty(
+        name="Segmentation File Path",
+        description="Path to the segmentation TIFF file. Should have values between 0-1.",
+        subtype='FILE_PATH',
+    )
+    bpy.types.Scene.tissue_cartography_segmentation_resolution = FloatVectorProperty(
+        name="Segmentation x/y/z Resolution (µm)",
+        description="Resolution of segmentation in microns along x, y, z axes",
+        size=3,
+        default=(1.0, 1.0, 1.0),
+    )
+    bpy.types.Scene.tissue_cartography_segmentation_sigma = FloatProperty(
+        name="Segmentation Smoothing (µm)",
+        description="Smothing kernel for extracting mesh from segmentation, in µm",
+        default=0,
+        min=0
+    )
+    
     bpy.types.Scene.tissue_cartography_offsets = StringProperty(
         name="Normal Offsets (µm)",
         description="Comma-separated list of floats for multilayer projection offsets",
@@ -936,16 +1021,30 @@ def register():
 def unregister():
     bpy.utils.unregister_class(TissueCartographyPanel)
     bpy.utils.unregister_class(LoadTIFFOperator)
+    bpy.utils.unregister_class(LoadSegmentationTIFFOperator)
     bpy.utils.unregister_class(CreateProjectionOperator)
     bpy.utils.unregister_class(SaveProjectionOperator)
     bpy.utils.unregister_class(SlicePlaneOperator)
     bpy.utils.unregister_class(VertexShaderInitializeOperator)
     bpy.utils.unregister_class(VertexShaderRefreshOperator)
     bpy.utils.unregister_class(HelpPopupOperator)
+
+    del bpy.types.Scene.tissue_cartography_file 
+    del bpy.types.Scene.tissue_cartography_resolution 
+    del bpy.types.Scene.tissue_cartography_segmentation_file
+    del bpy.types.Scene.tissue_cartography_segmentation_resolution 
+    del bpy.types.Scene.tissue_cartography_segmentation_sigma
+    del bpy.types.Scene.tissue_cartography_offsets 
+    del bpy.types.Scene.projection_resolution 
+    del bpy.types.Scene.slice_axis 
+    del bpy.types.Scene.slice_position 
+    del bpy.types.Scene.slice_channel 
+    del bpy.types.Scene.vertex_offset 
+    del bpy.types.Scene.vertex_channel
+
     del bpy.types.Scene.tissue_cartography_resolution_array
     del bpy.types.Scene.tissue_cartography_data
     del bpy.types.Scene.tissue_cartography_interpolators
-
 
 ### Run the add-on
 
