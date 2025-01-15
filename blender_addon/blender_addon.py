@@ -7,11 +7,14 @@ bl_info = {
 import bpy
 from bpy.props import StringProperty, FloatVectorProperty, IntVectorProperty, FloatProperty, IntProperty, EnumProperty
 from bpy.types import Operator, Panel
+import mathutils
 from pathlib import Path
 import numpy as np
 import tifffile
-from scipy import interpolate, ndimage
+from scipy import interpolate, ndimage, spatial, stats, linalg
 from skimage import measure
+import itertools
+
 
 ### I/O and image handling
 
@@ -568,6 +571,292 @@ def create_mesh_from_numpy(name, verts, faces):
     return obj
 
 
+### Iterative closest point alignment
+
+
+def package_affine_transformation(matrix, vector):
+    """Package matrix transformation & translation into (d+1,d+1) matrix representation of affine transformation."""
+    matrix_rep = np.hstack([matrix, vector[:, np.newaxis]])
+    matrix_rep = np.pad(matrix_rep, ((0,1),(0,0)), constant_values=0)
+    matrix_rep[-1,-1] = 1
+    return matrix_rep
+
+
+def get_inertia(pts):
+    """Get inertia tensor of 3d point cloud."""
+    pts_nomean = pts - np.mean(pts, axis=0)
+    x, y, z = pts_nomean.T
+    Ixx = np.mean(x**2)
+    Ixy = np.mean(x*y)
+    Ixz = np.mean(x*z)
+    Iyy = np.mean(y**2)
+    Iyz = np.mean(y*z)
+    Izz = np.mean(z*z)
+    return np.array([[Ixx, Ixy, Ixz], [Ixy,Iyy, Iyz], [Ixz, Iyz, Izz]])
+
+
+def align_by_centroid_and_intertia(source, target, scale=True, shear=True, improper=False, n_samples=10000):
+    """
+    Align source point cloud to target point cloud using affine transformation.
+    
+    Align by matching centroids and axes of inertia tensor. Since the inertia tensor is invariant
+    under reflections along its principal axes, all 2^3 reflections are tried and the one leading
+    to the best agreement with the target is chosen.
+    
+    Parameters
+    ----------
+    source : np.array of shape (n_source, 3)
+        Point cloud to be aligned.
+    target : np.array of shape (n_target, 3)
+        Point cloud to align to.
+    scale : bool, default True
+        Whether to allow scale transformation (True) or rotations only (False)
+    shear : bool, default False
+        Whether to allow shear transformation (True) or rotations/scale only (False)
+    improper : bool, default False
+        Whether to allow transfomations with determinant -1
+    n_samples : int, optional
+        Number of samples of source to use when estimating distances.
+
+
+    Returns
+    -------
+    np.array, np.array
+        affine_matrix_rep : np.array of shape (4, 4)
+            Affine transformation source -> target
+        aligned : np.array of shape (n_source, 3)
+            Aligned coordinates
+    """
+    target_centroid = np.mean(target, axis=0)
+    target_inertia = get_inertia(target)
+    target_eig = np.linalg.eigh(target_inertia)
+
+    source_centroid = np.mean(source, axis=0)
+    source_inertia = get_inertia(source)
+    source_eig = np.linalg.eigh(source_inertia)
+
+    flips = [np.diag([i,j,k]) for i, j, k in itertools.product(*(3*[[-1,1]]))]
+    trafo_matrix_candidates = []
+    tree = spatial.cKDTree(target)
+    samples = source[np.random.randint(low=0, high=source.shape[0], size=min([n_samples, source.shape[0]])),:]
+    distances = []
+    for flip in flips:
+        if shear:
+            trafo_matrix = (source_eig.eigenvectors
+                            @ np.diag(np.sqrt(target_eig.eigenvalues/source_eig.eigenvalues))
+                            @ flip @ target_eig.eigenvectors.T)
+        elif scale and not shear:
+            scale_fact = np.sqrt(stats.gmean(target_eig.eigenvalues)/stats.gmean(source_eig.eigenvalues))
+            trafo_matrix = scale_fact*source_eig.eigenvectors@flip@target_eig.eigenvectors.T
+        elif not scale and not shear:
+            trafo_matrix = source_eig.eigenvectors@flip@target_eig.eigenvectors.T
+        if not improper and np.linalg.det(trafo_matrix) < 0:
+            continue
+        trafo_matrix = trafo_matrix.T
+        trafo_matrix_candidates.append(trafo_matrix)
+        trafo_translate = target_centroid - trafo_matrix@source_centroid
+        aligned = samples@trafo_matrix.T + trafo_translate
+        distances.append(np.mean(tree.query(aligned)[0]))
+    trafo_matrix = trafo_matrix_candidates[np.argmin(distances)]
+    print('inferred rotation/scale', trafo_matrix)
+    trafo_translate = target_centroid - trafo_matrix@source_centroid
+    aligned = source@trafo_matrix.T + trafo_translate
+    affine_matrix_rep = package_affine_transformation(trafo_matrix, trafo_translate)
+    
+    print('inferred translation', trafo_translate)
+    return affine_matrix_rep, aligned
+
+
+def procrustes(source, target, scale=True):
+    """
+    Procrustes analysis, a similarity test for two data sets.
+
+    Copied from scipy.spatial.procrustes, modified to return the transform
+    as an affine matrix, and return the transformed source data in the original,
+    non-normalized coordinates.
+
+    Each input matrix is a set of points or vectors (the rows of the matrix).
+    The dimension of the space is the number of columns of each matrix. Given
+    two identically sized matrices, procrustes standardizes both such that:
+
+    - tr(AA^T) = 1.
+    - Both sets of points are centered around the origin.
+
+    Procrustes then applies the optimal transform to the source matrix
+    (including scaling/dilation, rotations, and reflections) to minimize the
+    sum of the squares of the pointwise differences between the two input datasets.
+
+    This function is not designed to handle datasets with different numbers of
+    datapoints (rows).  If two data sets have different dimensionality
+    (different number of columns), simply add columns of zeros to the smaller
+    of the two.
+    
+
+    Parameters
+    ----------
+    source : array_like
+        Matrix, n rows represent points in k (columns) space. The data from
+        source will be transformed to fit the pattern in target.
+    target : array_like
+        Maxtrix, n rows represent points in k (columns) space. 
+        target is the reference data. 
+    scale : bool, default True
+        Whether to allow scaling transformations
+
+    Returns
+    -------
+    trafo_affine : array_like
+        (4,4) array representing the affine transformation from source to target.
+    aligned : array_like
+        The orientation of source that best fits target.
+    disparity : float
+        np.linalg.norm(aligned-target, axis=1).mean()
+    """
+    mtx1 = np.array(target, dtype=np.float64, copy=True)
+    mtx2 = np.array(source, dtype=np.float64, copy=True)
+
+    if mtx1.ndim != 2 or mtx2.ndim != 2:
+        raise ValueError("Input matrices must be two-dimensional")
+    if mtx1.shape != mtx2.shape:
+        raise ValueError("Input matrices must be of same shape")
+    if mtx1.size == 0:
+        raise ValueError("Input matrices must be >0 rows and >0 cols")
+
+    # translate all the data to the origin
+    centroid1, centroid2 = (np.mean(mtx1, 0), np.mean(mtx2, 0))
+    mtx1 -= centroid1
+    mtx2 -= centroid2
+
+    # change scaling of data (in rows) such that trace(mtx*mtx') = 1
+    norm1 = np.linalg.norm(mtx1)
+    norm2 = np.linalg.norm(mtx2)
+    if norm1 == 0 or norm2 == 0:
+        raise ValueError("Input matrices must contain >1 unique points")
+    mtx1 /= norm1
+    mtx2 /= norm2
+    # transform mtx2 to minimize disparity
+    R, s = linalg.orthogonal_procrustes(mtx1, mtx2)
+    mtx2 = np.dot(mtx2, R.T) * s
+
+    # retranslate and scale
+    aligned = norm1 * mtx2 + centroid1
+
+    # measure the dissimilarity between the two datasets
+    disparity = np.mean(np.linalg.norm(aligned-target, axis=1))
+
+    # assemble the linear transformation
+    if scale:
+        trafo_matrix = (norm1/norm2)*s*R
+    else:
+        trafo_matrix = (norm1/norm2)*R
+    trafo_translate = centroid1 - trafo_matrix@centroid2
+    trafo_affine = package_affine_transformation(trafo_matrix, trafo_translate)
+    return trafo_affine, aligned, disparity
+
+
+def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, scale=True, n_samples=1000):
+    """
+    Apply the iterative closest point algorithm to align point cloud a with
+    point cloud b. Will only produce reasonable results if the
+    initial transformation is roughly correct. Initial transformation can be
+    found by applying Procrustes' analysis to a suitable set of landmark
+    points (often picked manually), or by inertia+centroid based alignment,
+    implemented in align_by_centroid_and_intertia.
+
+    Parameters
+    ----------
+    source : (n,3) float
+      Source points in space.
+    target : (m,3) float or Trimesh
+      Target points in space or mesh.
+    initial : (4,4) float
+      Initial transformation.
+    threshold : float
+      Stop when change in cost is less than threshold
+    max_iterations : int
+      Maximum number of iterations
+    scale : bool, optional
+      Whether to allow dilations. If False, orthogonal procrustes is used
+    n_samples : int or None
+        If not None, n_samples sample points are randomly chosen from source array for distance computation
+    
+    Returns
+    ----------
+    matrix : (4,4) float
+      The transformation matrix sending a to b
+    transformed : (n,3) float
+      The image of a under the transformation
+    cost : float
+      The cost of the transformation
+    """
+    # initialize transform matrix
+    total_matrix = np.eye(4) if initial is None else initial
+    tree = spatial.cKDTree(target)
+    # subsample and apply initial transformation
+    samples = (source[np.random.randint(low=0, high=source.shape[0],
+                                        size=min([n_samples, source.shape[0]])),:]
+               if n_samples is not None else source[:])
+    samples = samples@total_matrix[:3,:3].T + total_matrix[:3,-1]
+    # start with infinite cost
+    old_cost = np.inf
+    # avoid looping forever by capping iterations
+    for i in range(max_iterations):
+        print('iteration', i, 'cost', old_cost) 
+        # Find closest point in target to each point in sample and align
+        closest = target[tree.query(samples, 1)[1]]
+        matrix, samples, cost = procrustes(samples, closest, scale=scale)
+        # update a with our new transformed points
+        total_matrix = np.dot(matrix, total_matrix)
+        if old_cost - cost < threshold:
+            break
+        else:
+            old_cost = cost
+    aligned = source@total_matrix[:3,:3].T + total_matrix[:3,-1]
+    return total_matrix, aligned, cost
+
+
+def combined_alignment(source, target, pre_align=True, shear=False, iterations=100):
+    """Align source to target by combination of moment-of-intertia based aligment + ICP"""
+    if pre_align:
+        trafo_initial, _ = align_by_centroid_and_intertia(source, target,
+                                                          scale=True, shear=shear, improper=False)
+    else:
+        trafo_initial = None
+    trafo_icp, _, _ = icp(source, target, initial=trafo_initial,
+                          threshold=1e-4, max_iterations=iterations,
+                          scale=True, n_samples=5000)
+    return trafo_icp
+
+
+class AlignOperator(bpy.types.Operator):
+    """Align selected to active mesh by rotation, translation, and scaling."""
+    bl_idname = "scene.align"
+    bl_label = "Align Selected To Active Mesh"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        target_mesh = context.active_object
+        source_mesh = [x for x in context.selected_objects if not x==target_mesh][0]
+        
+        self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
+        if len(context.selected_objects) != 2:
+            self.report({'ERROR'}, "Please select exactly two meshes.")
+            return {'CANCELLED'}
+        if target_mesh.type != 'MESH'  or source_mesh.type != 'MESH':
+            self.report({'ERROR'}, "Selected object(s) is not a mesh.")
+            return {'CANCELLED'}
+        # Get the 3D coordinates from the meshes
+        target = np.array([target_mesh.matrix_world@v.co for v in target_mesh.data.vertices])
+        source = np.array([source_mesh.matrix_world@v.co for v in source_mesh.data.vertices])
+        trafo_matrix = combined_alignment(source, target,
+                                          pre_align=context.scene.tissue_cartography_prealign,
+                                          shear=context.scene.tissue_cartography_prealign_shear,
+                                          iterations=context.scene.tissue_cartography_align_iter)
+        source_mesh.matrix_world = mathutils.Matrix(trafo_matrix)@ source_mesh.matrix_world
+         
+        return {'FINISHED'}
+
+
 ### Operators defining the user interface of the add-on
 
 
@@ -926,7 +1215,6 @@ class TissueCartographyPanel(Panel):
         layout.prop(scene, "tissue_cartography_axis_order")
         layout.operator("scene.load_tiff", text="Load .tiff file")
         layout.label(text=f"Loaded Image Shape: {scene.tissue_cartography_image_shape}. Loaded Image Channels: {scene.tissue_cartography_image_channels}")
-
         layout.separator()
         
         layout.prop(scene, "tissue_cartography_segmentation_file")
@@ -935,21 +1223,36 @@ class TissueCartographyPanel(Panel):
         layout.operator("scene.load_segmentation", text="Get mesh from binary segmentation .tiff file")
         layout.separator()
         
-        layout.prop(scene, "tissue_cartography_offsets")
-        layout.prop(scene, "projection_resolution")
-        layout.operator("scene.create_projection", text="Create Projection")
-        layout.operator("scene.save_projection", text="Save Projection")
-        layout.separator()
-        layout.prop(scene, "slice_axis")
-        layout.prop(scene, "slice_position")
-        layout.prop(scene, "slice_channel")
+        row_slice = layout.row()
+        row_slice.prop(scene, "slice_axis")
+        row_slice.prop(scene, "slice_position")
+        row_slice.prop(scene, "slice_channel")
         layout.operator("scene.create_slice_plane", text="Create slice plane")
         layout.separator()
-        layout.prop(scene, "vertex_offset")
-        layout.prop(scene, "vertex_channel")
-        layout.operator("scene.initialize_vertex_shader", text="Initialize vertex shading")
-        layout.operator("scene.refresh_vertex_shader", text="Refresh vertex shading")
+        
+        row_vertex = layout.row()
+        row_vertex.prop(scene, "vertex_offset")
+        row_vertex.prop(scene, "vertex_channel")
+        row_vertex2 = layout.row()
+        row_vertex2.operator("scene.initialize_vertex_shader", text="Initialize vertex shading")
+        row_vertex2.operator("scene.refresh_vertex_shader", text="Refresh vertex shading")
         layout.separator()
+        
+        row_projection = layout.row()
+        row_projection.prop(scene, "tissue_cartography_offsets")
+        row_projection.prop(scene, "projection_resolution")
+        row_projection2 = layout.row()
+        row_projection2.operator("scene.create_projection", text="Create Projection")
+        row_projection2.operator("scene.save_projection", text="Save Projection")
+        layout.separator()
+        
+        row_align = layout.row()
+        row_align.prop(scene, "tissue_cartography_prealign")
+        row_align.prop(scene, "tissue_cartography_prealign_shear")
+        row_align.prop(scene, "tissue_cartography_align_iter")
+        layout.operator("scene.align", text="Align Selected To Active")
+        layout.separator()
+        
         layout.operator("scene.help_popup", text="Show help", icon='HELP')
         
 
@@ -963,8 +1266,8 @@ def register():
     bpy.utils.register_class(SlicePlaneOperator)
     bpy.utils.register_class(VertexShaderInitializeOperator)
     bpy.utils.register_class(VertexShaderRefreshOperator)
+    bpy.utils.register_class(AlignOperator)
     bpy.utils.register_class(HelpPopupOperator)
-    
     
     bpy.types.Scene.tissue_cartography_file = StringProperty(
         name="File Path",
@@ -1055,6 +1358,23 @@ def register():
         default=0,
         min=0,
     )
+    
+    bpy.types.Scene.tissue_cartography_prealign = bpy.props.BoolProperty(
+        name="Pre-align?",
+        description="Enable or disable pre-alignment. Do not use if the two meshes are already closely aligned.",
+        default=True
+    )
+    bpy.types.Scene.tissue_cartography_prealign_shear = bpy.props.BoolProperty(
+        name="Allow shear",
+        description="Allow shear transformation during alignment.",
+        default=True
+    )
+    bpy.types.Scene.tissue_cartography_align_iter = bpy.props.IntProperty(
+        name="Iterations",
+        description="ICP iterations during alignment.",
+        default=100,
+        min=1,
+    )
 
 
 def unregister():
@@ -1066,6 +1386,7 @@ def unregister():
     bpy.utils.unregister_class(SlicePlaneOperator)
     bpy.utils.unregister_class(VertexShaderInitializeOperator)
     bpy.utils.unregister_class(VertexShaderRefreshOperator)
+    bpy.utils.unregister_class(AlignOperator)
     bpy.utils.unregister_class(HelpPopupOperator)
 
     del bpy.types.Scene.tissue_cartography_file 
@@ -1082,7 +1403,10 @@ def unregister():
     del bpy.types.Scene.slice_channel 
     del bpy.types.Scene.vertex_offset 
     del bpy.types.Scene.vertex_channel
-
+    del bpy.types.Scene.tissue_cartography_prealign 
+    del bpy.types.Scene.tissue_cartography_prealign_shear
+    del bpy.types.Scene.tissue_cartography_align_iter
+    
     del bpy.types.Scene.tissue_cartography_resolution_array
     del bpy.types.Scene.tissue_cartography_data
     del bpy.types.Scene.tissue_cartography_interpolators
