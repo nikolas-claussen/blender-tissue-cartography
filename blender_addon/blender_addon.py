@@ -5,7 +5,7 @@ bl_info = {
 }
 
 import bpy
-from bpy.props import StringProperty, FloatVectorProperty, FloatProperty, IntProperty, EnumProperty
+from bpy.props import StringProperty, FloatVectorProperty, IntVectorProperty, FloatProperty, IntProperty, EnumProperty
 from bpy.types import Operator, Panel
 from pathlib import Path
 import numpy as np
@@ -590,9 +590,25 @@ class LoadTIFFOperator(Operator):
             return {'CANCELLED'}
         try:
             data = tifffile.imread(file_path)
+            if not len(data.shape) in [3,4]:
+                self.report({'ERROR'}, "Selected TIFF must have 3 or 4 axes.")
+                return {'CANCELLED'}
             if len(data.shape) == 3: # add singleton channel axis to single channel-data 
                 data = data[np.newaxis]
-            assert len(data.shape) == 4, "Data must be volumetric!"
+            # ensure channel axis (assumed shortest axis) is 1st
+            channel_axis = np.argmin(data.shape)
+            data = np.moveaxis(data, channel_axis, 0)
+            # permute axes
+            axis_order = list(context.scene.tissue_cartography_axis_order)
+            if not sorted(axis_order) == [0,1,2,3]:
+                self.report({'ERROR'}, "Axis order must be a permutation of [0,1,2,3] (e.g. [3,0,1,2]")
+                return {'CANCELLED'}
+            data = data.transpose(axis_order)
+            
+            # display image shape in add-on
+            context.scene.tissue_cartography_image_shape = str(data.shape[1:])
+            context.scene.tissue_cartography_image_channels = data.shape[0]
+            
             self.report({'INFO'}, f"TIFF file loaded with shape {data.shape}")
             # Store variables in Blender's global storage
             bpy.types.Scene.tissue_cartography_data = data
@@ -859,35 +875,38 @@ class VertexShaderRefreshOperator(bpy.types.Operator):
 
 
 class HelpPopupOperator(Operator):
-    """Show help window."""
+    """Open help window."""
     bl_idname = "scene.help_popup"
     bl_label = "Tissue Cartography Help"
 
     def execute(self, context):
-        return context.window_manager.invoke_popup(self, width=400)
+        url = "https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/03_blender_addon_tutorial.html"
+        bpy.ops.wm.url_open(url=url)
+        return {'FINISHED'}
+        #return context.window_manager.invoke_popup(self, width=400)
 
-    def draw(self, context):
-        layout = self.layout
-        col = layout.column()
+#    def draw(self, context):
+#        layout = self.layout
+#        col = layout.column()
 
-        col.label(text="Tissue Cartography Add-On Help", icon='INFO')
-        col.label(text="1. Load a .tiff file using the 'Load' button.")
-        col.label(text="   after entering the resolution (x, y, z) in microns.")
-        col.label(text="2. Select the mesh to use (it should be outlined in orange).")
-        col.label(text="3. Click 'Create Projection' to bake mesh positions,")
-        col.label(text="   nesh normals, and volumetric data to UV textures.")
-        col.label(text="   Define normal offsets to get a multi-layer projection.")
-        col.label(text="   Data is saved as .tiff files for further processing,")
-        col.label(text="   and as a material to shade the mesh (see Shading workspace).")
-        col.label(text="   Projection resolution determines the output texture size.")
-        col.separator()
-        col.label(text="4. Troubleshooting and conventions")
-        col.label(text="   a. The mesh vertex positions must be in micrometers.")
-        col.label(text="      After creating the mesh (for example by a marching cubes),")
-        col.label(text="      make sure to convert from pixels to microns!")
-        col.label(text="   b. When importing a mesh into blender, choose Y=Forward and Z=Up.")
-        col.label(text="      This ensures the mesh coordinates match the image axes!")
-        col.label(text="   c. Check the Info Monitor (Scripting window) for messages and errors.")
+#        col.label(text="Tissue Cartography Add-On Help", icon='INFO')
+#        col.label(text="1. Load a .tiff file using the 'Load' button.")
+#        col.label(text="   after entering the resolution (x, y, z) in microns.")
+#        col.label(text="2. Select the mesh to use (it should be outlined in orange).")
+#        col.label(text="3. Click 'Create Projection' to bake mesh positions,")
+#        col.label(text="   nesh normals, and volumetric data to UV textures.")
+#        col.label(text="   Define normal offsets to get a multi-layer projection.")
+#        col.label(text="   Data is saved as .tiff files for further processing,")
+#        col.label(text="   and as a material to shade the mesh (see Shading workspace).")
+#        col.label(text="   Projection resolution determines the output texture size.")
+#        col.separator()
+#        col.label(text="4. Troubleshooting and conventions")
+#        col.label(text="   a. The mesh vertex positions must be in micrometers.")
+#        col.label(text="      After creating the mesh (for example by a marching cubes),")
+#        col.label(text="      make sure to convert from pixels to microns!")
+#        col.label(text="   b. When importing a mesh into blender, choose Y=Forward and Z=Up.")
+#        col.label(text="      This ensures the mesh coordinates match the image axes!")
+#        col.label(text="   c. Check the Info Monitor (Scripting window) for messages and errors.")
         
         
 class TissueCartographyPanel(Panel):
@@ -904,7 +923,10 @@ class TissueCartographyPanel(Panel):
 
         layout.prop(scene, "tissue_cartography_file")
         layout.prop(scene, "tissue_cartography_resolution")
+        layout.prop(scene, "tissue_cartography_axis_order")
         layout.operator("scene.load_tiff", text="Load .tiff file")
+        layout.label(text=f"Loaded Image Shape: {scene.tissue_cartography_image_shape}. Loaded Image Channels: {scene.tissue_cartography_image_channels}")
+
         layout.separator()
         
         layout.prop(scene, "tissue_cartography_segmentation_file")
@@ -955,7 +977,25 @@ def register():
         size=3,
         default=(1.0, 1.0, 1.0),
     )
-    
+    bpy.types.Scene.tissue_cartography_axis_order= IntVectorProperty(
+        name="Axis order",
+        description="Permute axes after loading image. Use if loaded image shape appears incorrect. (0, 1, 2, 3) =  no permutation. Channel axis should be first axis!",
+        size=4,
+        default=(0, 1, 2, 3),
+        min=0,
+        max=3,
+    )
+    bpy.types.Scene.tissue_cartography_image_channels = bpy.props.IntProperty(
+        name="Image Channels",
+        description="Channels of the loaded image (read-only)",
+        default=0,
+        min=0,
+    )
+    bpy.types.Scene.tissue_cartography_image_shape = bpy.props.StringProperty(
+        name="Image Shape",
+        description="Shape of the loaded image (read-only)",
+        default="Not loaded"
+    )
     bpy.types.Scene.tissue_cartography_segmentation_file = StringProperty(
         name="Segmentation File Path",
         description="Path to the segmentation TIFF file. Should have values between 0-1.",
@@ -972,16 +1012,15 @@ def register():
         description="Smothing kernel for extracting mesh from segmentation, in µm",
         default=0,
         min=0
-    )
-    
+    ) 
     bpy.types.Scene.tissue_cartography_offsets = StringProperty(
         name="Normal Offsets (µm)",
         description="Comma-separated list of floats for multilayer projection offsets",
         default="0",
     )
     bpy.types.Scene.projection_resolution = IntProperty(
-        name="Projection Resolution",
-        description="Resolution for the projection (e.g., 1024 for 1024x1024)",
+        name="Projection Format (Pixels)",
+        description="Resolution for the projection (e.g., 1024 for 1024x1024 pixels)",
         default=1024,
         min=1,
     )
@@ -1030,7 +1069,9 @@ def unregister():
     bpy.utils.unregister_class(HelpPopupOperator)
 
     del bpy.types.Scene.tissue_cartography_file 
-    del bpy.types.Scene.tissue_cartography_resolution 
+    del bpy.types.Scene.tissue_cartography_resolution
+    del bpy.types.Scene.tissue_cartography_axis_order
+    del bpy.types.Scene.tissue_cartography_image_shape
     del bpy.types.Scene.tissue_cartography_segmentation_file
     del bpy.types.Scene.tissue_cartography_segmentation_resolution 
     del bpy.types.Scene.tissue_cartography_segmentation_sigma
