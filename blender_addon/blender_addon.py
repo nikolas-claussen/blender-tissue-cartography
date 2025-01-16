@@ -834,6 +834,54 @@ def combined_alignment(source, target, pre_align=True, shear=False, iterations=1
     return trafo_icp
 
 
+### Handling of mesh-associated array-data
+
+
+def set_numpy_attribute(mesh, name, array, method="tolist"):
+    """Sets mesh[name] = array.
+    
+    Since Blender does not support adding arbitrary objects as attributes to meshes,
+    the array is flattened and saved together with its shape.
+    
+    Method can be either "tolist" or "flatten". Somehow this has an effect on blender's
+    internals and can affect e.g. file size.
+    """
+    if method == "tolist":
+        mesh[name] = (array.tolist(), array.shape)
+    elif method == "flatten":
+        mesh[name] = (array.flatten(), array.shape)
+    return None
+
+
+def get_numpy_attribute(mesh, name):
+    """Get array = mesh[name].
+    
+    Since Blender does not support adding arbitrary objects as attributes to meshes,
+    the array is flattened and saved together with its shape.
+    """
+    assert name in mesh, "Attribute not found"
+    return np.array(mesh[name][0]).reshape(mesh[name][1])
+
+
+def separate_selected_into_mesh_and_box(self, context):
+    """
+    Separate selected objects into mesh and box, representing 3D image data.
+    
+    If not exactly one mesh and one box (with attribute "3D_data") are selected,
+    an error is raised.
+    """
+    n_data_selected = len([x for x in context.selected_objects if "3D_data" in x])
+    n_mesh_selected = len([x for x in context.selected_objects if not "3D_data" in x])
+    if not ((n_data_selected==1) and (n_mesh_selected==1)):
+        self.report({'ERROR'}, "Select exactly one mesh and one 3D image (BoundingBox)!")
+        return None, None
+    box = [x for x in context.selected_objects if "3D_data" in x][0]
+    obj = [x for x in context.selected_objects if not "3D_data" in x][0]
+    if not obj or obj.type != 'MESH':
+        self.report({'ERROR'}, "No mesh object selected!")
+        return None, None
+    return box, obj
+
 ### Operators defining the user interface of the add-on
 
 
@@ -844,11 +892,8 @@ class LoadTIFFOperator(Operator):
 
     def execute(self, context):
         file_path = bpy.path.abspath(context.scene.tissue_cartography_file)
-        resolution = context.scene.tissue_cartography_resolution
-
-        # Load resolution as a NumPy array
-        resolution_array = np.array(resolution)
-        self.report({'INFO'}, f"Resolution loaded: {resolution_array}")
+        resolution = np.array(context.scene.tissue_cartography_resolution)
+        self.report({'INFO'}, f"Resolution loaded: {resolution}")
 
         # Load TIFF file as a NumPy array
         if not (file_path.lower().endswith(".tiff") or file_path.lower().endswith(".tif")):
@@ -875,18 +920,14 @@ class LoadTIFFOperator(Operator):
             context.scene.tissue_cartography_image_shape = str(data.shape[1:])
             context.scene.tissue_cartography_image_channels = data.shape[0]
             self.report({'INFO'}, f"TIFF file loaded with shape {data.shape}")
-            # Store variables in Blender's global storage
-            #bpy.types.Scene.tissue_cartography_data = data
-            #bpy.types.Scene.tissue_cartography_resolution_array = resolution_array
-            
             # create a bounding box mesh to represent the data
-            box = create_box(*(np.array(data.shape[1:])*resolution_array),
+            box = create_box(*(np.array(data.shape[1:])*resolution),
                              name=f"{Path(file_path).stem}_BoundingBox",
                              hide=False)
             box.display_type = 'WIRE'
             # attach the data to the box
-            box["resolution"] = resolution_array.tolist()
-            box["3D_data"] = (data.tolist(), data.shape) # data will be converted to list, so need to save its shape
+            set_numpy_attribute(box, "resolution", resolution)
+            set_numpy_attribute(box, "3D_data", data)
             
         except Exception as e:
             self.report({'ERROR'}, f"Failed to load TIFF file: {e}")
@@ -942,15 +983,18 @@ class CreateProjectionOperator(Operator):
 
     def execute(self, context):
         # Validate selected object and UV map
-        n_data_selected = len([x for x in context.selected_objects if "3D_data" in x])
-        n_mesh_selected = len([x for x in context.selected_objects if not "3D_data" in x])
-        if not ((n_data_selected==1) and (n_mesh_selected==1)):
-            self.report({'ERROR'}, "Select exactly one mesh and one 3D image (BoundingBox)!")
-            return {'CANCELLED'}
-        box = [x for x in context.selected_objects if "3D_data" in x][0]
-        obj = [x for x in context.selected_objects if not "3D_data" in x][0]
-        if not obj or obj.type != 'MESH':
-            self.report({'ERROR'}, "No mesh object selected!")
+        #n_data_selected = len([x for x in context.selected_objects if "3D_data" in x])
+        #n_mesh_selected = len([x for x in context.selected_objects if not "3D_data" in x])
+        #if not ((n_data_selected==1) and (n_mesh_selected==1)):
+        #    self.report({'ERROR'}, "Select exactly one mesh and one 3D image (BoundingBox)!")
+        #    return {'CANCELLED'}
+        #box = [x for x in context.selected_objects if "3D_data" in x][0]
+        #obj = [x for x in context.selected_objects if not "3D_data" in x][0]
+        #if not obj or obj.type != 'MESH':
+        #    self.report({'ERROR'}, "No mesh object selected!")
+        #    return {'CANCELLED'}
+        box, obj = separate_selected_into_mesh_and_box(self, context)
+        if box is None or obj is None:
             return {'CANCELLED'}
         # Ensure the object has a UV map
         if not obj.data.uv_layers:
@@ -989,23 +1033,17 @@ class CreateProjectionOperator(Operator):
         baked_normals[~mask] = np.nan
         baked_world_positions[~mask] = np.nan
         
-        # create a pullback. first, convert bake to bounding box coordinates
+        # create a pullback
         box_world_inv = np.linalg.inv(np.array(box.matrix_world))
-        #baked_box_positions = baked_world_positions @ box_world_inv[:3,:3].T + box_world_inv[:3,3]
-        #baked_box_normals = baked_normals @ box_world_inv[:3,:3].T
-   
-        baked_data = bake_volumetric_data_to_uv(np.array(box["3D_data"][0]).reshape(box["3D_data"][1]),
-                                                #context.scene.tissue_cartography_data,
+        baked_data = bake_volumetric_data_to_uv(get_numpy_attribute(box, "3D_data"),
                                                 baked_world_positions, 
-                                                np.array(box["resolution"]),
-                                                #context.scene.tissue_cartography_resolution_array,
+                                                get_numpy_attribute(box, "resolution"),
                                                 baked_normals, normal_offsets=offsets_array,
                                                 affine_matrix=box_world_inv)
         # set results as attributes of the mesh
-        obj["baked_data"] = (baked_data.flatten(), baked_data.shape)
-        obj["baked_normals"] = (baked_normals.flatten(), baked_normals.shape)
-        obj["baked_world_positions"] = (baked_world_positions.flatten(), baked_world_positions.shape)
-
+        set_numpy_attribute(obj, "baked_data", baked_data, method="flatten")
+        set_numpy_attribute(obj, "baked_normals", baked_normals, method="flatten")
+        set_numpy_attribute(obj, "baked_world_positions", baked_world_positions, method="flatten")
         # create texture
         create_material_from_multilayer_array(obj, baked_data, material_name="ProjectedMaterial")
 
@@ -1031,10 +1069,9 @@ class SaveProjectionOperator(bpy.types.Operator):
             return {'CANCELLED'}
         
         # Get the baked data
-        baked_data = np.array(obj["baked_data"][0]).reshape(obj["baked_data"][1])
-        baked_normals = np.array(obj["baked_normals"][0]).reshape(obj["baked_normals"][1])
-        baked_world_positions = np.array(obj["baked_world_positions"][0]).reshape(obj["baked_world_positions"][1])
-        print(self.filepath)
+        baked_data = get_numpy_attribute(obj, "baked_data")
+        baked_normals = get_numpy_attribute(obj, "baked_normals")
+        baked_world_positions = get_numpy_attribute(obj, "baked_world_positions")
         # Save the data to the chosen filepath
         try:
             tifffile.imwrite(self.filepath + "_BakedNormals.tif", baked_normals)
@@ -1057,13 +1094,13 @@ class SlicePlaneOperator(bpy.types.Operator):
 
     def execute(self, context):
         # Get the 3D data array from the selected box
-        n_data_selected = len([x for x in context.selected_objects if "3D_data" in x])
-        if not (n_data_selected==1):
-            self.report({'ERROR'}, "Select exactly one 3D image (BoundingBox)!")
+        box = context.active_object
+        if not box or not "3D_data" in box:
+            self.report({'ERROR'}, "Select exactly a 3D image (BoundingBox)!")
             return {'CANCELLED'}
-        box = [x for x in context.selected_objects if "3D_data" in x][0]
-        data = np.array(box["3D_data"][0]).reshape(box["3D_data"][1])
-        resolution = np.array(box["resolution"])
+        data = get_numpy_attribute(box, "3D_data")
+        
+        resolution = get_numpy_attribute(box, "resolution")
         if not isinstance(data, np.ndarray) or data.ndim != 4:
             self.report({'ERROR'}, "Invalid 3D data array.")
             return {'CANCELLED'}
@@ -1097,16 +1134,12 @@ class VertexShaderInitializeOperator(bpy.types.Operator):
         if not hasattr(bpy.types.Scene, "tissue_cartography_interpolators"):
             bpy.types.Scene.tissue_cartography_interpolators = dict()
         # get the selected mesh and bounding box
-        n_data_selected = len([x for x in context.selected_objects if "3D_data" in x])
-        n_mesh_selected = len([x for x in context.selected_objects if not "3D_data" in x])
-        if not ((n_data_selected==1) and (n_mesh_selected==1)):
-            self.report({'ERROR'}, "Select exactly one mesh and one 3D image (BoundingBox)!")
+        box, obj = separate_selected_into_mesh_and_box(self, context)
+        if box is None or obj is None:
             return {'CANCELLED'}
-        box = [x for x in context.selected_objects if "3D_data" in x][0]
-        obj = [x for x in context.selected_objects if not "3D_data" in x][0]
         # Get the 3D data array from the box object
-        data = np.array(box["3D_data"][0]).reshape(box["3D_data"][1])
-        resolution = np.array(box["resolution"])
+        data = get_numpy_attribute(box, "3D_data")
+        resolution = get_numpy_attribute(box, "resolution")
      
         if not isinstance(data, np.ndarray) or data.ndim != 4:
             self.report({'ERROR'}, "Invalid 3D data array.")
@@ -1118,9 +1151,11 @@ class VertexShaderInitializeOperator(bpy.types.Operator):
             self.report({'ERROR'}, f"Channel {context.scene.vertex_channel} is out of bounds for the data array.")
             return {'CANCELLED'}
         # need to compute coordinates relative to matrix_world of box I think
-        obj["box_world_inv_vertex_shader"] = np.array(box.matrix_world.inverted()).flatten()
+        set_numpy_attribute(obj, "box_world_inv_vertex_shader",
+                            np.array(box.matrix_world.inverted()))
         bpy.types.Scene.tissue_cartography_interpolators[obj.name] = get_image_to_vertex_interpolator(obj, data, resolution)
-        box_inv = mathutils.Matrix(np.array(obj["box_world_inv_vertex_shader"]).reshape((4,4)))
+        box_inv = mathutils.Matrix(get_numpy_attribute(obj, 
+                                   "box_world_inv_vertex_shader"))
         positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.vertex_offset*v.normal)
                               for v in obj.data.vertices])
         intensities = bpy.types.Scene.tissue_cartography_interpolators[obj.name][context.scene.vertex_channel](positions)
@@ -1160,7 +1195,8 @@ class VertexShaderRefreshOperator(bpy.types.Operator):
             self.report({'ERROR'}, f"Vertex shader not initialized.")
             return {'CANCELLED'}
        
-        box_inv = mathutils.Matrix(np.array(obj["box_world_inv_vertex_shader"]).reshape((4,4)))
+        box_inv = mathutils.Matrix(get_numpy_attribute(obj, 
+                                   "box_world_inv_vertex_shader"))
         positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.vertex_offset*v.normal)
                               for v in obj.data.vertices])
         intensities = interpolator_dict[obj.name][context.scene.vertex_channel](positions)
