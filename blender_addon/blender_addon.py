@@ -139,7 +139,7 @@ def bake_per_loop_values_to_uv(loop_uvs, loop_values, image_resolution):
     return interpolated
 
 
-def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_normals, normal_offsets=(0,)):
+def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_normals, normal_offsets=(0,), affine_matrix=None):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
     
@@ -165,6 +165,8 @@ def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_n
     normal_offsets : np.array of shape (n_layers,), default (0,)
         Offsets along normal direction, in same units as interpolated_3d_positions (i.e. microns).
         0 corresponds to no shift.
+    affine_matrix : np.array of shape (4, 4) or None
+        If not None, transform coordinates by affine trafor before calling interpolator
         
     Returns
     -------
@@ -174,8 +176,11 @@ def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_n
     x, y, z = [np.arange(ni) for ni in image.shape[1:]]
     baked_data = []
     for o in normal_offsets:
-        baked_layer_data = np.stack([interpolate.interpn((x, y, z), channel,
-                                     (baked_world_positions+o*baked_normals)/resolution,
+        position = (baked_world_positions+o*baked_normals)
+        if affine_matrix is not None:
+            position = position @ affine_matrix[:3, :3].T + affine_matrix[:3,3]
+        position =  position/resolution
+        baked_layer_data = np.stack([interpolate.interpn((x, y, z), channel, position,
                                      method="linear", bounds_error=False) for channel in image])
         baked_data.append(baked_layer_data)
     baked_data = np.stack(baked_data, axis=1)
@@ -445,6 +450,7 @@ def get_image_to_vertex_interpolator(obj, image_3d, resolution_array, quantiles=
                                             quantiles=quantiles, clip=True, data_type=None)
     x, y, z = [np.arange(ni)*resolution_array[i]
                for i, ni in enumerate(image_3d.shape[1:])]
+    
     return [interpolate.RegularGridInterpolator((x,y,z), ch, method='linear', bounds_error=False)
             for ch in image_3d_smoothed]
 
@@ -938,7 +944,6 @@ class CreateProjectionOperator(Operator):
         # Validate selected object and UV map
         n_data_selected = len([x for x in context.selected_objects if "3D_data" in x])
         n_mesh_selected = len([x for x in context.selected_objects if not "3D_data" in x])
-        self.report({'INFO'}, f"{n_data_selected}, {n_mesh_selected}")
         if not ((n_data_selected==1) and (n_mesh_selected==1)):
             self.report({'ERROR'}, "Select exactly one mesh and one 3D image (BoundingBox)!")
             return {'CANCELLED'}
@@ -986,16 +991,16 @@ class CreateProjectionOperator(Operator):
         
         # create a pullback. first, convert bake to bounding box coordinates
         box_world_inv = np.linalg.inv(np.array(box.matrix_world))
-        baked_box_positions = baked_world_positions @ box_world_inv[:3,:3].T + box_world_inv[:3,3]
-        baked_box_normals = baked_normals @ box_world_inv[:3,:3].T
-        baked_box_normals = (baked_box_normals.T / np.linalg.norm(baked_box_normals.T, axis=0)).T
-        
+        #baked_box_positions = baked_world_positions @ box_world_inv[:3,:3].T + box_world_inv[:3,3]
+        #baked_box_normals = baked_normals @ box_world_inv[:3,:3].T
+   
         baked_data = bake_volumetric_data_to_uv(np.array(box["3D_data"][0]).reshape(box["3D_data"][1]),
                                                 #context.scene.tissue_cartography_data,
-                                                baked_box_positions, 
+                                                baked_world_positions, 
                                                 np.array(box["resolution"]),
                                                 #context.scene.tissue_cartography_resolution_array,
-                                                baked_box_normals, normal_offsets=offsets_array)
+                                                baked_normals, normal_offsets=offsets_array,
+                                                affine_matrix=box_world_inv)
         # set results as attributes of the mesh
         obj["baked_data"] = (baked_data.flatten(), baked_data.shape)
         obj["baked_normals"] = (baked_normals.flatten(), baked_normals.shape)
@@ -1051,12 +1056,14 @@ class SlicePlaneOperator(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        # Get the 3D data array from the scene
-        data = getattr(context.scene, "tissue_cartography_data", None)
-        resolution = getattr(context.scene, "tissue_cartography_resolution_array", None)
-        if data is None or resolution is None:
-            self.report({'ERROR'}, "3D data array not found in the scene.")
+        # Get the 3D data array from the selected box
+        n_data_selected = len([x for x in context.selected_objects if "3D_data" in x])
+        if not (n_data_selected==1):
+            self.report({'ERROR'}, "Select exactly one 3D image (BoundingBox)!")
             return {'CANCELLED'}
+        box = [x for x in context.selected_objects if "3D_data" in x][0]
+        data = np.array(box["3D_data"][0]).reshape(box["3D_data"][1])
+        resolution = np.array(box["resolution"])
         if not isinstance(data, np.ndarray) or data.ndim != 4:
             self.report({'ERROR'}, "Invalid 3D data array.")
             return {'CANCELLED'}
@@ -1067,6 +1074,9 @@ class SlicePlaneOperator(bpy.types.Operator):
         length, width, height = (np.array(data.shape[1:]) * resolution)
         slice_plane = create_slice_plane(length, width, height, axis=context.scene.slice_axis,
                                          position=context.scene.slice_position)
+        # set matrix world
+        slice_plane.matrix_world = box.matrix_world
+                                         
         slice_img = get_slice_image(data, resolution, axis=context.scene.slice_axis,
                                     position=context.scene.slice_position)
         slice_img = normalize_quantiles(slice_img, quantiles=(0.01, 0.99),
@@ -1077,7 +1087,7 @@ class SlicePlaneOperator(bpy.types.Operator):
 
 class VertexShaderInitializeOperator(bpy.types.Operator):
     """Initialize vertex shader for a selected mesh. Colors mesh vertices according to 
-    3D image intensity."""
+    3D image intensity from selected BoundingBox."""
     bl_idname = "scene.initialize_vertex_shader"
     bl_label = "Initialize Vertex Shader"
     bl_options = {'REGISTER', 'UNDO'}
@@ -1086,13 +1096,18 @@ class VertexShaderInitializeOperator(bpy.types.Operator):
         # create global dict to hold interpolator objects
         if not hasattr(bpy.types.Scene, "tissue_cartography_interpolators"):
             bpy.types.Scene.tissue_cartography_interpolators = dict()
-        # Get the 3D data array from the scene
-        data = getattr(context.scene, "tissue_cartography_data", None)
-        resolution = getattr(context.scene, "tissue_cartography_resolution_array", None)
-        obj = context.active_object
-        if data is None or resolution is None:
-            self.report({'ERROR'}, "3D data array not found in the scene.")
+        # get the selected mesh and bounding box
+        n_data_selected = len([x for x in context.selected_objects if "3D_data" in x])
+        n_mesh_selected = len([x for x in context.selected_objects if not "3D_data" in x])
+        if not ((n_data_selected==1) and (n_mesh_selected==1)):
+            self.report({'ERROR'}, "Select exactly one mesh and one 3D image (BoundingBox)!")
             return {'CANCELLED'}
+        box = [x for x in context.selected_objects if "3D_data" in x][0]
+        obj = [x for x in context.selected_objects if not "3D_data" in x][0]
+        # Get the 3D data array from the box object
+        data = np.array(box["3D_data"][0]).reshape(box["3D_data"][1])
+        resolution = np.array(box["resolution"])
+     
         if not isinstance(data, np.ndarray) or data.ndim != 4:
             self.report({'ERROR'}, "Invalid 3D data array.")
             return {'CANCELLED'}
@@ -1102,9 +1117,12 @@ class VertexShaderInitializeOperator(bpy.types.Operator):
         if context.scene.vertex_channel >= data.shape[0]:
             self.report({'ERROR'}, f"Channel {context.scene.vertex_channel} is out of bounds for the data array.")
             return {'CANCELLED'}
-        
+        # need to compute coordinates relative to matrix_world of box I think
+        obj["box_world_inv_vertex_shader"] = np.array(box.matrix_world.inverted()).flatten()
         bpy.types.Scene.tissue_cartography_interpolators[obj.name] = get_image_to_vertex_interpolator(obj, data, resolution)
-        positions = np.array([v.co + context.scene.vertex_offset*v.normal for v in obj.data.vertices])
+        box_inv = mathutils.Matrix(np.array(obj["box_world_inv_vertex_shader"]).reshape((4,4)))
+        positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.vertex_offset*v.normal)
+                              for v in obj.data.vertices])
         intensities = bpy.types.Scene.tissue_cartography_interpolators[obj.name][context.scene.vertex_channel](positions)
         colors = np.stack(3*[intensities,], axis=1)
         
@@ -1142,7 +1160,9 @@ class VertexShaderRefreshOperator(bpy.types.Operator):
             self.report({'ERROR'}, f"Vertex shader not initialized.")
             return {'CANCELLED'}
        
-        positions = np.array([v.co + context.scene.vertex_offset*v.normal for v in obj.data.vertices])
+        box_inv = mathutils.Matrix(np.array(obj["box_world_inv_vertex_shader"]).reshape((4,4)))
+        positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.vertex_offset*v.normal)
+                              for v in obj.data.vertices])
         intensities = interpolator_dict[obj.name][context.scene.vertex_channel](positions)
         colors = np.stack(3*[intensities,], axis=1)
         assign_vertex_colors(obj, colors)
