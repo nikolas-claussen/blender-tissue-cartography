@@ -828,35 +828,6 @@ def combined_alignment(source, target, pre_align=True, shear=False, iterations=1
     return trafo_icp
 
 
-class AlignOperator(bpy.types.Operator):
-    """Align selected to active mesh by rotation, translation, and scaling."""
-    bl_idname = "scene.align"
-    bl_label = "Align Selected To Active Mesh"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        target_mesh = context.active_object
-        source_mesh = [x for x in context.selected_objects if not x==target_mesh][0]
-        
-        self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
-        if len(context.selected_objects) != 2:
-            self.report({'ERROR'}, "Please select exactly two meshes.")
-            return {'CANCELLED'}
-        if target_mesh.type != 'MESH'  or source_mesh.type != 'MESH':
-            self.report({'ERROR'}, "Selected object(s) is not a mesh.")
-            return {'CANCELLED'}
-        # Get the 3D coordinates from the meshes
-        target = np.array([target_mesh.matrix_world@v.co for v in target_mesh.data.vertices])
-        source = np.array([source_mesh.matrix_world@v.co for v in source_mesh.data.vertices])
-        trafo_matrix = combined_alignment(source, target,
-                                          pre_align=context.scene.tissue_cartography_prealign,
-                                          shear=context.scene.tissue_cartography_prealign_shear,
-                                          iterations=context.scene.tissue_cartography_align_iter)
-        source_mesh.matrix_world = mathutils.Matrix(trafo_matrix)@ source_mesh.matrix_world
-         
-        return {'FINISHED'}
-
-
 ### Operators defining the user interface of the add-on
 
 
@@ -897,11 +868,11 @@ class LoadTIFFOperator(Operator):
             # display image shape in add-on
             context.scene.tissue_cartography_image_shape = str(data.shape[1:])
             context.scene.tissue_cartography_image_channels = data.shape[0]
-            
             self.report({'INFO'}, f"TIFF file loaded with shape {data.shape}")
             # Store variables in Blender's global storage
-            bpy.types.Scene.tissue_cartography_data = data
-            bpy.types.Scene.tissue_cartography_resolution_array = resolution_array
+            #bpy.types.Scene.tissue_cartography_data = data
+            #bpy.types.Scene.tissue_cartography_resolution_array = resolution_array
+            
             # create a bounding box mesh to represent the data
             box = create_box(*(np.array(data.shape[1:])*resolution_array),
                              name=f"{Path(file_path).stem}_BoundingBox",
@@ -957,16 +928,22 @@ class CreateProjectionOperator(Operator):
     """
     Create a cartographic projection.
     
-    This is done in two steps: first, bake 3d world positions and normals to UV,
-    then use the baked positions to interpolate the volumetric data
-    to UV.
+    Select one mesh and one 3d-image ([...]_BoundingBox) to project 3d image data
+    onto mesh surface.
     """
     bl_idname = "scene.create_projection"
     bl_label = "Create Projection"
 
     def execute(self, context):
         # Validate selected object and UV map
-        obj = context.active_object
+        n_data_selected = len([x for x in context.selected_objects if "3D_data" in x])
+        n_mesh_selected = len([x for x in context.selected_objects if not "3D_data" in x])
+        self.report({'INFO'}, f"{n_data_selected}, {n_mesh_selected}")
+        if not ((n_data_selected==1) and (n_mesh_selected==1)):
+            self.report({'ERROR'}, "Select exactly one mesh and one 3D image (BoundingBox)!")
+            return {'CANCELLED'}
+        box = [x for x in context.selected_objects if "3D_data" in x][0]
+        obj = [x for x in context.selected_objects if not "3D_data" in x][0]
         if not obj or obj.type != 'MESH':
             self.report({'ERROR'}, "No mesh object selected!")
             return {'CANCELLED'}
@@ -985,13 +962,16 @@ class CreateProjectionOperator(Operator):
         except ValueError as e:
             self.report({'ERROR'}, f"Invalid offsets input: {e}")
             return {'CANCELLED'}
+        # set offsets as property
+        obj["projection_offsets"] = list(offsets_array)
         
         # Parse projection resolution
         projection_resolution = context.scene.projection_resolution
         self.report({'INFO'}, f"Using projection resolution: {projection_resolution}")
 
         # texture bake normals and world positions
-        loop_uvs, loop_normals, loop_world_positions = get_uv_normal_world_per_loop(obj, filter_unique=True)
+        loop_uvs, loop_normals, loop_world_positions = get_uv_normal_world_per_loop(obj, 
+                                                                                    filter_unique=True)
         
         baked_normals = bake_per_loop_values_to_uv(loop_uvs, loop_normals, 
                                                    image_resolution=projection_resolution)
@@ -1004,11 +984,18 @@ class CreateProjectionOperator(Operator):
         baked_normals[~mask] = np.nan
         baked_world_positions[~mask] = np.nan
         
-        # create a pullback
-        baked_data = bake_volumetric_data_to_uv(context.scene.tissue_cartography_data,
-                                                baked_world_positions, 
-                                                context.scene.tissue_cartography_resolution_array,
-                                                baked_normals, normal_offsets=offsets_array)
+        # create a pullback. first, convert bake to bounding box coordinates
+        box_world_inv = np.linalg.inv(np.array(box.matrix_world))
+        baked_box_positions = baked_world_positions @ box_world_inv[:3,:3].T + box_world_inv[:3,3]
+        baked_box_normals = baked_normals @ box_world_inv[:3,:3].T
+        baked_box_normals = (baked_box_normals.T / np.linalg.norm(baked_box_normals.T, axis=0)).T
+        
+        baked_data = bake_volumetric_data_to_uv(np.array(box["3D_data"][0]).reshape(box["3D_data"][1]),
+                                                #context.scene.tissue_cartography_data,
+                                                baked_box_positions, 
+                                                np.array(box["resolution"]),
+                                                #context.scene.tissue_cartography_resolution_array,
+                                                baked_box_normals, normal_offsets=offsets_array)
         # set results as attributes of the mesh
         obj["baked_data"] = (baked_data.flatten(), baked_data.shape)
         obj["baked_normals"] = (baked_normals.flatten(), baked_normals.shape)
@@ -1160,6 +1147,35 @@ class VertexShaderRefreshOperator(bpy.types.Operator):
         colors = np.stack(3*[intensities,], axis=1)
         assign_vertex_colors(obj, colors)
 
+        return {'FINISHED'}
+
+
+class AlignOperator(bpy.types.Operator):
+    """Align selected to active mesh by rotation, translation, and scaling."""
+    bl_idname = "scene.align"
+    bl_label = "Align Selected To Active Mesh"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        target_mesh = context.active_object
+        source_mesh = [x for x in context.selected_objects if not x==target_mesh][0]
+        
+        self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
+        if len(context.selected_objects) != 2:
+            self.report({'ERROR'}, "Please select exactly two meshes.")
+            return {'CANCELLED'}
+        if target_mesh.type != 'MESH'  or source_mesh.type != 'MESH':
+            self.report({'ERROR'}, "Selected object(s) is not a mesh.")
+            return {'CANCELLED'}
+        # Get the 3D coordinates from the meshes
+        target = np.array([target_mesh.matrix_world@v.co for v in target_mesh.data.vertices])
+        source = np.array([source_mesh.matrix_world@v.co for v in source_mesh.data.vertices])
+        trafo_matrix = combined_alignment(source, target,
+                                          pre_align=context.scene.tissue_cartography_prealign,
+                                          shear=context.scene.tissue_cartography_prealign_shear,
+                                          iterations=context.scene.tissue_cartography_align_iter)
+        source_mesh.matrix_world = mathutils.Matrix(trafo_matrix)@ source_mesh.matrix_world
+         
         return {'FINISHED'}
 
 
@@ -1407,8 +1423,8 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_prealign_shear
     del bpy.types.Scene.tissue_cartography_align_iter
     
-    del bpy.types.Scene.tissue_cartography_resolution_array
-    del bpy.types.Scene.tissue_cartography_data
+    #del bpy.types.Scene.tissue_cartography_resolution_array
+    #del bpy.types.Scene.tissue_cartography_data
     del bpy.types.Scene.tissue_cartography_interpolators
 
 ### Run the add-on
