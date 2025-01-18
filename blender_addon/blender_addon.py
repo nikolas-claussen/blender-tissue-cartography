@@ -76,8 +76,7 @@ def normalize_quantiles(image, quantiles=(0.01, 0.99), channel_axis=None, clip=F
 
 
 def get_uv_layout(obj, uv_layout_path, image_resolution):
-    """Get UV layout mask for obj object as a np.array. As a side effect, saves layout to disk"""
-    # delete UV layout file if it already exists
+    """Get UV layout mask for obj object as a np.array. As a side effect, saves layout to disk and deselects everything except obj."""
     if os.path.exists(uv_layout_path):
         os.remove(uv_layout_path)
 
@@ -92,57 +91,11 @@ def get_uv_layout(obj, uv_layout_path, image_resolution):
         face.select = True
     bmesh.update_edit_mesh(obj.data)
     
-    print(obj.name)
     bpy.ops.uv.export_layout(filepath=uv_layout_path, size=(image_resolution, image_resolution), opacity=1, export_all=False, check_existing=False)
     bpy.ops.object.mode_set(mode='OBJECT')
     UV_layout = load_png(uv_layout_path)
     
     return (UV_layout.sum(axis=-1) > 0)[::-1]
-
-
-
-#def get_uv_layout(obj, image_resolution=1024, image_name="UV_Layout"):
-#    """
-#    Generate the UV layout of a mesh object and store it as a Blender image.
-#    
-#    Args:
-#        obj (bpy.types.Object): The mesh object to process.
-#        image_name (str): The name of the generated Blender image.
-#        resolution (int): The resolution of the UV layout image (square).
-#    
-#    Returns:
-#        bpy.types.Image: The generated Blender image containing the UV layout.
-#    """
-#    if obj.type != 'MESH':
-#        raise ValueError("Selected object is not a mesh")
-
-    # Create a new image in Blender
-#    image = bpy.data.images.new(name=image_name, width=resolution, height=resolution, alpha=True)
-    
-    # Ensure the mesh has UVs
-#    uv_layer = obj.data.uv_layers.active
-#    if uv_layer is None:
-#        raise ValueError("The mesh does not have an active UV map")
-
-    # Bake UV layout to the image
-#    selected = 
-#    bpy.ops.object.select_all(action='DESELECT')  # Deselect all objects
-#    obj.select_set(True)  # Select the specific object
-#    bpy.context.view_layer.objects.active = obj  # Set the object as active
-    
-    # Bake UV layout to the new image
-#    bpy.ops.uv.export_layout(filepath="", size=(image_resolution, image_resolution), export_all=False, opacity=1)
-#    image.filepath_raw = ""  # Keep the image internal without saving to disk
-    
-    # Assign the UV layout image to the active UV map
-#    uv_texture = obj.data.uv_textures.active
-#    if uv_texture is None:
-#        uv_texture = obj.data.uv_textures.new(name=image_name)
-    
-#   uv_texture.data.foreach_set("image", [image] * len(uv_texture.data))
-#    
-#    return image
-
 
 
 def get_uv_normal_world_per_loop(mesh_obj, filter_unique=False):
@@ -945,6 +898,7 @@ def separate_selected_into_mesh_and_box(self, context):
         return None, None
     return box, obj
 
+
 ### Operators defining the user interface of the add-on
 
 
@@ -975,7 +929,7 @@ class LoadTIFFOperator(Operator):
             # permute axes
             axis_order = list(context.scene.tissue_cartography_axis_order)
             if not sorted(axis_order) == [0,1,2,3]:
-                self.report({'ERROR'}, "Axis order must be a permutation of [0,1,2,3] (e.g. [3,0,1,2]")
+                self.report({'ERROR'}, "Axis order must be a permutation of [0,1,2,3] (e.g. [3,0,1,2])")
                 return {'CANCELLED'}
             data = data.transpose(axis_order)
             
@@ -1046,16 +1000,6 @@ class CreateProjectionOperator(Operator):
 
     def execute(self, context):
         # Validate selected object and UV map
-        #n_data_selected = len([x for x in context.selected_objects if "3D_data" in x])
-        #n_mesh_selected = len([x for x in context.selected_objects if not "3D_data" in x])
-        #if not ((n_data_selected==1) and (n_mesh_selected==1)):
-        #    self.report({'ERROR'}, "Select exactly one mesh and one 3D image (BoundingBox)!")
-        #    return {'CANCELLED'}
-        #box = [x for x in context.selected_objects if "3D_data" in x][0]
-        #obj = [x for x in context.selected_objects if not "3D_data" in x][0]
-        #if not obj or obj.type != 'MESH':
-        #    self.report({'ERROR'}, "No mesh object selected!")
-        #    return {'CANCELLED'}
         box, obj = separate_selected_into_mesh_and_box(self, context)
         if box is None or obj is None:
             return {'CANCELLED'}
@@ -1063,7 +1007,6 @@ class CreateProjectionOperator(Operator):
         if not obj.data.uv_layers:
             self.report({'ERROR'}, "The selected mesh does not have a UV map!")
             return {'CANCELLED'}
-        
         # Parse offsets into a NumPy array
         offsets_str = context.scene.tissue_cartography_offsets
         try:
@@ -1075,15 +1018,14 @@ class CreateProjectionOperator(Operator):
             self.report({'ERROR'}, f"Invalid offsets input: {e}")
             return {'CANCELLED'}
         # set offsets as property
-        obj["projection_offsets"] = list(offsets_array)
+        set_numpy_attribute(obj, "projection_offsets", offsets_array)
         
         # Parse projection resolution
-        projection_resolution = context.scene.projection_resolution
+        projection_resolution = context.scene.tissue_cartography_projection_resolution
         self.report({'INFO'}, f"Using projection resolution: {projection_resolution}")
 
         # texture bake normals and world positions
-        loop_uvs, loop_normals, loop_world_positions = get_uv_normal_world_per_loop(obj, 
-                                                                                    filter_unique=True)
+        loop_uvs, loop_normals, loop_world_positions = get_uv_normal_world_per_loop(obj, filter_unique=True)
         
         baked_normals = bake_per_loop_values_to_uv(loop_uvs, loop_normals, 
                                                    image_resolution=projection_resolution)
@@ -1093,7 +1035,6 @@ class CreateProjectionOperator(Operator):
         # obtain UV layout and use it to get a mask
         uv_layout_path = str(Path(bpy.path.abspath("//")).joinpath(f'{obj.name}_UV_layout.png'))
         mask = get_uv_layout(obj, uv_layout_path, projection_resolution)
-        #mask = np.ones((projection_resolution, projection_resolution)) > 0
         baked_normals[~mask] = np.nan
         baked_world_positions[~mask] = np.nan
         
@@ -1109,7 +1050,7 @@ class CreateProjectionOperator(Operator):
         set_numpy_attribute(obj, "baked_normals", baked_normals, method="flatten")
         set_numpy_attribute(obj, "baked_world_positions", baked_world_positions, method="flatten")
         # create texture
-        create_material_from_multilayer_array(obj, baked_data, material_name="ProjectedMaterial")
+        create_material_from_multilayer_array(obj, baked_data, material_name=f"ProjectedMaterial_{obj.name}")
 
         return {'FINISHED'}
 
@@ -1168,21 +1109,22 @@ class SlicePlaneOperator(bpy.types.Operator):
         if not isinstance(data, np.ndarray) or data.ndim != 4:
             self.report({'ERROR'}, "Invalid 3D data array.")
             return {'CANCELLED'}
-        if context.scene.slice_channel >= data.shape[0]:
-            self.report({'ERROR'}, f"Channel {context.scene.slice_channel} is out of bounds for the data array.")
+        if context.scene.tissue_cartography_slice_channel >= data.shape[0]:
+            self.report({'ERROR'}, f"Channel {context.scene.tissue_cartography_slice_channel} is out of bounds for the data array.")
             return {'CANCELLED'}
 
         length, width, height = (np.array(data.shape[1:]) * resolution)
-        slice_plane = create_slice_plane(length, width, height, axis=context.scene.slice_axis,
-                                         position=context.scene.slice_position)
+        slice_plane = create_slice_plane(length, width, height, axis=context.scene.tissue_cartography_slice_axis,
+                                         position=context.scene.tissue_cartography_slice_position)
+        slice_plane.name = f"{slice_plane.name}_{box.name}"
         # set matrix world
         slice_plane.matrix_world = box.matrix_world
                                          
-        slice_img = get_slice_image(data, resolution, axis=context.scene.slice_axis,
-                                    position=context.scene.slice_position)
+        slice_img = get_slice_image(data, resolution, axis=context.scene.tissue_cartography_slice_axis,
+                                    position=context.scene.tissue_cartography_slice_position)
         slice_img = normalize_quantiles(slice_img, quantiles=(0.01, 0.99),
                                         channel_axis=0, clip=True, data_type=None)     
-        create_material_from_array(slice_plane, slice_img[context.scene.slice_channel], material_name=f"SliceMaterial_{context.scene.slice_axis}_{context.scene.slice_position}")  
+        create_material_from_array(slice_plane, slice_img[context.scene.tissue_cartography_slice_channel], material_name=f"SliceMaterial_{box.name}_{context.scene.tissue_cartography_slice_axis}_{context.scene.tissue_cartography_slice_position}")  
         return {'FINISHED'}
 
 
@@ -1211,8 +1153,8 @@ class VertexShaderInitializeOperator(bpy.types.Operator):
         if not obj or obj.type != 'MESH':
             self.report({'ERROR'}, "No mesh object selected!")
             return {'CANCELLED'}
-        if context.scene.vertex_channel >= data.shape[0]:
-            self.report({'ERROR'}, f"Channel {context.scene.vertex_channel} is out of bounds for the data array.")
+        if context.scene.tissue_cartography_vertex_shader_channel >= data.shape[0]:
+            self.report({'ERROR'}, f"Channel {context.scene.tissue_cartography_vertex_shader_channel} is out of bounds for the data array.")
             return {'CANCELLED'}
         # need to compute coordinates relative to matrix_world of box I think
         set_numpy_attribute(obj, "box_world_inv_vertex_shader",
@@ -1220,13 +1162,13 @@ class VertexShaderInitializeOperator(bpy.types.Operator):
         bpy.types.Scene.tissue_cartography_interpolators[obj.name] = get_image_to_vertex_interpolator(obj, data, resolution)
         box_inv = mathutils.Matrix(get_numpy_attribute(obj, 
                                    "box_world_inv_vertex_shader"))
-        positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.vertex_offset*v.normal)
+        positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.tissue_cartography_vertex_shader_offset*v.normal)
                               for v in obj.data.vertices])
-        intensities = bpy.types.Scene.tissue_cartography_interpolators[obj.name][context.scene.vertex_channel](positions)
+        intensities = bpy.types.Scene.tissue_cartography_interpolators[obj.name][context.scene.tissue_cartography_vertex_shader_channel](positions)
         colors = np.stack(3*[intensities,], axis=1)
         
         assign_vertex_colors(obj, colors)
-        create_vertex_color_material(obj)
+        create_vertex_color_material(obj, material_name=f"VertexColorMaterial_{obj.name}")
 
         return {'FINISHED'}
 
@@ -1239,31 +1181,20 @@ class VertexShaderRefreshOperator(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        # Get the 3D data array from the scene
-        data = getattr(context.scene, "tissue_cartography_data", None)
-        resolution = getattr(context.scene, "tissue_cartography_resolution_array", None)
         obj = context.active_object
         interpolator_dict = getattr(context.scene, "tissue_cartography_interpolators")
-        if data is None or resolution is None:
-            self.report({'ERROR'}, "3D data array not found in the scene.")
-            return {'CANCELLED'}
-        if not isinstance(data, np.ndarray) or data.ndim != 4:
-            self.report({'ERROR'}, "Invalid 3D data array.")
-            return {'CANCELLED'}
         if not obj or obj.type != 'MESH':
             self.report({'ERROR'}, "No mesh object selected!")
             return {'CANCELLED'}
-        if context.scene.vertex_channel >= data.shape[0]:
-            self.report({'ERROR'}, f"Channel {context.scene.vertex_channel} is out of bounds for the data array.")
         if interpolator_dict is None or obj.name not in interpolator_dict:
             self.report({'ERROR'}, f"Vertex shader not initialized.")
             return {'CANCELLED'}
-       
-        box_inv = mathutils.Matrix(get_numpy_attribute(obj, 
-                                   "box_world_inv_vertex_shader"))
-        positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.vertex_offset*v.normal)
+        if context.scene.tissue_cartography_vertex_shader_channel >= len(interpolator_dict[obj.name]):
+            self.report({'ERROR'}, f"Channel {context.scene.tissue_cartography_vertex_shader_channel} is out of bounds for the data array.")
+        box_inv = mathutils.Matrix(get_numpy_attribute(obj, "box_world_inv_vertex_shader"))
+        positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.tissue_cartography_vertex_shader_offset*v.normal)
                               for v in obj.data.vertices])
-        intensities = interpolator_dict[obj.name][context.scene.vertex_channel](positions)
+        intensities = interpolator_dict[obj.name][context.scene.tissue_cartography_vertex_shader_channel](positions)
         colors = np.stack(3*[intensities,], axis=1)
         assign_vertex_colors(obj, colors)
 
@@ -1308,30 +1239,6 @@ class HelpPopupOperator(Operator):
         url = "https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/03_blender_addon_tutorial.html"
         bpy.ops.wm.url_open(url=url)
         return {'FINISHED'}
-        #return context.window_manager.invoke_popup(self, width=400)
-
-#    def draw(self, context):
-#        layout = self.layout
-#        col = layout.column()
-
-#        col.label(text="Tissue Cartography Add-On Help", icon='INFO')
-#        col.label(text="1. Load a .tiff file using the 'Load' button.")
-#        col.label(text="   after entering the resolution (x, y, z) in microns.")
-#        col.label(text="2. Select the mesh to use (it should be outlined in orange).")
-#        col.label(text="3. Click 'Create Projection' to bake mesh positions,")
-#        col.label(text="   nesh normals, and volumetric data to UV textures.")
-#        col.label(text="   Define normal offsets to get a multi-layer projection.")
-#        col.label(text="   Data is saved as .tiff files for further processing,")
-#        col.label(text="   and as a material to shade the mesh (see Shading workspace).")
-#        col.label(text="   Projection resolution determines the output texture size.")
-#        col.separator()
-#        col.label(text="4. Troubleshooting and conventions")
-#        col.label(text="   a. The mesh vertex positions must be in micrometers.")
-#        col.label(text="      After creating the mesh (for example by a marching cubes),")
-#        col.label(text="      make sure to convert from pixels to microns!")
-#        col.label(text="   b. When importing a mesh into blender, choose Y=Forward and Z=Up.")
-#        col.label(text="      This ensures the mesh coordinates match the image axes!")
-#        col.label(text="   c. Check the Info Monitor (Scripting window) for messages and errors.")
         
         
 class TissueCartographyPanel(Panel):
@@ -1360,15 +1267,15 @@ class TissueCartographyPanel(Panel):
         layout.separator()
         
         row_slice = layout.row()
-        row_slice.prop(scene, "slice_axis")
-        row_slice.prop(scene, "slice_position")
-        row_slice.prop(scene, "slice_channel")
+        row_slice.prop(scene, "tissue_cartography_slice_axis")
+        row_slice.prop(scene, "tissue_cartography_slice_position")
+        row_slice.prop(scene, "tissue_cartography_slice_channel")
         layout.operator("scene.create_slice_plane", text="Create slice plane")
         layout.separator()
         
         row_vertex = layout.row()
-        row_vertex.prop(scene, "vertex_offset")
-        row_vertex.prop(scene, "vertex_channel")
+        row_vertex.prop(scene, "tissue_cartography_vertex_shader_offset")
+        row_vertex.prop(scene, "tissue_cartography_vertex_shader_channel")
         row_vertex2 = layout.row()
         row_vertex2.operator("scene.initialize_vertex_shader", text="Initialize vertex shading")
         row_vertex2.operator("scene.refresh_vertex_shader", text="Refresh vertex shading")
@@ -1376,7 +1283,7 @@ class TissueCartographyPanel(Panel):
         
         row_projection = layout.row()
         row_projection.prop(scene, "tissue_cartography_offsets")
-        row_projection.prop(scene, "projection_resolution")
+        row_projection.prop(scene, "tissue_cartography_projection_resolution")
         row_projection2 = layout.row()
         row_projection2.operator("scene.create_projection", text="Create Projection")
         row_projection2.operator("scene.save_projection", text="Save Projection")
@@ -1457,13 +1364,13 @@ def register():
         description="Comma-separated list of floats for multilayer projection offsets",
         default="0",
     )
-    bpy.types.Scene.projection_resolution = IntProperty(
+    bpy.types.Scene.tissue_cartography_projection_resolution = IntProperty(
         name="Projection Format (Pixels)",
         description="Resolution for the projection (e.g., 1024 for 1024x1024 pixels)",
         default=1024,
         min=1,
     )
-    bpy.types.Scene.slice_axis = EnumProperty(
+    bpy.types.Scene.tissue_cartography_slice_axis = EnumProperty(
         name="Slice Axis",
         description="Choose an axis",
         items=[('x', "X-Axis", "Align to the X axis"),
@@ -1471,26 +1378,25 @@ def register():
                ('z', "Z-Axis", "Align to the Z axis")],
         default='x'
     )
-    bpy.types.Scene.slice_position = FloatProperty(
+    bpy.types.Scene.tissue_cartography_slice_position = FloatProperty(
         name="Slice Position (µm)",
         description="Position along the selected axis in µm",
         default=0
     )
-    bpy.types.Scene.slice_channel = IntProperty(
+    bpy.types.Scene.tissue_cartography_slice_channel = IntProperty(
         name="Slice Channel",
-        description="Channel to use for slice. plane",
+        description="Channel for slice plane",
         default=0,
         min=0,
     )
-    bpy.types.Scene.vertex_offset = FloatProperty(
-        name="Vertex Normal Offset (µm)",
-        description="Normal offset to use for vertex shading.",
+    bpy.types.Scene.tissue_cartography_vertex_shader_offset = FloatProperty(
+        name="Vertex Shader Normal Offset (µm)",
+        description="Normal offse for vertex shading.",
         default=0,
-        min=0,
     )
-    bpy.types.Scene.vertex_channel = IntProperty(
-        name="Vertex Channel",
-        description="Channel to use for vertex shading.",
+    bpy.types.Scene.tissue_cartography_vertex_shader_channel = IntProperty(
+        name="Vertex Shader Channel",
+        description="Channel for vertex shading.",
         default=0,
         min=0,
     )
@@ -1533,12 +1439,12 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_segmentation_resolution 
     del bpy.types.Scene.tissue_cartography_segmentation_sigma
     del bpy.types.Scene.tissue_cartography_offsets 
-    del bpy.types.Scene.projection_resolution 
-    del bpy.types.Scene.slice_axis 
-    del bpy.types.Scene.slice_position 
-    del bpy.types.Scene.slice_channel 
-    del bpy.types.Scene.vertex_offset 
-    del bpy.types.Scene.vertex_channel
+    del bpy.types.Scene.tissue_cartography_projection_resolution 
+    del bpy.types.Scene.tissue_cartography_slice_axis 
+    del bpy.types.Scene.tissue_cartography_slice_position 
+    del bpy.types.Scene.tissue_cartography_slice_channel 
+    del bpy.types.Scene.tissue_cartography_vertex_shader_offset 
+    del bpy.types.Scene.tissue_cartography_vertex_shader_channel
     del bpy.types.Scene.tissue_cartography_prealign 
     del bpy.types.Scene.tissue_cartography_prealign_shear
     del bpy.types.Scene.tissue_cartography_align_iter
