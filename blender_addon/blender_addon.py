@@ -356,7 +356,7 @@ def create_material_from_array(slice_plane, array, material_name="SliceMaterial"
     links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
 
     # Assign the material to the plane
-    slice_plane.data.materials.append(material)
+    slice_plane.active_material = material
     return None
 
 
@@ -417,7 +417,6 @@ def create_material_from_multilayer_array(mesh, array, material_name="ProjectedM
     links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
 
     # Assign the material to the mesh
-    mesh.data.materials.append(material)
     mesh.active_material = material
     return None
 
@@ -564,10 +563,6 @@ def create_vertex_color_material(object, material_name="VertexColorMaterial"):
         map_range_node.inputs["To Max"].default_value = 1.0
 
     # Assign the material to the object
-    if object.data.materials:
-        object.data.materials[0] = material
-    else:
-        object.data.materials.append(material)
     object.active_material = material
     return None
 
