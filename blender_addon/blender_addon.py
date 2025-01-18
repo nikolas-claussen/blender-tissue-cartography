@@ -8,7 +8,9 @@ import bpy
 from bpy.props import StringProperty, FloatVectorProperty, IntVectorProperty, FloatProperty, IntProperty, EnumProperty
 from bpy.types import Operator, Panel
 import mathutils
+import bmesh
 from pathlib import Path
+import os
 import numpy as np
 import tifffile
 from scipy import interpolate, ndimage, spatial, stats, linalg
@@ -73,13 +75,74 @@ def normalize_quantiles(image, quantiles=(0.01, 0.99), channel_axis=None, clip=F
 ### Tissue cartography - projecting 3d images to UV textures
 
 
-def get_uv_layout(uv_layout_path, image_resolution):
-    """Get UV layout mask for currently active object and save it to disk"""
+def get_uv_layout(obj, uv_layout_path, image_resolution):
+    """Get UV layout mask for obj object as a np.array. As a side effect, saves layout to disk"""
+    # delete UV layout file if it already exists
+    if os.path.exists(uv_layout_path):
+        os.remove(uv_layout_path)
+
+    bpy.ops.object.select_all(action='DESELECT')  # Deselect all objects
+    obj.select_set(True)  # Select the specific object
+    bpy.context.view_layer.objects.active = obj
     bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.uv.export_layout(filepath=uv_layout_path, size=(image_resolution, image_resolution), opacity=1)
+    
+    # Set all faces to selected for the UV layout
+    mesh = bmesh.from_edit_mesh(obj.data)
+    for face in mesh.faces:
+        face.select = True
+    bmesh.update_edit_mesh(obj.data)
+    
+    print(obj.name)
+    bpy.ops.uv.export_layout(filepath=uv_layout_path, size=(image_resolution, image_resolution), opacity=1, export_all=False, check_existing=False)
     bpy.ops.object.mode_set(mode='OBJECT')
     UV_layout = load_png(uv_layout_path)
+    
     return (UV_layout.sum(axis=-1) > 0)[::-1]
+
+
+
+#def get_uv_layout(obj, image_resolution=1024, image_name="UV_Layout"):
+#    """
+#    Generate the UV layout of a mesh object and store it as a Blender image.
+#    
+#    Args:
+#        obj (bpy.types.Object): The mesh object to process.
+#        image_name (str): The name of the generated Blender image.
+#        resolution (int): The resolution of the UV layout image (square).
+#    
+#    Returns:
+#        bpy.types.Image: The generated Blender image containing the UV layout.
+#    """
+#    if obj.type != 'MESH':
+#        raise ValueError("Selected object is not a mesh")
+
+    # Create a new image in Blender
+#    image = bpy.data.images.new(name=image_name, width=resolution, height=resolution, alpha=True)
+    
+    # Ensure the mesh has UVs
+#    uv_layer = obj.data.uv_layers.active
+#    if uv_layer is None:
+#        raise ValueError("The mesh does not have an active UV map")
+
+    # Bake UV layout to the image
+#    selected = 
+#    bpy.ops.object.select_all(action='DESELECT')  # Deselect all objects
+#    obj.select_set(True)  # Select the specific object
+#    bpy.context.view_layer.objects.active = obj  # Set the object as active
+    
+    # Bake UV layout to the new image
+#    bpy.ops.uv.export_layout(filepath="", size=(image_resolution, image_resolution), export_all=False, opacity=1)
+#    image.filepath_raw = ""  # Keep the image internal without saving to disk
+    
+    # Assign the UV layout image to the active UV map
+#    uv_texture = obj.data.uv_textures.active
+#    if uv_texture is None:
+#        uv_texture = obj.data.uv_textures.new(name=image_name)
+    
+#   uv_texture.data.foreach_set("image", [image] * len(uv_texture.data))
+#    
+#    return image
+
 
 
 def get_uv_normal_world_per_loop(mesh_obj, filter_unique=False):
@@ -927,7 +990,7 @@ class LoadTIFFOperator(Operator):
             box.display_type = 'WIRE'
             # attach the data to the box
             set_numpy_attribute(box, "resolution", resolution)
-            set_numpy_attribute(box, "3D_data", data)
+            set_numpy_attribute(box, "3D_data", data, method="tolist")
             
         except Exception as e:
             self.report({'ERROR'}, f"Failed to load TIFF file: {e}")
@@ -1029,7 +1092,8 @@ class CreateProjectionOperator(Operator):
                                                            image_resolution=projection_resolution)
         # obtain UV layout and use it to get a mask
         uv_layout_path = str(Path(bpy.path.abspath("//")).joinpath(f'{obj.name}_UV_layout.png'))
-        mask = get_uv_layout(uv_layout_path, projection_resolution)
+        mask = get_uv_layout(obj, uv_layout_path, projection_resolution)
+        #mask = np.ones((projection_resolution, projection_resolution)) > 0
         baked_normals[~mask] = np.nan
         baked_world_positions[~mask] = np.nan
         
