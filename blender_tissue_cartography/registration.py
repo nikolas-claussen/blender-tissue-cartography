@@ -105,7 +105,7 @@ def align_by_centroid_and_intertia(source, target, q=0, scale=True, shear=False,
     affine_matrix_rep = np.round(package_affine_transformation(trafo_matrix, trafo_translate),decimals=2)
     return affine_matrix_rep, aligned
 
-# %% ../nbs/05a_registration.ipynb 28
+# %% ../nbs/05a_registration.ipynb 31
 def procrustes(source, target, include_scaling=True, include_reflections=True):
     """
     Wrapper around igl.procrustes
@@ -136,7 +136,7 @@ def procrustes(source, target, include_scaling=True, include_reflections=True):
     disparity = np.linalg.norm(aligned-target, axis=1).mean()
     return trafo_affine, aligned, disparity
 
-# %% ../nbs/05a_registration.ipynb 30
+# %% ../nbs/05a_registration.ipynb 36
 def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, include_scaling=True, n_samples=1000):
     """
     Apply the iterative closest point algorithm to align point cloud a with
