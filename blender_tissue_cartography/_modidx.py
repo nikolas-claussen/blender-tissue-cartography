@@ -6,245 +6,353 @@ d = { 'settings': { 'branch': 'main',
                 'git_url': 'https://github.com/nikolas-claussen/blender-tissue-cartography',
                 'lib_path': 'blender_tissue_cartography'},
   'syms': { 'blender_tissue_cartography.blender_tissue_cartography_addon': {},
-            'blender_tissue_cartography.diffgeo': { 'blender_tissue_cartography.diffgeo.compute_per_face_jacobian': ( 'differential_geometry.html#compute_per_face_jacobian',
+            'blender_tissue_cartography.diffgeo': { 'blender_tissue_cartography.diffgeo.compute_per_face_jacobian': ( 'Python '
+                                                                                                                      'library/differential_geometry.html#compute_per_face_jacobian',
                                                                                                                       'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.compute_per_vertex_angle_distortion': ( 'differential_geometry.html#compute_per_vertex_angle_distortion',
+                                                    'blender_tissue_cartography.diffgeo.compute_per_vertex_angle_distortion': ( 'Python '
+                                                                                                                                'library/differential_geometry.html#compute_per_vertex_angle_distortion',
                                                                                                                                 'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.compute_per_vertex_area_distortion': ( 'differential_geometry.html#compute_per_vertex_area_distortion',
+                                                    'blender_tissue_cartography.diffgeo.compute_per_vertex_area_distortion': ( 'Python '
+                                                                                                                               'library/differential_geometry.html#compute_per_vertex_area_distortion',
                                                                                                                                'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.compute_per_vertex_jacobian': ( 'differential_geometry.html#compute_per_vertex_jacobian',
+                                                    'blender_tissue_cartography.diffgeo.compute_per_vertex_jacobian': ( 'Python '
+                                                                                                                        'library/differential_geometry.html#compute_per_vertex_jacobian',
                                                                                                                         'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.get_area_distortion_in_UV': ( 'differential_geometry.html#get_area_distortion_in_uv',
+                                                    'blender_tissue_cartography.diffgeo.get_area_distortion_in_UV': ( 'Python '
+                                                                                                                      'library/differential_geometry.html#get_area_distortion_in_uv',
                                                                                                                       'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.get_div': ( 'differential_geometry.html#get_div',
+                                                    'blender_tissue_cartography.diffgeo.get_div': ( 'Python '
+                                                                                                    'library/differential_geometry.html#get_div',
                                                                                                     'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.get_grad_perp': ( 'differential_geometry.html#get_grad_perp',
+                                                    'blender_tissue_cartography.diffgeo.get_grad_perp': ( 'Python '
+                                                                                                          'library/differential_geometry.html#get_grad_perp',
                                                                                                           'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.get_induced_metric': ( 'differential_geometry.html#get_induced_metric',
+                                                    'blender_tissue_cartography.diffgeo.get_induced_metric': ( 'Python '
+                                                                                                               'library/differential_geometry.html#get_induced_metric',
                                                                                                                'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.get_metric_angle': ( 'differential_geometry.html#get_metric_angle',
+                                                    'blender_tissue_cartography.diffgeo.get_metric_angle': ( 'Python '
+                                                                                                             'library/differential_geometry.html#get_metric_angle',
                                                                                                              'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.get_metric_norm': ( 'differential_geometry.html#get_metric_norm',
+                                                    'blender_tissue_cartography.diffgeo.get_metric_norm': ( 'Python '
+                                                                                                            'library/differential_geometry.html#get_metric_norm',
                                                                                                             'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.get_normal_projector': ( 'differential_geometry.html#get_normal_projector',
+                                                    'blender_tissue_cartography.diffgeo.get_normal_projector': ( 'Python '
+                                                                                                                 'library/differential_geometry.html#get_normal_projector',
                                                                                                                  'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.get_rot': ( 'differential_geometry.html#get_rot',
+                                                    'blender_tissue_cartography.diffgeo.get_rot': ( 'Python '
+                                                                                                    'library/differential_geometry.html#get_rot',
                                                                                                     'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.separate_tangential_normal': ( 'differential_geometry.html#separate_tangential_normal',
+                                                    'blender_tissue_cartography.diffgeo.separate_tangential_normal': ( 'Python '
+                                                                                                                       'library/differential_geometry.html#separate_tangential_normal',
                                                                                                                        'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.tri_grad': ( 'differential_geometry.html#tri_grad',
+                                                    'blender_tissue_cartography.diffgeo.tri_grad': ( 'Python '
+                                                                                                     'library/differential_geometry.html#tri_grad',
                                                                                                      'blender_tissue_cartography/diffgeo.py')},
-            'blender_tissue_cartography.harmonic': { 'blender_tissue_cartography.harmonic.center_moebius': ( 'harmonic_wrapping.html#center_moebius',
+            'blender_tissue_cartography.harmonic': { 'blender_tissue_cartography.harmonic.center_moebius': ( 'Python '
+                                                                                                             'library/harmonic_wrapping.html#center_moebius',
                                                                                                              'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.complex_to_xy': ( 'harmonic_wrapping.html#complex_to_xy',
+                                                     'blender_tissue_cartography.harmonic.complex_to_xy': ( 'Python '
+                                                                                                            'library/harmonic_wrapping.html#complex_to_xy',
                                                                                                             'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.get_rot_mat2d': ( 'harmonic_wrapping.html#get_rot_mat2d',
+                                                     'blender_tissue_cartography.harmonic.get_rot_mat2d': ( 'Python '
+                                                                                                            'library/harmonic_wrapping.html#get_rot_mat2d',
                                                                                                             'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.map_cylinder_to_disk': ( 'harmonic_wrapping.html#map_cylinder_to_disk',
+                                                     'blender_tissue_cartography.harmonic.map_cylinder_to_disk': ( 'Python '
+                                                                                                                   'library/harmonic_wrapping.html#map_cylinder_to_disk',
                                                                                                                    'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.map_to_disk': ( 'harmonic_wrapping.html#map_to_disk',
+                                                     'blender_tissue_cartography.harmonic.map_to_disk': ( 'Python '
+                                                                                                          'library/harmonic_wrapping.html#map_to_disk',
                                                                                                           'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.map_to_sphere': ( 'harmonic_wrapping.html#map_to_sphere',
+                                                     'blender_tissue_cartography.harmonic.map_to_sphere': ( 'Python '
+                                                                                                            'library/harmonic_wrapping.html#map_to_sphere',
                                                                                                             'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.moebius_disk': ( 'harmonic_wrapping.html#moebius_disk',
+                                                     'blender_tissue_cartography.harmonic.moebius_disk': ( 'Python '
+                                                                                                           'library/harmonic_wrapping.html#moebius_disk',
                                                                                                            'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.polygon_area': ( 'harmonic_wrapping.html#polygon_area',
+                                                     'blender_tissue_cartography.harmonic.polygon_area': ( 'Python '
+                                                                                                           'library/harmonic_wrapping.html#polygon_area',
                                                                                                            'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.polygon_centroid': ( 'harmonic_wrapping.html#polygon_centroid',
+                                                     'blender_tissue_cartography.harmonic.polygon_centroid': ( 'Python '
+                                                                                                               'library/harmonic_wrapping.html#polygon_centroid',
                                                                                                                'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.rotational_align_disk': ( 'harmonic_wrapping.html#rotational_align_disk',
+                                                     'blender_tissue_cartography.harmonic.rotational_align_disk': ( 'Python '
+                                                                                                                    'library/harmonic_wrapping.html#rotational_align_disk',
                                                                                                                     'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.rotational_align_sphere': ( 'harmonic_wrapping.html#rotational_align_sphere',
+                                                     'blender_tissue_cartography.harmonic.rotational_align_sphere': ( 'Python '
+                                                                                                                      'library/harmonic_wrapping.html#rotational_align_sphere',
                                                                                                                       'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.stereographic_plane_to_sphere': ( 'harmonic_wrapping.html#stereographic_plane_to_sphere',
+                                                     'blender_tissue_cartography.harmonic.stereographic_plane_to_sphere': ( 'Python '
+                                                                                                                            'library/harmonic_wrapping.html#stereographic_plane_to_sphere',
                                                                                                                             'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.stereographic_sphere_to_plane': ( 'harmonic_wrapping.html#stereographic_sphere_to_plane',
+                                                     'blender_tissue_cartography.harmonic.stereographic_sphere_to_plane': ( 'Python '
+                                                                                                                            'library/harmonic_wrapping.html#stereographic_sphere_to_plane',
                                                                                                                             'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.wrap_coords_via_disk': ( 'harmonic_wrapping.html#wrap_coords_via_disk',
+                                                     'blender_tissue_cartography.harmonic.wrap_coords_via_disk': ( 'Python '
+                                                                                                                   'library/harmonic_wrapping.html#wrap_coords_via_disk',
                                                                                                                    'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.wrap_coords_via_disk_cylinder': ( 'harmonic_wrapping.html#wrap_coords_via_disk_cylinder',
+                                                     'blender_tissue_cartography.harmonic.wrap_coords_via_disk_cylinder': ( 'Python '
+                                                                                                                            'library/harmonic_wrapping.html#wrap_coords_via_disk_cylinder',
                                                                                                                             'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.wrap_coords_via_sphere': ( 'harmonic_wrapping.html#wrap_coords_via_sphere',
+                                                     'blender_tissue_cartography.harmonic.wrap_coords_via_sphere': ( 'Python '
+                                                                                                                     'library/harmonic_wrapping.html#wrap_coords_via_sphere',
                                                                                                                      'blender_tissue_cartography/harmonic.py'),
-                                                     'blender_tissue_cartography.harmonic.xy_to_complex': ( 'harmonic_wrapping.html#xy_to_complex',
+                                                     'blender_tissue_cartography.harmonic.xy_to_complex': ( 'Python '
+                                                                                                            'library/harmonic_wrapping.html#xy_to_complex',
                                                                                                             'blender_tissue_cartography/harmonic.py')},
-            'blender_tissue_cartography.interface_pymeshlab': { 'blender_tissue_cartography.interface_pymeshlab.convert_from_pymeshlab': ( 'interface_pymeshlab.html#convert_from_pymeshlab',
+            'blender_tissue_cartography.interface_pymeshlab': { 'blender_tissue_cartography.interface_pymeshlab.convert_from_pymeshlab': ( 'Python '
+                                                                                                                                           'library/interface_pymeshlab.html#convert_from_pymeshlab',
                                                                                                                                            'blender_tissue_cartography/interface_pymeshlab.py'),
-                                                                'blender_tissue_cartography.interface_pymeshlab.convert_to_pymeshlab': ( 'interface_pymeshlab.html#convert_to_pymeshlab',
+                                                                'blender_tissue_cartography.interface_pymeshlab.convert_to_pymeshlab': ( 'Python '
+                                                                                                                                         'library/interface_pymeshlab.html#convert_to_pymeshlab',
                                                                                                                                          'blender_tissue_cartography/interface_pymeshlab.py')},
-            'blender_tissue_cartography.interface_trimesh': { 'blender_tissue_cartography.interface_trimesh.convert_from_trimesh': ( 'interface_trimesh.html#convert_from_trimesh',
+            'blender_tissue_cartography.interface_trimesh': { 'blender_tissue_cartography.interface_trimesh.convert_from_trimesh': ( 'Python '
+                                                                                                                                     'library/interface_trimesh.html#convert_from_trimesh',
                                                                                                                                      'blender_tissue_cartography/interface_trimesh.py'),
-                                                              'blender_tissue_cartography.interface_trimesh.convert_to_trimesh': ( 'interface_trimesh.html#convert_to_trimesh',
+                                                              'blender_tissue_cartography.interface_trimesh.convert_to_trimesh': ( 'Python '
+                                                                                                                                   'library/interface_trimesh.html#convert_to_trimesh',
                                                                                                                                    'blender_tissue_cartography/interface_trimesh.py')},
-            'blender_tissue_cartography.interpolation': { 'blender_tissue_cartography.interpolation.create_cartographic_projections': ( 'cartographic_interpolation.html#create_cartographic_projections',
+            'blender_tissue_cartography.interpolation': { 'blender_tissue_cartography.interpolation.create_cartographic_projections': ( 'Python '
+                                                                                                                                        'library/cartographic_interpolation.html#create_cartographic_projections',
                                                                                                                                         'blender_tissue_cartography/interpolation.py'),
-                                                          'blender_tissue_cartography.interpolation.get_cross_section_vertices_normals': ( 'cartographic_interpolation.html#get_cross_section_vertices_normals',
+                                                          'blender_tissue_cartography.interpolation.get_cross_section_vertices_normals': ( 'Python '
+                                                                                                                                           'library/cartographic_interpolation.html#get_cross_section_vertices_normals',
                                                                                                                                            'blender_tissue_cartography/interpolation.py'),
-                                                          'blender_tissue_cartography.interpolation.get_uv_layout_mask_mask': ( 'cartographic_interpolation.html#get_uv_layout_mask_mask',
+                                                          'blender_tissue_cartography.interpolation.get_uv_layout_mask_mask': ( 'Python '
+                                                                                                                                'library/cartographic_interpolation.html#get_uv_layout_mask_mask',
                                                                                                                                 'blender_tissue_cartography/interpolation.py'),
-                                                          'blender_tissue_cartography.interpolation.interpolate_UV_to_per_vertex_field': ( 'cartographic_interpolation.html#interpolate_uv_to_per_vertex_field',
+                                                          'blender_tissue_cartography.interpolation.interpolate_UV_to_per_vertex_field': ( 'Python '
+                                                                                                                                           'library/cartographic_interpolation.html#interpolate_uv_to_per_vertex_field',
                                                                                                                                            'blender_tissue_cartography/interpolation.py'),
-                                                          'blender_tissue_cartography.interpolation.interpolate_barycentric': ( 'cartographic_interpolation.html#interpolate_barycentric',
+                                                          'blender_tissue_cartography.interpolation.interpolate_barycentric': ( 'Python '
+                                                                                                                                'library/cartographic_interpolation.html#interpolate_barycentric',
                                                                                                                                 'blender_tissue_cartography/interpolation.py'),
-                                                          'blender_tissue_cartography.interpolation.interpolate_per_vertex_field_to_UV': ( 'cartographic_interpolation.html#interpolate_per_vertex_field_to_uv',
+                                                          'blender_tissue_cartography.interpolation.interpolate_per_vertex_field_to_UV': ( 'Python '
+                                                                                                                                           'library/cartographic_interpolation.html#interpolate_per_vertex_field_to_uv',
                                                                                                                                            'blender_tissue_cartography/interpolation.py'),
-                                                          'blender_tissue_cartography.interpolation.interpolate_volumetric_data_to_uv': ( 'cartographic_interpolation.html#interpolate_volumetric_data_to_uv',
+                                                          'blender_tissue_cartography.interpolation.interpolate_volumetric_data_to_uv': ( 'Python '
+                                                                                                                                          'library/cartographic_interpolation.html#interpolate_volumetric_data_to_uv',
                                                                                                                                           'blender_tissue_cartography/interpolation.py'),
-                                                          'blender_tissue_cartography.interpolation.interpolate_volumetric_data_to_uv_multilayer': ( 'cartographic_interpolation.html#interpolate_volumetric_data_to_uv_multilayer',
+                                                          'blender_tissue_cartography.interpolation.interpolate_volumetric_data_to_uv_multilayer': ( 'Python '
+                                                                                                                                                     'library/cartographic_interpolation.html#interpolate_volumetric_data_to_uv_multilayer',
                                                                                                                                                      'blender_tissue_cartography/interpolation.py')},
-            'blender_tissue_cartography.io': { 'blender_tissue_cartography.io.adjust_axis_order': ( 'io.html#adjust_axis_order',
+            'blender_tissue_cartography.io': { 'blender_tissue_cartography.io.adjust_axis_order': ( 'Python '
+                                                                                                    'library/io.html#adjust_axis_order',
                                                                                                     'blender_tissue_cartography/io.py'),
-                                               'blender_tissue_cartography.io.deprecated': ( 'io.html#deprecated',
+                                               'blender_tissue_cartography.io.deprecated': ( 'Python library/io.html#deprecated',
                                                                                              'blender_tissue_cartography/io.py'),
-                                               'blender_tissue_cartography.io.normalize_mean_std': ( 'io.html#normalize_mean_std',
+                                               'blender_tissue_cartography.io.normalize_mean_std': ( 'Python '
+                                                                                                     'library/io.html#normalize_mean_std',
                                                                                                      'blender_tissue_cartography/io.py'),
-                                               'blender_tissue_cartography.io.normalize_quantiles': ( 'io.html#normalize_quantiles',
+                                               'blender_tissue_cartography.io.normalize_quantiles': ( 'Python '
+                                                                                                      'library/io.html#normalize_quantiles',
                                                                                                       'blender_tissue_cartography/io.py'),
-                                               'blender_tissue_cartography.io.normalize_quantiles_for_png': ( 'io.html#normalize_quantiles_for_png',
+                                               'blender_tissue_cartography.io.normalize_quantiles_for_png': ( 'Python '
+                                                                                                              'library/io.html#normalize_quantiles_for_png',
                                                                                                               'blender_tissue_cartography/io.py'),
-                                               'blender_tissue_cartography.io.read_h5': ( 'io.html#read_h5',
+                                               'blender_tissue_cartography.io.read_h5': ( 'Python library/io.html#read_h5',
                                                                                           'blender_tissue_cartography/io.py'),
-                                               'blender_tissue_cartography.io.save_dict_to_json': ( 'io.html#save_dict_to_json',
+                                               'blender_tissue_cartography.io.save_dict_to_json': ( 'Python '
+                                                                                                    'library/io.html#save_dict_to_json',
                                                                                                     'blender_tissue_cartography/io.py'),
-                                               'blender_tissue_cartography.io.save_for_imageJ': ( 'io.html#save_for_imagej',
+                                               'blender_tissue_cartography.io.save_for_imageJ': ( 'Python library/io.html#save_for_imagej',
                                                                                                   'blender_tissue_cartography/io.py'),
-                                               'blender_tissue_cartography.io.save_stack_for_blender': ( 'io.html#save_stack_for_blender',
+                                               'blender_tissue_cartography.io.save_stack_for_blender': ( 'Python '
+                                                                                                         'library/io.html#save_stack_for_blender',
                                                                                                          'blender_tissue_cartography/io.py'),
-                                               'blender_tissue_cartography.io.subsample_image': ( 'io.html#subsample_image',
+                                               'blender_tissue_cartography.io.subsample_image': ( 'Python library/io.html#subsample_image',
                                                                                                   'blender_tissue_cartography/io.py'),
-                                               'blender_tissue_cartography.io.write_h5': ( 'io.html#write_h5',
+                                               'blender_tissue_cartography.io.write_h5': ( 'Python library/io.html#write_h5',
                                                                                            'blender_tissue_cartography/io.py')},
-            'blender_tissue_cartography.mesh': { 'blender_tissue_cartography.mesh.ObjMesh': ( 'mesh.html#objmesh',
+            'blender_tissue_cartography.mesh': { 'blender_tissue_cartography.mesh.ObjMesh': ( 'Python library/mesh.html#objmesh',
                                                                                               'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.__init__': ( 'mesh.html#objmesh.__init__',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.__init__': ( 'Python '
+                                                                                                       'library/mesh.html#objmesh.__init__',
                                                                                                        'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.apply_affine_to_mesh': ( 'mesh.html#objmesh.apply_affine_to_mesh',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.apply_affine_to_mesh': ( 'Python '
+                                                                                                                   'library/mesh.html#objmesh.apply_affine_to_mesh',
                                                                                                                    'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.cut_along_seams': ( 'mesh.html#objmesh.cut_along_seams',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.cut_along_seams': ( 'Python '
+                                                                                                              'library/mesh.html#objmesh.cut_along_seams',
                                                                                                               'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.get_uv_index_to_vertex_index_map': ( 'mesh.html#objmesh.get_uv_index_to_vertex_index_map',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.get_uv_index_to_vertex_index_map': ( 'Python '
+                                                                                                                               'library/mesh.html#objmesh.get_uv_index_to_vertex_index_map',
                                                                                                                                'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.get_vertex_index_to_uv_index_map': ( 'mesh.html#objmesh.get_vertex_index_to_uv_index_map',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.get_vertex_index_to_uv_index_map': ( 'Python '
+                                                                                                                               'library/mesh.html#objmesh.get_vertex_index_to_uv_index_map',
                                                                                                                                'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.get_vertex_to_texture_vertex_indices': ( 'mesh.html#objmesh.get_vertex_to_texture_vertex_indices',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.get_vertex_to_texture_vertex_indices': ( 'Python '
+                                                                                                                                   'library/mesh.html#objmesh.get_vertex_to_texture_vertex_indices',
                                                                                                                                    'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.is_triangular': ( 'mesh.html#objmesh.is_triangular',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.is_triangular': ( 'Python '
+                                                                                                            'library/mesh.html#objmesh.is_triangular',
                                                                                                             'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.map_per_texture_vertex_to_per_vertex': ( 'mesh.html#objmesh.map_per_texture_vertex_to_per_vertex',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.map_per_texture_vertex_to_per_vertex': ( 'Python '
+                                                                                                                                   'library/mesh.html#objmesh.map_per_texture_vertex_to_per_vertex',
                                                                                                                                    'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.map_per_vertex_to_per_texture_vertex': ( 'mesh.html#objmesh.map_per_vertex_to_per_texture_vertex',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.map_per_vertex_to_per_texture_vertex': ( 'Python '
+                                                                                                                                   'library/mesh.html#objmesh.map_per_vertex_to_per_texture_vertex',
                                                                                                                                    'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.only_vertices': ( 'mesh.html#objmesh.only_vertices',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.only_vertices': ( 'Python '
+                                                                                                            'library/mesh.html#objmesh.only_vertices',
                                                                                                             'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.read_obj': ( 'mesh.html#objmesh.read_obj',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.read_obj': ( 'Python '
+                                                                                                       'library/mesh.html#objmesh.read_obj',
                                                                                                        'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.read_obj_fallback': ( 'mesh.html#objmesh.read_obj_fallback',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.read_obj_fallback': ( 'Python '
+                                                                                                                'library/mesh.html#objmesh.read_obj_fallback',
                                                                                                                 'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.set_normals': ( 'mesh.html#objmesh.set_normals',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.set_normals': ( 'Python '
+                                                                                                          'library/mesh.html#objmesh.set_normals',
                                                                                                           'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.texture_tris': ( 'mesh.html#objmesh.texture_tris',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.texture_tris': ( 'Python '
+                                                                                                           'library/mesh.html#objmesh.texture_tris',
                                                                                                            'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.tris': ( 'mesh.html#objmesh.tris',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.tris': ( 'Python library/mesh.html#objmesh.tris',
                                                                                                    'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.vertex_textures': ( 'mesh.html#objmesh.vertex_textures',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.vertex_textures': ( 'Python '
+                                                                                                              'library/mesh.html#objmesh.vertex_textures',
                                                                                                               'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.ObjMesh.write_obj': ( 'mesh.html#objmesh.write_obj',
+                                                 'blender_tissue_cartography.mesh.ObjMesh.write_obj': ( 'Python '
+                                                                                                        'library/mesh.html#objmesh.write_obj',
                                                                                                         'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh._match_normals_to_vertices': ( 'mesh.html#_match_normals_to_vertices',
+                                                 'blender_tissue_cartography.mesh._match_normals_to_vertices': ( 'Python '
+                                                                                                                 'library/mesh.html#_match_normals_to_vertices',
                                                                                                                  'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.flatten': ( 'mesh.html#flatten',
+                                                 'blender_tissue_cartography.mesh.flatten': ( 'Python library/mesh.html#flatten',
                                                                                               'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.glue_seams': ( 'mesh.html#glue_seams',
+                                                 'blender_tissue_cartography.mesh.glue_seams': ( 'Python library/mesh.html#glue_seams',
                                                                                                  'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.index_else_nan': ( 'mesh.html#index_else_nan',
+                                                 'blender_tissue_cartography.mesh.index_else_nan': ( 'Python '
+                                                                                                     'library/mesh.html#index_else_nan',
                                                                                                      'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.invert_dictionary': ( 'mesh.html#invert_dictionary',
+                                                 'blender_tissue_cartography.mesh.invert_dictionary': ( 'Python '
+                                                                                                        'library/mesh.html#invert_dictionary',
                                                                                                         'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.pad_list': ( 'mesh.html#pad_list',
+                                                 'blender_tissue_cartography.mesh.pad_list': ( 'Python library/mesh.html#pad_list',
                                                                                                'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.read_other_formats_without_uv': ( 'mesh.html#read_other_formats_without_uv',
+                                                 'blender_tissue_cartography.mesh.read_other_formats_without_uv': ( 'Python '
+                                                                                                                    'library/mesh.html#read_other_formats_without_uv',
                                                                                                                     'blender_tissue_cartography/mesh.py'),
-                                                 'blender_tissue_cartography.mesh.unique': ( 'mesh.html#unique',
+                                                 'blender_tissue_cartography.mesh.unique': ( 'Python library/mesh.html#unique',
                                                                                              'blender_tissue_cartography/mesh.py')},
             'blender_tissue_cartography.morphsnakes': {},
-            'blender_tissue_cartography.registration': { 'blender_tissue_cartography.registration.align_by_centroid_and_intertia': ( 'registration.html#align_by_centroid_and_intertia',
+            'blender_tissue_cartography.registration': { 'blender_tissue_cartography.registration.align_by_centroid_and_intertia': ( 'Python '
+                                                                                                                                     'library/registration.html#align_by_centroid_and_intertia',
                                                                                                                                      'blender_tissue_cartography/registration.py'),
-                                                         'blender_tissue_cartography.registration.get_inertia': ( 'registration.html#get_inertia',
+                                                         'blender_tissue_cartography.registration.get_inertia': ( 'Python '
+                                                                                                                  'library/registration.html#get_inertia',
                                                                                                                   'blender_tissue_cartography/registration.py'),
-                                                         'blender_tissue_cartography.registration.icp': ( 'registration.html#icp',
+                                                         'blender_tissue_cartography.registration.icp': ( 'Python '
+                                                                                                          'library/registration.html#icp',
                                                                                                           'blender_tissue_cartography/registration.py'),
-                                                         'blender_tissue_cartography.registration.package_affine_transformation': ( 'registration.html#package_affine_transformation',
+                                                         'blender_tissue_cartography.registration.package_affine_transformation': ( 'Python '
+                                                                                                                                    'library/registration.html#package_affine_transformation',
                                                                                                                                     'blender_tissue_cartography/registration.py'),
-                                                         'blender_tissue_cartography.registration.procrustes': ( 'registration.html#procrustes',
+                                                         'blender_tissue_cartography.registration.procrustes': ( 'Python '
+                                                                                                                 'library/registration.html#procrustes',
                                                                                                                  'blender_tissue_cartography/registration.py')},
-            'blender_tissue_cartography.remesh': { 'blender_tissue_cartography.remesh.make_delaunay': ( 'remeshing.html#make_delaunay',
+            'blender_tissue_cartography.remesh': { 'blender_tissue_cartography.remesh.make_delaunay': ( 'Python '
+                                                                                                        'library/remeshing.html#make_delaunay',
                                                                                                         'blender_tissue_cartography/remesh.py'),
-                                                   'blender_tissue_cartography.remesh.marching_cubes': ( 'remeshing.html#marching_cubes',
+                                                   'blender_tissue_cartography.remesh.marching_cubes': ( 'Python '
+                                                                                                         'library/remeshing.html#marching_cubes',
                                                                                                          'blender_tissue_cartography/remesh.py'),
-                                                   'blender_tissue_cartography.remesh.qslim': ( 'remeshing.html#qslim',
+                                                   'blender_tissue_cartography.remesh.qslim': ( 'Python library/remeshing.html#qslim',
                                                                                                 'blender_tissue_cartography/remesh.py'),
-                                                   'blender_tissue_cartography.remesh.subdivide_igl': ( 'remeshing.html#subdivide_igl',
+                                                   'blender_tissue_cartography.remesh.subdivide_igl': ( 'Python '
+                                                                                                        'library/remeshing.html#subdivide_igl',
                                                                                                         'blender_tissue_cartography/remesh.py')},
-            'blender_tissue_cartography.remesh_pymeshlab': { 'blender_tissue_cartography.remesh_pymeshlab.reconstruct_poisson': ( 'remeshing_pymeshlab.html#reconstruct_poisson',
+            'blender_tissue_cartography.remesh_pymeshlab': { 'blender_tissue_cartography.remesh_pymeshlab.reconstruct_poisson': ( 'Python '
+                                                                                                                                  'library/remeshing_pymeshlab.html#reconstruct_poisson',
                                                                                                                                   'blender_tissue_cartography/remesh_pymeshlab.py'),
-                                                             'blender_tissue_cartography.remesh_pymeshlab.remesh_pymeshlab': ( 'remeshing_pymeshlab.html#remesh_pymeshlab',
+                                                             'blender_tissue_cartography.remesh_pymeshlab.remesh_pymeshlab': ( 'Python '
+                                                                                                                               'library/remeshing_pymeshlab.html#remesh_pymeshlab',
                                                                                                                                'blender_tissue_cartography/remesh_pymeshlab.py'),
-                                                             'blender_tissue_cartography.remesh_pymeshlab.subdivide_pymeshlab': ( 'remeshing_pymeshlab.html#subdivide_pymeshlab',
+                                                             'blender_tissue_cartography.remesh_pymeshlab.subdivide_pymeshlab': ( 'Python '
+                                                                                                                                  'library/remeshing_pymeshlab.html#subdivide_pymeshlab',
                                                                                                                                   'blender_tissue_cartography/remesh_pymeshlab.py')},
-            'blender_tissue_cartography.rotation': { 'blender_tissue_cartography.rotation._get_minus_overlap': ( 'registration_rotation.html#_get_minus_overlap',
+            'blender_tissue_cartography.rotation': { 'blender_tissue_cartography.rotation._get_minus_overlap': ( 'Python '
+                                                                                                                 'library/registration_rotation.html#_get_minus_overlap',
                                                                                                                  'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation._get_wigner_D_element': ( 'registration_rotation.html#_get_wigner_d_element',
+                                                     'blender_tissue_cartography.rotation._get_wigner_D_element': ( 'Python '
+                                                                                                                    'library/registration_rotation.html#_get_wigner_d_element',
                                                                                                                     'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.cartesian_to_spherical': ( 'registration_rotation.html#cartesian_to_spherical',
+                                                     'blender_tissue_cartography.rotation.cartesian_to_spherical': ( 'Python '
+                                                                                                                     'library/registration_rotation.html#cartesian_to_spherical',
                                                                                                                      'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.compute_spherical_harmonics_coeffs': ( 'registration_rotation.html#compute_spherical_harmonics_coeffs',
+                                                     'blender_tissue_cartography.rotation.compute_spherical_harmonics_coeffs': ( 'Python '
+                                                                                                                                 'library/registration_rotation.html#compute_spherical_harmonics_coeffs',
                                                                                                                                  'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.conjugate_quaternion': ( 'registration_rotation.html#conjugate_quaternion',
+                                                     'blender_tissue_cartography.rotation.conjugate_quaternion': ( 'Python '
+                                                                                                                   'library/registration_rotation.html#conjugate_quaternion',
                                                                                                                    'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.get_binomial_matrix': ( 'registration_rotation.html#get_binomial_matrix',
+                                                     'blender_tissue_cartography.rotation.get_binomial_matrix': ( 'Python '
+                                                                                                                  'library/registration_rotation.html#get_binomial_matrix',
                                                                                                                   'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.get_icosphere': ( 'registration_rotation.html#get_icosphere',
+                                                     'blender_tissue_cartography.rotation.get_icosphere': ( 'Python '
+                                                                                                            'library/registration_rotation.html#get_icosphere',
                                                                                                             'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.get_wigner_D_matrix': ( 'registration_rotation.html#get_wigner_d_matrix',
+                                                     'blender_tissue_cartography.rotation.get_wigner_D_matrix': ( 'Python '
+                                                                                                                  'library/registration_rotation.html#get_wigner_d_matrix',
                                                                                                                   'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.invert_quaternion': ( 'registration_rotation.html#invert_quaternion',
+                                                     'blender_tissue_cartography.rotation.invert_quaternion': ( 'Python '
+                                                                                                                'library/registration_rotation.html#invert_quaternion',
                                                                                                                 'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.multiply_quaternions': ( 'registration_rotation.html#multiply_quaternions',
+                                                     'blender_tissue_cartography.rotation.multiply_quaternions': ( 'Python '
+                                                                                                                   'library/registration_rotation.html#multiply_quaternions',
                                                                                                                    'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.overlap_spherical_harmonics': ( 'registration_rotation.html#overlap_spherical_harmonics',
+                                                     'blender_tissue_cartography.rotation.overlap_spherical_harmonics': ( 'Python '
+                                                                                                                          'library/registration_rotation.html#overlap_spherical_harmonics',
                                                                                                                           'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.parity_spherical_harmonics_coeffs': ( 'registration_rotation.html#parity_spherical_harmonics_coeffs',
+                                                     'blender_tissue_cartography.rotation.parity_spherical_harmonics_coeffs': ( 'Python '
+                                                                                                                                'library/registration_rotation.html#parity_spherical_harmonics_coeffs',
                                                                                                                                 'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.quaternion_power': ( 'registration_rotation.html#quaternion_power',
+                                                     'blender_tissue_cartography.rotation.quaternion_power': ( 'Python '
+                                                                                                               'library/registration_rotation.html#quaternion_power',
                                                                                                                'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.quaternion_to_complex_pair': ( 'registration_rotation.html#quaternion_to_complex_pair',
+                                                     'blender_tissue_cartography.rotation.quaternion_to_complex_pair': ( 'Python '
+                                                                                                                         'library/registration_rotation.html#quaternion_to_complex_pair',
                                                                                                                          'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.quaternion_to_rot_max': ( 'registration_rotation.html#quaternion_to_rot_max',
+                                                     'blender_tissue_cartography.rotation.quaternion_to_rot_max': ( 'Python '
+                                                                                                                    'library/registration_rotation.html#quaternion_to_rot_max',
                                                                                                                     'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.rot_mat_to_quaternion': ( 'registration_rotation.html#rot_mat_to_quaternion',
+                                                     'blender_tissue_cartography.rotation.rot_mat_to_quaternion': ( 'Python '
+                                                                                                                    'library/registration_rotation.html#rot_mat_to_quaternion',
                                                                                                                     'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.rotate_spherical_harmonics_coeffs': ( 'registration_rotation.html#rotate_spherical_harmonics_coeffs',
+                                                     'blender_tissue_cartography.rotation.rotate_spherical_harmonics_coeffs': ( 'Python '
+                                                                                                                                'library/registration_rotation.html#rotate_spherical_harmonics_coeffs',
                                                                                                                                 'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.rotation_alignment_brute_force': ( 'registration_rotation.html#rotation_alignment_brute_force',
+                                                     'blender_tissue_cartography.rotation.rotation_alignment_brute_force': ( 'Python '
+                                                                                                                             'library/registration_rotation.html#rotation_alignment_brute_force',
                                                                                                                              'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.rotation_alignment_refined': ( 'registration_rotation.html#rotation_alignment_refined',
+                                                     'blender_tissue_cartography.rotation.rotation_alignment_refined': ( 'Python '
+                                                                                                                         'library/registration_rotation.html#rotation_alignment_refined',
                                                                                                                          'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.rotational_alignment': ( 'registration_rotation.html#rotational_alignment',
+                                                     'blender_tissue_cartography.rotation.rotational_alignment': ( 'Python '
+                                                                                                                   'library/registration_rotation.html#rotational_alignment',
                                                                                                                    'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.spherical_harmonics_to_grid': ( 'registration_rotation.html#spherical_harmonics_to_grid',
+                                                     'blender_tissue_cartography.rotation.spherical_harmonics_to_grid': ( 'Python '
+                                                                                                                          'library/registration_rotation.html#spherical_harmonics_to_grid',
                                                                                                                           'blender_tissue_cartography/rotation.py'),
-                                                     'blender_tissue_cartography.rotation.spherical_to_cartesian': ( 'registration_rotation.html#spherical_to_cartesian',
+                                                     'blender_tissue_cartography.rotation.spherical_to_cartesian': ( 'Python '
+                                                                                                                     'library/registration_rotation.html#spherical_to_cartesian',
                                                                                                                      'blender_tissue_cartography/rotation.py')},
-            'blender_tissue_cartography.smoothing': { 'blender_tissue_cartography.smoothing.get_uniform_laplacian': ( 'smoothing.html#get_uniform_laplacian',
+            'blender_tissue_cartography.smoothing': { 'blender_tissue_cartography.smoothing.get_uniform_laplacian': ( 'Python '
+                                                                                                                      'library/smoothing.html#get_uniform_laplacian',
                                                                                                                       'blender_tissue_cartography/smoothing.py'),
-                                                      'blender_tissue_cartography.smoothing.smooth_laplacian': ( 'smoothing.html#smooth_laplacian',
+                                                      'blender_tissue_cartography.smoothing.smooth_laplacian': ( 'Python '
+                                                                                                                 'library/smoothing.html#smooth_laplacian',
                                                                                                                  'blender_tissue_cartography/smoothing.py'),
-                                                      'blender_tissue_cartography.smoothing.smooth_laplacian_on_surface': ( 'smoothing.html#smooth_laplacian_on_surface',
+                                                      'blender_tissue_cartography.smoothing.smooth_laplacian_on_surface': ( 'Python '
+                                                                                                                            'library/smoothing.html#smooth_laplacian_on_surface',
                                                                                                                             'blender_tissue_cartography/smoothing.py'),
-                                                      'blender_tissue_cartography.smoothing.smooth_laplacian_texture': ( 'smoothing.html#smooth_laplacian_texture',
+                                                      'blender_tissue_cartography.smoothing.smooth_laplacian_texture': ( 'Python '
+                                                                                                                         'library/smoothing.html#smooth_laplacian_texture',
                                                                                                                          'blender_tissue_cartography/smoothing.py'),
-                                                      'blender_tissue_cartography.smoothing.smooth_taubin': ( 'smoothing.html#smooth_taubin',
+                                                      'blender_tissue_cartography.smoothing.smooth_taubin': ( 'Python '
+                                                                                                              'library/smoothing.html#smooth_taubin',
                                                                                                               'blender_tissue_cartography/smoothing.py')},
             'blender_tissue_cartography.volumetric': {},
-            'blender_tissue_cartography.wrapping': { 'blender_tissue_cartography.wrapping.shrinkwrap_igl': ( 'wrapping.html#shrinkwrap_igl',
+            'blender_tissue_cartography.wrapping': { 'blender_tissue_cartography.wrapping.shrinkwrap_igl': ( 'Python '
+                                                                                                             'library/wrapping.html#shrinkwrap_igl',
                                                                                                              'blender_tissue_cartography/wrapping.py')}}}
