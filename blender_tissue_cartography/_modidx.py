@@ -5,8 +5,7 @@ d = { 'settings': { 'branch': 'main',
                 'doc_host': 'https://nikolas-claussen.github.io',
                 'git_url': 'https://github.com/nikolas-claussen/blender-tissue-cartography',
                 'lib_path': 'blender_tissue_cartography'},
-  'syms': { 'blender_tissue_cartography.blender_tissue_cartography_addon': {},
-            'blender_tissue_cartography.diffgeo': { 'blender_tissue_cartography.diffgeo.compute_per_face_jacobian': ( 'Python '
+  'syms': { 'blender_tissue_cartography.diffgeo': { 'blender_tissue_cartography.diffgeo.compute_per_face_jacobian': ( 'Python '
                                                                                                                       'library/differential_geometry.html#compute_per_face_jacobian',
                                                                                                                       'blender_tissue_cartography/diffgeo.py'),
                                                     'blender_tissue_cartography.diffgeo.compute_per_vertex_angle_distortion': ( 'Python '
@@ -218,6 +217,9 @@ d = { 'settings': { 'branch': 'main',
                                                  'blender_tissue_cartography.mesh._match_normals_to_vertices': ( 'Python '
                                                                                                                  'library/mesh.html#_match_normals_to_vertices',
                                                                                                                  'blender_tissue_cartography/mesh.py'),
+                                                 'blender_tissue_cartography.mesh.compute_project_from_axis_scale': ( 'Python '
+                                                                                                                      'library/mesh.html#compute_project_from_axis_scale',
+                                                                                                                      'blender_tissue_cartography/mesh.py'),
                                                  'blender_tissue_cartography.mesh.flatten': ( 'Python library/mesh.html#flatten',
                                                                                               'blender_tissue_cartography/mesh.py'),
                                                  'blender_tissue_cartography.mesh.glue_seams': ( 'Python library/mesh.html#glue_seams',
@@ -230,6 +232,9 @@ d = { 'settings': { 'branch': 'main',
                                                                                                         'blender_tissue_cartography/mesh.py'),
                                                  'blender_tissue_cartography.mesh.pad_list': ( 'Python library/mesh.html#pad_list',
                                                                                                'blender_tissue_cartography/mesh.py'),
+                                                 'blender_tissue_cartography.mesh.project_from_axis': ( 'Python '
+                                                                                                        'library/mesh.html#project_from_axis',
+                                                                                                        'blender_tissue_cartography/mesh.py'),
                                                  'blender_tissue_cartography.mesh.read_other_formats_without_uv': ( 'Python '
                                                                                                                     'library/mesh.html#read_other_formats_without_uv',
                                                                                                                     'blender_tissue_cartography/mesh.py'),
@@ -352,7 +357,6 @@ d = { 'settings': { 'branch': 'main',
                                                       'blender_tissue_cartography.smoothing.smooth_taubin': ( 'Python '
                                                                                                               'library/smoothing.html#smooth_taubin',
                                                                                                               'blender_tissue_cartography/smoothing.py')},
-            'blender_tissue_cartography.volumetric': {},
             'blender_tissue_cartography.wrapping': { 'blender_tissue_cartography.wrapping.shrinkwrap_igl': ( 'Python '
                                                                                                              'library/wrapping.html#shrinkwrap_igl',
                                                                                                              'blender_tissue_cartography/wrapping.py')}}}
