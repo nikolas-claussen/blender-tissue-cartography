@@ -240,7 +240,45 @@ d = { 'settings': { 'branch': 'main',
                                                                                                                     'blender_tissue_cartography/mesh.py'),
                                                  'blender_tissue_cartography.mesh.unique': ( 'Python library/mesh.html#unique',
                                                                                              'blender_tissue_cartography/mesh.py')},
-            'blender_tissue_cartography.morphsnakes': {},
+            'blender_tissue_cartography.morphsnakes': { 'blender_tissue_cartography.morphsnakes._check_input': ( 'Python '
+                                                                                                                 'library/morphsnakes.html#_check_input',
+                                                                                                                 'blender_tissue_cartography/morphsnakes.py'),
+                                                        'blender_tissue_cartography.morphsnakes._fcycle': ( 'Python '
+                                                                                                            'library/morphsnakes.html#_fcycle',
+                                                                                                            'blender_tissue_cartography/morphsnakes.py'),
+                                                        'blender_tissue_cartography.morphsnakes._fcycle.__call__': ( 'Python '
+                                                                                                                     'library/morphsnakes.html#_fcycle.__call__',
+                                                                                                                     'blender_tissue_cartography/morphsnakes.py'),
+                                                        'blender_tissue_cartography.morphsnakes._fcycle.__init__': ( 'Python '
+                                                                                                                     'library/morphsnakes.html#_fcycle.__init__',
+                                                                                                                     'blender_tissue_cartography/morphsnakes.py'),
+                                                        'blender_tissue_cartography.morphsnakes._init_level_set': ( 'Python '
+                                                                                                                    'library/morphsnakes.html#_init_level_set',
+                                                                                                                    'blender_tissue_cartography/morphsnakes.py'),
+                                                        'blender_tissue_cartography.morphsnakes.checkerboard_level_set': ( 'Python '
+                                                                                                                           'library/morphsnakes.html#checkerboard_level_set',
+                                                                                                                           'blender_tissue_cartography/morphsnakes.py'),
+                                                        'blender_tissue_cartography.morphsnakes.circle_level_set': ( 'Python '
+                                                                                                                     'library/morphsnakes.html#circle_level_set',
+                                                                                                                     'blender_tissue_cartography/morphsnakes.py'),
+                                                        'blender_tissue_cartography.morphsnakes.ellipsoid_level_set': ( 'Python '
+                                                                                                                        'library/morphsnakes.html#ellipsoid_level_set',
+                                                                                                                        'blender_tissue_cartography/morphsnakes.py'),
+                                                        'blender_tissue_cartography.morphsnakes.inf_sup': ( 'Python '
+                                                                                                            'library/morphsnakes.html#inf_sup',
+                                                                                                            'blender_tissue_cartography/morphsnakes.py'),
+                                                        'blender_tissue_cartography.morphsnakes.inverse_gaussian_gradient': ( 'Python '
+                                                                                                                              'library/morphsnakes.html#inverse_gaussian_gradient',
+                                                                                                                              'blender_tissue_cartography/morphsnakes.py'),
+                                                        'blender_tissue_cartography.morphsnakes.morphological_chan_vese': ( 'Python '
+                                                                                                                            'library/morphsnakes.html#morphological_chan_vese',
+                                                                                                                            'blender_tissue_cartography/morphsnakes.py'),
+                                                        'blender_tissue_cartography.morphsnakes.morphological_geodesic_active_contour': ( 'Python '
+                                                                                                                                          'library/morphsnakes.html#morphological_geodesic_active_contour',
+                                                                                                                                          'blender_tissue_cartography/morphsnakes.py'),
+                                                        'blender_tissue_cartography.morphsnakes.sup_inf': ( 'Python '
+                                                                                                            'library/morphsnakes.html#sup_inf',
+                                                                                                            'blender_tissue_cartography/morphsnakes.py')},
             'blender_tissue_cartography.registration': { 'blender_tissue_cartography.registration.align_by_centroid_and_intertia': ( 'Python '
                                                                                                                                      'library/registration.html#align_by_centroid_and_intertia',
                                                                                                                                      'blender_tissue_cartography/registration.py'),
