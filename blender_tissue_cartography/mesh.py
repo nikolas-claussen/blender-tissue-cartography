@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['flatten', 'pad_list', 'unique', 'index_else_nan', 'invert_dictionary', 'ObjMesh', 'read_other_formats_without_uv',
-           'glue_seams']
+           'project_from_axis', 'compute_project_from_axis_scale', 'glue_seams']
 
 # %% ../nbs/Python library/01b_mesh.ipynb 4
 import numpy as np
@@ -457,7 +457,88 @@ def read_other_formats_without_uv(filename):
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
-# %% ../nbs/Python library/01b_mesh.ipynb 32
+# %% ../nbs/Python library/01b_mesh.ipynb 19
+def project_from_axis(mesh, axis1, axis2, translate=None, scale=None):
+    """
+    Create UV map by projecting 3D coordinates along an axis.
+
+    The UV topology will be _identical_ to the 3D topology (no seams), and there may be self-intersections.
+
+    The projected coordinates should be scaled to lie in [0,1]^2. The scale factor can be found automatically
+    or be computed from the shape and resolution of a 3D image using
+   
+    Parameters
+    ----------
+    mesh : ObjMesh
+    axis1 : np.array of shape (3,)
+        vector defining the axis projected to U coordinate
+    axis2 : np.array of shape (3,)
+        vector defining the axis projected to V coordinate
+    translate : np.array of shape (2,) or None
+        translation to ensure UV coordinates are positive. If None, the minimum of U & V is used.
+    scale : float or None
+        scaling factor to ensure UV coordinates lie in [0, 1]. If None, the maximum of U & V is used.
+
+    Returns
+    -------
+    mesh_projected: ObjMesh
+        New mesh, with UV map. UV and 
+    """
+    vertices = mesh.vertices
+    if mesh.only_vertices:
+        faces = [[ [v, v] for v in f] for f in mesh.faces]
+    else:
+        faces = [[[v[0], v[0]] for v in f] for f in mesh.faces]
+    axis1 = axis1/np.linalg.norm(axis1)
+    axis2 = axis2/np.linalg.norm(axis2)
+    texture_vertices = np.stack([vertices.dot(axis1),  vertices.dot(axis2)], axis=1)
+    if translate is None:
+        translate = texture_vertices.min(axis=0)
+    texture_vertices -= translate
+    if scale is None:
+        scale = texture_vertices.max()
+    texture_vertices /= scale
+    mesh_projected = ObjMesh(vertices, faces, texture_vertices=texture_vertices, normals=mesh.normals, name=mesh.name)
+    return mesh_projected
+
+def compute_project_from_axis_scale(image_shape, resolution, axis1, axis2):
+    """
+    Compute scaling factor for UV coordinates obtained projecting 3D coordinates along an axis.
+
+    UV coordinates must be scaled to lie between 0 and 1. To get a consistent scaling across e.g. 
+    different frames of a movie, this function computes the scale factor based on the projection axes
+    and the shape of the volumetric image.
+
+    Parameters
+    ----------
+    image_shape : list or np.array of length 3
+        Shape of image in pixels
+    resolution : np.array of shape (3,)
+        Resolution of image in microns/pixel along each axis
+    axis2 : np.array of shape (3,)
+        vector defining the axis projected to V coordinate
+
+    Returns
+    -------
+    scale : float
+        scaling factor to ensure UV coordinates lie in [0, 1]
+    """
+    # compute coordinates of bounding bo
+    box_coordinates = np.array([[0,0,0],
+                                [0, image_shape[1], 0],
+                                [0, 0, image_shape[2]],
+                                [0, image_shape[1], image_shape[2]],
+                                [image_shape[0], 0, 0],
+                                [image_shape[0], image_shape[1], 0],
+                                [image_shape[0], 0, image_shape[2]],
+                                [image_shape[0], image_shape[1], image_shape[2]]])
+    box_coordinates = box_coordinates * np.array(resolution)
+    axis1 = axis1/np.linalg.norm(axis1)
+    axis2 = axis2/np.linalg.norm(axis2)
+    scale = np.stack([box_coordinates.dot(axis1),  box_coordinates.dot(axis2)], axis=1).max()
+    return scale
+
+# %% ../nbs/Python library/01b_mesh.ipynb 36
 def glue_seams(mesh, decimals=None):
     """
     Merge close vertices.
