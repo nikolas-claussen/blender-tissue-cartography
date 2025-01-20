@@ -1,11 +1,11 @@
 bl_info = {
     "name": "Tissue Cartography",
-    "blender": (3, 0, 0),
+    "blender": (4, 3, 0),
     "category": "Scene",
 }
 
 import bpy
-from bpy.props import StringProperty, FloatVectorProperty, IntVectorProperty, FloatProperty, IntProperty, EnumProperty
+from bpy.props import StringProperty, FloatVectorProperty, IntVectorProperty, FloatProperty, IntProperty, BoolProperty, EnumProperty
 from bpy.types import Operator, Panel
 import mathutils
 import bmesh
@@ -1050,7 +1050,7 @@ class CreateProjectionOperator(Operator):
         return {'FINISHED'}
 
 
-class SaveProjectionOperator(bpy.types.Operator):
+class SaveProjectionOperator(Operator):
     """Save cartographic projection to disk"""
     bl_idname = "scene.save_projection"
     bl_label = "Save Projection"
@@ -1086,7 +1086,7 @@ class SaveProjectionOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class SlicePlaneOperator(bpy.types.Operator):
+class SlicePlaneOperator(Operator):
     """Create a slice plane along the selected axis with texture from 3D data"""
     bl_idname = "scene.create_slice_plane"
     bl_label = "Create Slice Plane"
@@ -1123,7 +1123,7 @@ class SlicePlaneOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class VertexShaderInitializeOperator(bpy.types.Operator):
+class VertexShaderInitializeOperator(Operator):
     """Initialize vertex shader for a selected mesh. Colors mesh vertices according to 
     3D image intensity from selected BoundingBox."""
     bl_idname = "scene.initialize_vertex_shader"
@@ -1168,7 +1168,7 @@ class VertexShaderInitializeOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class VertexShaderRefreshOperator(bpy.types.Operator):
+class VertexShaderRefreshOperator(Operator):
     """Refresh vertex colors for a selected mesh. Colors mesh vertices according to 
     3D image intensity."""
     bl_idname = "scene.refresh_vertex_shader"
@@ -1196,7 +1196,7 @@ class VertexShaderRefreshOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class AlignOperator(bpy.types.Operator):
+class AlignOperator(Operator):
     """Align selected to active mesh by rotation, translation, and scaling."""
     bl_idname = "scene.align"
     bl_label = "Align Selected To Active Mesh"
@@ -1326,13 +1326,13 @@ def register():
         min=0,
         max=3,
     )
-    bpy.types.Scene.tissue_cartography_image_channels = bpy.props.IntProperty(
+    bpy.types.Scene.tissue_cartography_image_channels = IntProperty(
         name="Image Channels",
         description="Channels of the loaded image (read-only)",
         default=0,
         min=0,
     )
-    bpy.types.Scene.tissue_cartography_image_shape = bpy.props.StringProperty(
+    bpy.types.Scene.tissue_cartography_image_shape = StringProperty(
         name="Image Shape",
         description="Shape of the loaded image (read-only)",
         default="Not loaded"
@@ -1396,17 +1396,17 @@ def register():
         min=0,
     )
     
-    bpy.types.Scene.tissue_cartography_prealign = bpy.props.BoolProperty(
+    bpy.types.Scene.tissue_cartography_prealign = BoolProperty(
         name="Pre-align?",
         description="Enable or disable pre-alignment. Do not use if the two meshes are already closely aligned.",
         default=True
     )
-    bpy.types.Scene.tissue_cartography_prealign_shear = bpy.props.BoolProperty(
+    bpy.types.Scene.tissue_cartography_prealign_shear = BoolProperty(
         name="Allow shear",
         description="Allow shear transformation during alignment.",
         default=True
     )
-    bpy.types.Scene.tissue_cartography_align_iter = bpy.props.IntProperty(
+    bpy.types.Scene.tissue_cartography_align_iter = IntProperty(
         name="Iterations",
         description="ICP iterations during alignment.",
         default=100,
@@ -1444,8 +1444,6 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_prealign_shear
     del bpy.types.Scene.tissue_cartography_align_iter
     
-    #del bpy.types.Scene.tissue_cartography_resolution_array
-    #del bpy.types.Scene.tissue_cartography_data
     del bpy.types.Scene.tissue_cartography_interpolators
 
 ### Run the add-on
