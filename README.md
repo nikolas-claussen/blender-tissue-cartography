@@ -10,9 +10,9 @@ volumetric image data. This turns your 3d data into 2d data which is
 much easier to visualize, analyze, and computationally process. Tissue
 cartography is particularly useful in developmental biology, analyzing
 3d microscopy data by taking advantage of the laminar, sheet-like
-organization of many biological tissues. For more detail, see [Heemskerk
-& Streichan 2015](https://doi.org/10.1038/nmeth.3648) and [Mitchell &
-Cislo 2023](https://doi.org/10.1038/s41592-023-02081-w).
+organization of many biological tissues. For more on tissue cartography,
+see [Heemskerk & Streichan 2015](https://doi.org/10.1038/nmeth.3648) and
+[Mitchell & Cislo 2023](https://doi.org/10.1038/s41592-023-02081-w).
 
 `blender_tissue_cartography` is an add-on, a python package and a set of
 template analysis pipelines/tutorials to do tissue cartography using the
@@ -37,10 +37,10 @@ python library for custom and/or automatized pipelines.
     [Meshlab](https://www.meshlab.net/) (optional), and [Blender
     4.3](https://www.blender.org/).
 
-2.  From the
+2.  From
     [GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography),
     download the file
-    `blender_tissue_cartography/blender_tissue_cartography_addon.py`.
+    `blender_addon/blender_tissue_cartography_addon.py`.
 
 3.  [Install the
     add-on](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html):
@@ -130,11 +130,12 @@ Tissue cartography starts with a 3D, volumetric image.
 ### Blender add-on
 
 The Blender add-on allows you to carry out steps 2-5 entirely within
-Blender. Here is a screenshot using the example *Drosophila* dataset:
+Blender. Here is a screenshot using the example [*Drosophila*
+dataset](https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/nbs/Tutorials/addon_example/Drosophila_CAAX-mCherry.tif):
 
 ![image.png](index_files/figure-commonmark/cell-6-1-48b7a123-b1e4-4b12-ab3c-e804252bc2b7.png)
 
-Left: Projected 2D image. Center: 3D view of iamge data (volume bounding
+Left: Projected 2D image. Center: 3D view of image data (volume bounding
 box, image slices, and extracted surface). Right: Tissue Cartography
 add-on panel.
 
