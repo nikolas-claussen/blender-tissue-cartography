@@ -127,6 +127,8 @@ Tissue cartography starts with a 3D, volumetric image.
 5.  Visualize the results in 3D using blender or use the 2D projected
     data for quantitative analysis.
 
+6.  (Optional) batch process multiple 3D images (e.g. frames of a movie)
+
 ### Blender add-on
 
 The Blender add-on allows you to carry out steps 2-5 entirely within
