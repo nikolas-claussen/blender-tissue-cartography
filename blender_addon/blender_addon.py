@@ -12,6 +12,7 @@ import bmesh
 from pathlib import Path
 import os
 import numpy as np
+import difflib
 import tifffile
 from scipy import interpolate, ndimage, spatial, stats, linalg
 from skimage import measure
@@ -1086,6 +1087,120 @@ class SaveProjectionOperator(Operator):
         return {'FINISHED'}
 
 
+class BatchProjectionOperator(Operator):
+    """
+    Batch-process cartographic projections.
+    
+    Select all meshes to process (in blender) and one 3d-image ([...]_BoundingBox)
+    for resolution and relative position information. Further 3d .tiff files are read from
+    Batch Process Input directory. Mesh names should match .tiff file names.
+    
+    """
+    bl_idname = "scene.batch_projection"
+    bl_label = "Create Projections (Batch Mode)"
+
+    def execute(self, context):
+        try:
+            box = [x for x in context.selected_objects if "3D_data" in x][0]
+        except IndexError:
+            self.report({'ERROR'}, "Select one 3D image (BoundingBox) for resolution and position information!")
+            return
+        # get list of files
+        batch_path = Path(bpy.path.abspath(context.scene.tissue_cartography_batch_directory))
+        batch_out_path = Path(bpy.path.abspath(context.scene.tissue_cartography_batch_output_directory))
+        batch_files = {f.stem: f for f in list(batch_path.iterdir()) if ((f.suffix in [".tif", ".tiff"]) and not "Baked" in f.stem)}
+        # match files to selected meshes
+        meshes_to_process = [obj for obj in context.selected_objects if obj != box]
+        mesh_names = [obj.name for obj in meshes_to_process]
+        matched = {obj.name: difflib.get_close_matches(obj.name, batch_files.keys(), n=1, cutoff=0.1)
+                   for obj in context.selected_objects if obj != box}
+        # parse axis order
+        axis_order = list(context.scene.tissue_cartography_axis_order)
+        if not sorted(axis_order) == [0,1,2,3]:
+            self.report({'ERROR'}, "Axis order must be a permutation of [0,1,2,3] (e.g. [3,0,1,2])")
+            return {'CANCELLED'}
+        # parse offsets into a NumPy array
+        offsets_str = context.scene.tissue_cartography_offsets
+        try:
+            offsets_array = np.array([float(x) for x in offsets_str.split(",") if x.strip()])
+            if offsets_array.size == 0:
+                offsets_array = np.array([0])
+            self.report({'INFO'}, f"Offsets loaded: {offsets_array}")
+        except ValueError as e:
+            self.report({'ERROR'}, f"Invalid offsets input: {e}")
+            return {'CANCELLED'}
+        # Parse projection resolution
+        projection_resolution = context.scene.tissue_cartography_projection_resolution
+        self.report({'INFO'}, f"Using projection resolution: {projection_resolution}")
+        # find box for position and resolution info
+        
+        for iobj, obj in enumerate(meshes_to_process):
+            self.report({'INFO'}, f"Processing {iobj}/{len(meshes_to_process)}")
+            if not obj.data.uv_layers:
+                self.report({'ERROR'}, f"Mesh {obj.name} does not have a UV map!")
+                return {'CANCELLED'}
+            # set offsets as property
+            set_numpy_attribute(obj, "projection_offsets", offsets_array)
+            # find the matching file
+            if len(matched[obj.name]) == 0:
+                self.report({'ERROR'}, "No matching file found for {obj.name}!")
+                return {'CANCELLED'}
+            file_path = batch_files[matched[obj.name][0]]
+            # load the 3D data
+            try:
+                data = tifffile.imread(file_path)
+                if not len(data.shape) in [3,4]:
+                    self.report({'INFO'}, f"Selected TIFF for {obj.name} must have 3 or 4 axes.")
+                    return {'CANCELLED'}
+                if len(data.shape) == 3: # add singleton channel axis to single channel-data 
+                    data = data[np.newaxis]
+                # ensure channel axis (assumed shortest axis) is 1st
+                channel_axis = np.argmin(data.shape)
+                data = np.moveaxis(data, channel_axis, 0)
+                data = data.transpose(axis_order)
+            except:
+                self.report({'ERROR'}, f"Failed loading TIFF for {obj.name}")
+                return {'CANCELLED'}
+            # texture bake normals and world positions
+            loop_uvs, loop_normals, loop_world_positions = get_uv_normal_world_per_loop(obj, filter_unique=True)
+            
+            baked_normals = bake_per_loop_values_to_uv(loop_uvs, loop_normals, 
+                                                       image_resolution=projection_resolution)
+            baked_normals = (baked_normals.T/np.linalg.norm(baked_normals.T, axis=0)).T
+            baked_world_positions = bake_per_loop_values_to_uv(loop_uvs, loop_world_positions,
+                                                               image_resolution=projection_resolution)
+            # obtain UV layout and use it to get a mask
+            uv_layout_path = str(Path(batch_out_path).joinpath(f'{obj.name}_UV_layout.png'))
+            mask = get_uv_layout(obj, uv_layout_path, projection_resolution)
+            baked_normals[~mask] = np.nan
+            baked_world_positions[~mask] = np.nan
+            # create a pullback
+            box_world_inv = np.linalg.inv(np.array(box.matrix_world))
+            baked_data = bake_volumetric_data_to_uv(data,
+                                                    baked_world_positions, 
+                                                    get_numpy_attribute(box, "resolution"),
+                                                    baked_normals, normal_offsets=offsets_array,
+                                                    affine_matrix=box_world_inv)
+            # Save the data to the chosen filepath
+            try:
+                tifffile.imwrite(batch_out_path.joinpath(f"{obj.name}_BakedNormals.tif"), baked_normals)
+                tifffile.imwrite(batch_out_path.joinpath(f"{obj.name}_BakedPositions.tif"), baked_world_positions)
+                tifffile.imwrite(batch_out_path.joinpath(f"{obj.name}_BakedData.tif"), baked_data.astype(np.float32),
+                                 metadata={'axes': 'ZCYX'}, imagej=True)
+                self.report({'INFO'}, f"Cartographic projection saved for {obj.name}")
+            except Exception as e:
+                self.report({'ERROR'}, f"Failed to save data for {obj.name}: {str(e)}")
+                return {'CANCELLED'}
+            if bpy.context.scene.tissue_cartography_batch_create_materials:
+                # set results as attributes of the mesh
+                set_numpy_attribute(obj, "baked_data", baked_data, method="flatten")
+                set_numpy_attribute(obj, "baked_normals", baked_normals, method="flatten")
+                set_numpy_attribute(obj, "baked_world_positions", baked_world_positions, method="flatten")
+                # create texture
+                create_material_from_multilayer_array(obj, baked_data, material_name=f"ProjectedMaterial_{obj.name}")
+        return {'FINISHED'}
+    
+
 class SlicePlaneOperator(Operator):
     """Create a slice plane along the selected axis with texture from 3D data"""
     bl_idname = "scene.create_slice_plane"
@@ -1197,30 +1312,29 @@ class VertexShaderRefreshOperator(Operator):
 
 
 class AlignOperator(Operator):
-    """Align selected to active mesh by rotation, translation, and scaling."""
+    """Align selected meshes to active mesh by rotation, translation, and scaling."""
     bl_idname = "scene.align"
     bl_label = "Align Selected To Active Mesh"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         target_mesh = context.active_object
-        source_mesh = [x for x in context.selected_objects if not x==target_mesh][0]
-        
-        self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
-        if len(context.selected_objects) != 2:
-            self.report({'ERROR'}, "Please select exactly two meshes.")
-            return {'CANCELLED'}
-        if target_mesh.type != 'MESH'  or source_mesh.type != 'MESH':
-            self.report({'ERROR'}, "Selected object(s) is not a mesh.")
-            return {'CANCELLED'}
-        # Get the 3D coordinates from the meshes
-        target = np.array([target_mesh.matrix_world@v.co for v in target_mesh.data.vertices])
-        source = np.array([source_mesh.matrix_world@v.co for v in source_mesh.data.vertices])
-        trafo_matrix = combined_alignment(source, target,
-                                          pre_align=context.scene.tissue_cartography_prealign,
-                                          shear=context.scene.tissue_cartography_prealign_shear,
-                                          iterations=context.scene.tissue_cartography_align_iter)
-        source_mesh.matrix_world = mathutils.Matrix(trafo_matrix)@ source_mesh.matrix_world
+        for source_mesh in [x for x in context.selected_objects if not x==target_mesh]:
+            self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
+            if len(context.selected_objects) != 2:
+                self.report({'ERROR'}, "Please select exactly two meshes.")
+                return {'CANCELLED'}
+            if target_mesh.type != 'MESH'  or source_mesh.type != 'MESH':
+                self.report({'ERROR'}, "Selected object(s) is not a mesh.")
+                return {'CANCELLED'}
+            # Get the 3D coordinates from the meshes
+            target = np.array([target_mesh.matrix_world@v.co for v in target_mesh.data.vertices])
+            source = np.array([source_mesh.matrix_world@v.co for v in source_mesh.data.vertices])
+            trafo_matrix = combined_alignment(source, target,
+                                              pre_align=context.scene.tissue_cartography_prealign,
+                                              shear=context.scene.tissue_cartography_prealign_shear,
+                                              iterations=context.scene.tissue_cartography_align_iter)
+            source_mesh.matrix_world = mathutils.Matrix(trafo_matrix)@ source_mesh.matrix_world
          
         return {'FINISHED'}
 
@@ -1284,6 +1398,14 @@ class TissueCartographyPanel(Panel):
         row_projection2.operator("scene.save_projection", text="Save Projection")
         layout.separator()
         
+        row_batch = layout.row()
+        row_batch.prop(scene, "tissue_cartography_batch_directory")
+        row_batch.prop(scene, "tissue_cartography_batch_output_directory")
+        row_batch2 = layout.row()
+        row_batch2.prop(scene, "tissue_cartography_batch_create_materials")
+        row_batch2.operator("scene.batch_projection", text="Batch Process And Save")
+        layout.separator()
+        
         row_align = layout.row()
         row_align.prop(scene, "tissue_cartography_prealign")
         row_align.prop(scene, "tissue_cartography_prealign_shear")
@@ -1301,6 +1423,7 @@ def register():
     bpy.utils.register_class(LoadSegmentationTIFFOperator)
     bpy.utils.register_class(CreateProjectionOperator)
     bpy.utils.register_class(SaveProjectionOperator)
+    bpy.utils.register_class(BatchProjectionOperator)
     bpy.utils.register_class(SlicePlaneOperator)
     bpy.utils.register_class(VertexShaderInitializeOperator)
     bpy.utils.register_class(VertexShaderRefreshOperator)
@@ -1354,17 +1477,6 @@ def register():
         default=0,
         min=0
     ) 
-    bpy.types.Scene.tissue_cartography_offsets = StringProperty(
-        name="Normal Offsets (µm)",
-        description="Comma-separated list of floats for multilayer projection offsets",
-        default="0",
-    )
-    bpy.types.Scene.tissue_cartography_projection_resolution = IntProperty(
-        name="Projection Format (Pixels)",
-        description="Resolution for the projection (e.g., 1024 for 1024x1024 pixels)",
-        default=1024,
-        min=1,
-    )
     bpy.types.Scene.tissue_cartography_slice_axis = EnumProperty(
         name="Slice Axis",
         description="Choose an axis",
@@ -1395,7 +1507,34 @@ def register():
         default=0,
         min=0,
     )
+    bpy.types.Scene.tissue_cartography_offsets = StringProperty(
+        name="Normal Offsets (µm)",
+        description="Comma-separated list of floats for multilayer projection offsets",
+        default="0",
+    )
+    bpy.types.Scene.tissue_cartography_projection_resolution = IntProperty(
+        name="Projection Format (Pixels)",
+        description="Resolution for the projection (e.g., 1024 for 1024x1024 pixels)",
+        default=1024,
+        min=1,
+    )
     
+    bpy.types.Scene.tissue_cartography_batch_directory = StringProperty(
+        name="Batch Process Input Directory",
+        description="Path to TIFF files directory",
+        subtype='DIR_PATH',
+    )
+    bpy.types.Scene.tissue_cartography_batch_output_directory = StringProperty(
+        name="Batch Process Output Directory",
+        description="Path to TIFF files directory",
+        subtype='DIR_PATH',
+    )
+    bpy.types.Scene.tissue_cartography_batch_create_materials = BoolProperty(
+        name="Create materials",
+        description="Enable or disable creating materials with projected texture in batch mode. Enabling can result in large .blend files.",
+        default=True
+    )
+
     bpy.types.Scene.tissue_cartography_prealign = BoolProperty(
         name="Pre-align?",
         description="Enable or disable pre-alignment. Do not use if the two meshes are already closely aligned.",
@@ -1419,6 +1558,7 @@ def unregister():
     bpy.utils.unregister_class(LoadTIFFOperator)
     bpy.utils.unregister_class(LoadSegmentationTIFFOperator)
     bpy.utils.unregister_class(CreateProjectionOperator)
+    bpy.utils.unregister_class(BatchProjectionOperator)
     bpy.utils.unregister_class(SaveProjectionOperator)
     bpy.utils.unregister_class(SlicePlaneOperator)
     bpy.utils.unregister_class(VertexShaderInitializeOperator)
@@ -1443,6 +1583,9 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_prealign 
     del bpy.types.Scene.tissue_cartography_prealign_shear
     del bpy.types.Scene.tissue_cartography_align_iter
+    del bpy.types.Scene.tissue_cartography_batch_directory
+    del bpy.types.Scene.tissue_cartography_batch_output_directory
+    del bpy.types.Scene.tissue_cartography_batch_create_materials
     
     del bpy.types.Scene.tissue_cartography_interpolators
 
