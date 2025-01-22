@@ -846,6 +846,54 @@ def combined_alignment(source, target, pre_align=True, shear=False, iterations=1
     return trafo_icp
 
 
+### Shrink-wrapping
+
+
+def shrinkwrap_and_smooth(source_obj, target_obj, corrective_smooth_iter=0):
+    """
+    Applies a shrinkwrap modifier with target_obj to source_obj, 
+    optionally adds a corrective smooth modifier, and applies all modifiers.
+
+    Parameters:
+    - source_obj: The source mesh object to be modified.
+    - target_obj: The target mesh object for the shrinkwrap modifier.
+    - corrective_smooth_iter: (Optional) Number of iterations for the corrective smooth modifier. 
+      If 0, no corrective smooth is applied.
+
+    Returns:
+    - bpy.types.Object: The new modified mesh object.
+    """
+    # Ensure the objects are valid
+    if source_obj.type != 'MESH' or target_obj.type != 'MESH':
+        raise ValueError("Both source_obj and target_obj must be mesh objects.")
+
+    # Store the currently active object
+    original_active_obj = bpy.context.view_layer.objects.active
+
+    # Add the first shrinkwrap modifier
+    shrinkwrap_1 = source_obj.modifiers.new(name="Shrinkwrap", type='SHRINKWRAP')
+    shrinkwrap_1.target = target_obj
+    shrinkwrap_1.wrap_method = 'TARGET_PROJECT'
+
+    # Add a corrective smooth modifier if requested
+    for i in range(0, corrective_smooth_iter):
+        corrective_smooth = source_obj.modifiers.new(name=f"Corrective Smooth {i}", type='CORRECTIVE_SMOOTH')
+        corrective_smooth.iterations = 10
+        corrective_smooth.scale = 0
+        # Add a second shrinkwrap modifier after the corrective smooth
+        shrinkwrap_2 = source_obj.modifiers.new(name=f"Shrinkwrap {i}", type='SHRINKWRAP')
+        shrinkwrap_2.target = target_obj
+        shrinkwrap_2.wrap_method = 'TARGET_PROJECT'
+
+    # Apply all modifiers
+    bpy.context.view_layer.objects.active = source_obj
+    for modifier in source_obj.modifiers:
+        bpy.ops.object.modifier_apply(modifier=modifier.name)
+    # Restore the original active object
+    bpy.context.view_layer.objects.active = original_active_obj
+    return source_obj
+
+
 ### Handling of mesh-associated array-data
 
 
@@ -950,37 +998,48 @@ class LoadTIFFOperator(Operator):
 
 
 class LoadSegmentationTIFFOperator(Operator):
-    """Load segmentation .tif file and resolution, and create a mesh from binary segmentation."""
+    """
+    Load segmentation .tif file and resolution, and create a mesh from binary segmentation.
+    
+    Selecting a folder instead of a file batch processes all files in folder.
+    """
     bl_idname = "scene.load_segmentation"
     bl_label = "Load Segmentation TIFF File"
 
     def execute(self, context):
         # Load resolution as a NumPy array
         resolution_array = np.array(context.scene.tissue_cartography_segmentation_resolution)
-
-        # Load TIFF file as a NumPy array
-        file_path = bpy.path.abspath(context.scene.tissue_cartography_segmentation_file)
-        if not (file_path.lower().endswith(".tiff") or file_path.lower().endswith(".tif")):
-            self.report({'ERROR'}, "Selected file is not a TIFF")
+        input_path = Path(bpy.path.abspath(context.scene.tissue_cartography_segmentation_file))
+        if input_path.is_dir():
+            files_to_process = [f for f in input_path.iterdir() if f.is_file() and f.suffix in [".tif", ".tiff"]]
+        elif input_path.is_file():
+            files_to_process = [input_path]
+        else:
+            self.report({'ERROR'}, "Select a valid file or directory")
             return {'CANCELLED'}
-        try:
-            data = tifffile.imread(file_path)
-            assert len(data.shape) == 3, "Data must be volumetric!"
-            self.report({'INFO'}, f"TIFF file loaded with shape {data.shape}")
-            # smooth and normalize the segmentation
-            data = (data-data.min())/(data.max()-data.min())
-            sigma = context.scene.tissue_cartography_segmentation_sigma
-            data_smoothed = ndimage.gaussian_filter(data, sigma=sigma/resolution_array)
-            # compute mesh using marching cubes, and convert to mesh
-            verts, faces, _, _ = measure.marching_cubes(data_smoothed,
-                                                        level=0.5, spacing=(1.0,1.0,1.0))
-            verts = verts * resolution_array
-            create_mesh_from_numpy(f"{Path(file_path).stem}_mesh", verts, faces)
-            
-        except Exception as e:
-            self.report({'ERROR'}, f"Failed to load segmentation: {e}")
-            return {'CANCELLED'}
-
+        for file_path in files_to_process:
+            if not file_path.suffix in [".tif", ".tiff"]:
+                self.report({'ERROR'}, "Selected file is not a TIFF")
+                return {'CANCELLED'}
+            try:
+                data = tifffile.imread(file_path)
+                if len(data.shape) != 3:
+                    self.report({'ERROR'}, "Data must be volumetric!")
+                    return {'CANCELLED'}
+                self.report({'INFO'}, f"TIFF file loaded with shape {data.shape}")
+                # smooth and normalize the segmentation
+                data = (data-data.min())/(data.max()-data.min())
+                sigma = context.scene.tissue_cartography_segmentation_sigma
+                data_smoothed = ndimage.gaussian_filter(data, sigma=sigma/resolution_array)
+                # compute mesh using marching cubes, and convert to mesh
+                verts, faces, _, _ = measure.marching_cubes(data_smoothed,
+                                                            level=0.5, spacing=(1.0,1.0,1.0))
+                verts = verts * resolution_array
+                create_mesh_from_numpy(f"{Path(file_path).stem}_mesh", verts, faces)
+                
+            except Exception as e:
+                self.report({'ERROR'}, f"Failed to load segmentation: {e}")
+                return {'CANCELLED'}
         return {'FINISHED'}
     
 
@@ -1312,30 +1371,86 @@ class VertexShaderRefreshOperator(Operator):
 
 
 class AlignOperator(Operator):
-    """Align selected meshes to active mesh by rotation, translation, and scaling."""
+    """Align active and selected meshes by rotation, translation, and scaling."""
     bl_idname = "scene.align"
     bl_label = "Align Selected To Active Mesh"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        target_mesh = context.active_object
-        for source_mesh in [x for x in context.selected_objects if not x==target_mesh]:
+        
+        if context.scene.tissue_cartography_align_type == "selected":
+            target_mesh = context.active_object
+            for source_mesh in [x for x in context.selected_objects if not x==target_mesh]:
+                self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
+                if target_mesh.type != 'MESH'  or source_mesh.type != 'MESH':
+                    self.report({'ERROR'}, "Selected object(s) is not a mesh.")
+                    return {'CANCELLED'}
+                # Get the 3D coordinates from the meshes
+                target = np.array([target_mesh.matrix_world@v.co for v in target_mesh.data.vertices])
+                source = np.array([source_mesh.matrix_world@v.co for v in source_mesh.data.vertices])
+                trafo_matrix = combined_alignment(source, target,
+                                                  pre_align=context.scene.tissue_cartography_prealign,
+                                                  shear=context.scene.tissue_cartography_prealign_shear,
+                                                  iterations=context.scene.tissue_cartography_align_iter)
+                source_mesh.matrix_world = mathutils.Matrix(trafo_matrix)@ source_mesh.matrix_world
+        elif context.scene.tissue_cartography_align_type == "active":
+            source_mesh = context.active_object
+            for target_mesh in [x for x in context.selected_objects if not x==source_mesh]:
+                self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
+                if target_mesh.type != 'MESH'  or source_mesh.type != 'MESH':
+                    self.report({'ERROR'}, "Selected object(s) is not a mesh.")
+                    return {'CANCELLED'}
+                # Get the 3D coordinates from the meshes and compute alignment
+                target = np.array([target_mesh.matrix_world@v.co for v in target_mesh.data.vertices])
+                source = np.array([source_mesh.matrix_world@v.co for v in source_mesh.data.vertices])
+                trafo_matrix = combined_alignment(source, target,
+                                                  pre_align=context.scene.tissue_cartography_prealign,
+                                                  shear=context.scene.tissue_cartography_prealign_shear,
+                                                  iterations=context.scene.tissue_cartography_align_iter)
+                # copysource mesh
+                source_mesh_copied = source_mesh.copy()
+                source_mesh_copied.data = source_mesh.data.copy()
+                bpy.context.collection.objects.link(source_mesh_copied)
+                source_mesh_copied.name = f"{target_mesh.name}_aligned" 
+                source_mesh_copied.matrix_world = mathutils.Matrix(trafo_matrix)@ source_mesh.matrix_world
+        return {'FINISHED'}
+
+
+class ShrinkwrapOperator(Operator):
+    """Copy and shrink-wrap active mesh to selected meshes."""
+    bl_idname = "scene.shrinkwrap"
+    bl_label = "Shrink-Wrap Active to Selected"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        mode = context.scene.tissue_cartography_shrinkwarp_iterative
+        source_mesh = context.active_object
+        targets = sorted([x for x in context.selected_objects if not x==source_mesh], key=lambda x: x.name)
+        if mode == "backward":
+            targets = targets[::-1]
+        for target_mesh in targets:
             self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
-            if len(context.selected_objects) != 2:
-                self.report({'ERROR'}, "Please select exactly two meshes.")
-                return {'CANCELLED'}
             if target_mesh.type != 'MESH'  or source_mesh.type != 'MESH':
                 self.report({'ERROR'}, "Selected object(s) is not a mesh.")
                 return {'CANCELLED'}
-            # Get the 3D coordinates from the meshes
+            # rigid alignment
             target = np.array([target_mesh.matrix_world@v.co for v in target_mesh.data.vertices])
             source = np.array([source_mesh.matrix_world@v.co for v in source_mesh.data.vertices])
             trafo_matrix = combined_alignment(source, target,
                                               pre_align=context.scene.tissue_cartography_prealign,
                                               shear=context.scene.tissue_cartography_prealign_shear,
                                               iterations=context.scene.tissue_cartography_align_iter)
-            source_mesh.matrix_world = mathutils.Matrix(trafo_matrix)@ source_mesh.matrix_world
-         
+            # copy source mesh
+            source_mesh_copied = source_mesh.copy()
+            source_mesh_copied.data = source_mesh.data.copy()
+            bpy.context.collection.objects.link(source_mesh_copied)
+            source_mesh_copied.matrix_world = mathutils.Matrix(trafo_matrix)@ source_mesh.matrix_world
+            source_mesh_copied.name = f"{target_mesh.name}_wrapped" 
+            # shrink-wrap
+            shrinkwrap_and_smooth(source_mesh_copied, target_mesh,
+                                  corrective_smooth_iter=context.scene.tissue_cartography_shrinkwarp_smooth)
+            if mode in ["forward", "backward"]:
+                source_mesh = source_mesh_copied
         return {'FINISHED'}
 
 
@@ -1370,9 +1485,10 @@ class TissueCartographyPanel(Panel):
         layout.separator()
         
         layout.prop(scene, "tissue_cartography_segmentation_file")
-        layout.prop(scene, "tissue_cartography_segmentation_resolution")
-        layout.prop(scene, "tissue_cartography_segmentation_sigma")
-        layout.operator("scene.load_segmentation", text="Get mesh from binary segmentation .tiff file")
+        row_segmentation = layout.row()
+        row_segmentation.prop(scene, "tissue_cartography_segmentation_resolution")
+        row_segmentation.prop(scene, "tissue_cartography_segmentation_sigma")
+        layout.operator("scene.load_segmentation", text="Get mesh(es) from binary segmentation .tiff file(s)")
         layout.separator()
         
         row_slice = layout.row()
@@ -1401,20 +1517,27 @@ class TissueCartographyPanel(Panel):
         row_batch = layout.row()
         row_batch.prop(scene, "tissue_cartography_batch_directory")
         row_batch.prop(scene, "tissue_cartography_batch_output_directory")
-        row_batch2 = layout.row()
-        row_batch2.prop(scene, "tissue_cartography_batch_create_materials")
-        row_batch2.operator("scene.batch_projection", text="Batch Process And Save")
+        row_batch.prop(scene, "tissue_cartography_batch_create_materials")
+        layout.operator("scene.batch_projection", text="Batch Process And Save")
         layout.separator()
         
         row_align = layout.row()
         row_align.prop(scene, "tissue_cartography_prealign")
         row_align.prop(scene, "tissue_cartography_prealign_shear")
+        row_align.prop(scene, "tissue_cartography_align_type")
         row_align.prop(scene, "tissue_cartography_align_iter")
-        layout.operator("scene.align", text="Align Selected To Active")
+        layout.operator("scene.align", text="Align Meshes")
+        layout.separator()
+        
+        row_shrinkwrap = layout.row()
+        row_shrinkwrap.prop(scene, "tissue_cartography_shrinkwarp_smooth")
+        row_shrinkwrap.prop(scene, "tissue_cartography_shrinkwarp_iterative")
+        layout.operator("scene.shrinkwrap", text="Shrinkwrap Meshes (Active To Selected)")
         layout.separator()
         
         layout.operator("scene.help_popup", text="Show help", icon='HELP')
-        
+    
+    
 
 def register():
     """Add the add-on to the blender user interface"""
@@ -1428,6 +1551,7 @@ def register():
     bpy.utils.register_class(VertexShaderInitializeOperator)
     bpy.utils.register_class(VertexShaderRefreshOperator)
     bpy.utils.register_class(AlignOperator)
+    bpy.utils.register_class(ShrinkwrapOperator)
     bpy.utils.register_class(HelpPopupOperator)
     
     bpy.types.Scene.tissue_cartography_file = StringProperty(
@@ -1462,7 +1586,7 @@ def register():
     )
     bpy.types.Scene.tissue_cartography_segmentation_file = StringProperty(
         name="Segmentation File Path",
-        description="Path to the segmentation TIFF file. Should have values between 0-1.",
+        description="Path to the segmentation TIFF file. Should have values between 0-1. Selecting a folder instead of a single file will batch-process the full folder.",
         subtype='FILE_PATH',
     )
     bpy.types.Scene.tissue_cartography_segmentation_resolution = FloatVectorProperty(
@@ -1534,7 +1658,6 @@ def register():
         description="Enable or disable creating materials with projected texture in batch mode. Enabling can result in large .blend files.",
         default=True
     )
-
     bpy.types.Scene.tissue_cartography_prealign = BoolProperty(
         name="Pre-align?",
         description="Enable or disable pre-alignment. Do not use if the two meshes are already closely aligned.",
@@ -1545,13 +1668,33 @@ def register():
         description="Allow shear transformation during alignment.",
         default=True
     )
+    bpy.types.Scene.tissue_cartography_align_type = EnumProperty(
+        name="Align Mode",
+        description="Choose an axis",
+        items=[('selected', "Selected to Active", "Align selected meshes to active mesh."),
+               ('active', "Active to Selected", "Align active mesh to selected meshe (creates copies of active mesh).")],
+        default='selected'
+    )
     bpy.types.Scene.tissue_cartography_align_iter = IntProperty(
         name="Iterations",
         description="ICP iterations during alignment.",
         default=100,
         min=1,
     )
-
+    bpy.types.Scene.tissue_cartography_shrinkwarp_smooth = IntProperty(
+        name="Shrinkwrap Corrective Smooth",
+        description="Corrective smooth iterations during shrink-wrapping.",
+        default=10,
+        min=0,
+    )
+    bpy.types.Scene.tissue_cartography_shrinkwarp_iterative = EnumProperty(
+        name="Shrinkwrap Mode",
+        description="Choose an axis",
+        items=[('one-to-all', "One-To-All", "Shrink-wrap active mesh to each selected individually"),
+               ('forward', "Iterative Forward", "Shrink-wrap active mesh to selected meshes iteratively, starting with alpha-numerically first"),
+               ('backward', "Iterative Backward", "Shrink-wrap active mesh to selected meshes iteratively, starting with alpha-numerically last")],
+        default='one-to-all'
+    )
 
 def unregister():
     bpy.utils.unregister_class(TissueCartographyPanel)
@@ -1564,6 +1707,7 @@ def unregister():
     bpy.utils.unregister_class(VertexShaderInitializeOperator)
     bpy.utils.unregister_class(VertexShaderRefreshOperator)
     bpy.utils.unregister_class(AlignOperator)
+    bpy.utils.unregister_class(ShrinkwrapOperator)
     bpy.utils.unregister_class(HelpPopupOperator)
 
     del bpy.types.Scene.tissue_cartography_file 
@@ -1583,9 +1727,12 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_prealign 
     del bpy.types.Scene.tissue_cartography_prealign_shear
     del bpy.types.Scene.tissue_cartography_align_iter
+    del bpy.types.Scene.tissue_cartography_align_type
     del bpy.types.Scene.tissue_cartography_batch_directory
     del bpy.types.Scene.tissue_cartography_batch_output_directory
     del bpy.types.Scene.tissue_cartography_batch_create_materials
+    del bpy.types.Scene.tissue_cartography_shrinkwarp_smooth
+    del bpy.types.Scene.tissue_cartography_shrinkwarp_iterative
     
     del bpy.types.Scene.tissue_cartography_interpolators
 
