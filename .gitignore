@@ -164,3 +164,6 @@ nbs/blender_addon/blender_addon.blend1
 
 blender_addon/blender_addon.blend
 blender_addon/blender_addon.blend1
+blender_addon/packaging/wheels/
+blender_addon/test_data/
+blender_addon/test_scripts/

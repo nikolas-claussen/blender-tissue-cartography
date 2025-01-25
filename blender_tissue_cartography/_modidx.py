@@ -17,6 +17,9 @@ d = { 'settings': { 'branch': 'main',
                                                     'blender_tissue_cartography.diffgeo.compute_per_vertex_jacobian': ( 'Python '
                                                                                                                         'library/differential_geometry.html#compute_per_vertex_jacobian',
                                                                                                                         'blender_tissue_cartography/diffgeo.py'),
+                                                    'blender_tissue_cartography.diffgeo.get_all_boundary_vertices': ( 'Python '
+                                                                                                                      'library/differential_geometry.html#get_all_boundary_vertices',
+                                                                                                                      'blender_tissue_cartography/diffgeo.py'),
                                                     'blender_tissue_cartography.diffgeo.get_area_distortion_in_UV': ( 'Python '
                                                                                                                       'library/differential_geometry.html#get_area_distortion_in_uv',
                                                                                                                       'blender_tissue_cartography/diffgeo.py'),
@@ -41,6 +44,9 @@ d = { 'settings': { 'branch': 'main',
                                                     'blender_tissue_cartography.diffgeo.get_rot': ( 'Python '
                                                                                                     'library/differential_geometry.html#get_rot',
                                                                                                     'blender_tissue_cartography/diffgeo.py'),
+                                                    'blender_tissue_cartography.diffgeo.impute_boundary_values': ( 'Python '
+                                                                                                                   'library/differential_geometry.html#impute_boundary_values',
+                                                                                                                   'blender_tissue_cartography/diffgeo.py'),
                                                     'blender_tissue_cartography.diffgeo.separate_tangential_normal': ( 'Python '
                                                                                                                        'library/differential_geometry.html#separate_tangential_normal',
                                                                                                                        'blender_tissue_cartography/diffgeo.py'),

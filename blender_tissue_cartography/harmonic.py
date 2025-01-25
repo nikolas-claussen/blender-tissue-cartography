@@ -208,12 +208,9 @@ def wrap_coords_via_disk(mesh_source, mesh_target,
     
     Returns
     -------
-    np.array, float
-        new_coords : np.array
-            New 3d vertex coordinates for mesh_source, lying on the surface
-            defined by mesh_target
-        overlap : float
-            Only returned if align is True. A measure of geometry overlap. 1 = perfect alignment
+    new_coords : np.array
+        New 3d vertex coordinates for mesh_source, lying on the surface
+        defined by mesh_target
     """
     # compute harmonic map to disk
     if disk_uv_source is None:
@@ -230,8 +227,6 @@ def wrap_coords_via_disk(mesh_source, mesh_target,
     new_coords = tcinterp.interpolate_barycentric(np.pad(disk_uv_source_aligned, ((0,0), (0,1))),
                                                   np.pad(disk_uv_target, ((0,0), (0,1))),
                                                   mesh_target.tris, mesh_target.vertices, distance_threshold=np.inf)
-    if align:
-        return new_coords, overlap
     return new_coords
 
 # %% ../nbs/Python library/06_harmonic_wrapping.ipynb 32
