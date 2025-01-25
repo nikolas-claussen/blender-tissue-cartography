@@ -14,11 +14,15 @@ organization of many biological tissues. For more on tissue cartography,
 see [Heemskerk & Streichan 2015](https://doi.org/10.1038/nmeth.3648) and
 [Mitchell & Cislo 2023](https://doi.org/10.1038/s41592-023-02081-w).
 
-`blender_tissue_cartography` is an add-on, a python package and a set of
-template analysis pipelines/tutorials to do tissue cartography using the
-popular 3d creation software [blender](https://www.blender.org/). The
-goal is to make tissue cartography as user-friendly as possible using
-simple, modular Python code and blender’s graphical user interface.
+`blender_tissue_cartography` comprises an add-on to do tissue
+cartography using the popular 3d creation software
+[blender](https://www.blender.org/), as well as a python package for
+creating custom/automatized analysis pipelines, and a set of template
+analysis pipelines/tutorials.
+
+The goal is to make tissue cartography as user-friendly as possible
+using simple, modular Python code and blender’s graphical user
+interface.
 
 ### Work in progress!
 
@@ -40,7 +44,13 @@ python library for custom and/or automatized pipelines.
 2.  From
     [GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography),
     download the file
-    `blender_addon/blender_tissue_cartography_addon.py`.
+    `blender_addon/blender_tissue_cartography-1.0.0-[XXX].zip` where
+    `[XXX]` is your operating system (e.g. `linux_x64`).
+
+    - If your operating system is not available, you can also download
+      `blender_addon/blender_tissue_cartography.py`. In this case you
+      will need to install the pyhton libraries `scikit-image` in
+      Blender’s Python interface.
 
 3.  [Install the
     add-on](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html):
@@ -271,6 +281,7 @@ the installation instructions above.
 ## Acknowledgements
 
 This software is being developed by Nikolas Claussen in the [Streichan
-lab at UCSB](https://streichanlab.physics.ucsb.edu/). We thank Susan
-Wopat, Matthew Lefebvre, Sean Komura, Gary Han, Noah Mitchel, Boris
-Fosso, and Dillon Cislo, for sharing data, advice, and software testing.
+lab at UCSB](https://streichanlab.physics.ucsb.edu/). We thank Cecile
+Regis, Susan Wopat, Matthew Lefebvre, Sean Komura, Gary Han, Noah
+Mitchel, Boris Fosso, and Dillon Cislo, for sharing data, advice, and
+software testing.
