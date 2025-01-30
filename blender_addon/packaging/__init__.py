@@ -206,4 +206,5 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_shrinkwarp_smooth
     del bpy.types.Scene.tissue_cartography_shrinkwarp_iterative
     
-    del bpy.types.Scene.tissue_cartography_interpolators
+    if bpy.types.Scene.tissue_cartography_interpolators in globals():
+        del bpy.types.Scene.tissue_cartography_interpolators

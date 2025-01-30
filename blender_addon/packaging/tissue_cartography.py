@@ -3,14 +3,29 @@ from bpy.props import StringProperty, FloatVectorProperty, IntVectorProperty, Fl
 from bpy.types import Operator, Panel
 import mathutils
 import bmesh
+
 from pathlib import Path
 import os
 import numpy as np
 import difflib
+import itertools
+import subprocess
+import sys
+
 import tifffile
 from scipy import interpolate, ndimage, spatial, stats, linalg
 from skimage import measure
-import itertools
+
+
+### Installing dependencies
+
+def install_dependencies():
+    try:
+        import scipy
+        import skimage
+    except ImportError:
+        python_executable = sys.executable
+        subprocess.check_call([python_executable, "-m", "pip", "install", "scipy", "scikit-image", "tifffile"])
 
 
 ### I/O and image handling
@@ -891,19 +906,15 @@ def shrinkwrap_and_smooth(source_obj, target_obj, corrective_smooth_iter=0):
 ### Handling of mesh-associated array-data
 
 
-def set_numpy_attribute(mesh, name, array, method="tolist"):
+def set_numpy_attribute(mesh, name, array):
     """Sets mesh[name] = array.
     
     Since Blender does not support adding arbitrary objects as attributes to meshes,
-    the array is flattened and saved together with its shape.
-    
-    Method can be either "tolist" or "flatten". Somehow this has an effect on blender's
-    internals and can affect e.g. file size.
+    the array is flattened, converted to a binary buffer, and saved as a tuple together with its shape.
+    All arrays are converted to np.float32.
     """
-    if method == "tolist":
-        mesh[name] = (array.tolist(), array.shape)
-    elif method == "flatten":
-        mesh[name] = (array.flatten(), array.shape)
+    bytes, shape = (array.astype(np.float32).flatten().tobytes(), array.shape)
+    mesh[name] = (bytes, shape)
     return None
 
 
@@ -911,10 +922,11 @@ def get_numpy_attribute(mesh, name):
     """Get array = mesh[name].
     
     Since Blender does not support adding arbitrary objects as attributes to meshes,
-    the array is flattened and saved together with its shape.
+    the array is flattened, converted to a binary buffer, and saved as a tuple together with its shape.
+    All arrays are converted to np.float32.
     """
     assert name in mesh, "Attribute not found"
-    return np.array(mesh[name][0]).reshape(mesh[name][1])
+    return np.frombuffer(mesh[name][0], dtype=np.float32).reshape(mesh[name][1])
 
 
 def separate_selected_into_mesh_and_box(self, context):
@@ -982,7 +994,7 @@ class LoadTIFFOperator(Operator):
             box.display_type = 'WIRE'
             # attach the data to the box
             set_numpy_attribute(box, "resolution", resolution)
-            set_numpy_attribute(box, "3D_data", data, method="tolist")
+            set_numpy_attribute(box, "3D_data", data)
             
         except Exception as e:
             self.report({'ERROR'}, f"Failed to load TIFF file: {e}")
@@ -1095,9 +1107,9 @@ class CreateProjectionOperator(Operator):
                                                 baked_normals, normal_offsets=offsets_array,
                                                 affine_matrix=box_world_inv)
         # set results as attributes of the mesh
-        set_numpy_attribute(obj, "baked_data", baked_data, method="flatten")
-        set_numpy_attribute(obj, "baked_normals", baked_normals, method="flatten")
-        set_numpy_attribute(obj, "baked_world_positions", baked_world_positions, method="flatten")
+        set_numpy_attribute(obj, "baked_data", baked_data)
+        set_numpy_attribute(obj, "baked_normals", baked_normals)
+        set_numpy_attribute(obj, "baked_world_positions", baked_world_positions)
         # create texture
         create_material_from_multilayer_array(obj, baked_data, material_name=f"ProjectedMaterial_{obj.name}")
 
@@ -1246,9 +1258,9 @@ class BatchProjectionOperator(Operator):
                 return {'CANCELLED'}
             if bpy.context.scene.tissue_cartography_batch_create_materials:
                 # set results as attributes of the mesh
-                set_numpy_attribute(obj, "baked_data", baked_data, method="flatten")
-                set_numpy_attribute(obj, "baked_normals", baked_normals, method="flatten")
-                set_numpy_attribute(obj, "baked_world_positions", baked_world_positions, method="flatten")
+                set_numpy_attribute(obj, "baked_data", baked_data)
+                set_numpy_attribute(obj, "baked_normals", baked_normals)
+                set_numpy_attribute(obj, "baked_world_positions", baked_world_positions)
                 # create texture
                 create_material_from_multilayer_array(obj, baked_data, material_name=f"ProjectedMaterial_{obj.name}")
         return {'FINISHED'}
@@ -1401,7 +1413,7 @@ class AlignOperator(Operator):
                                                   pre_align=context.scene.tissue_cartography_prealign,
                                                   shear=context.scene.tissue_cartography_prealign_shear,
                                                   iterations=context.scene.tissue_cartography_align_iter)
-                # copysource mesh
+                # copy source mesh
                 source_mesh_copied = source_mesh.copy()
                 source_mesh_copied.data = source_mesh.data.copy()
                 bpy.context.collection.objects.link(source_mesh_copied)
@@ -1443,6 +1455,19 @@ class ShrinkwrapOperator(Operator):
             # shrink-wrap
             shrinkwrap_and_smooth(source_mesh_copied, target_mesh,
                                   corrective_smooth_iter=context.scene.tissue_cartography_shrinkwarp_smooth)
+            # data transfer modifier to copy UV map from wrapped to target
+            data_transfer = target_mesh.modifiers.new(name="DataTransfer", type='DATA_TRANSFER')
+            data_transfer.object = source_mesh_copied
+            data_transfer.use_loop_data = True
+            data_transfer.data_types_loops = {'UV'}
+            data_transfer.loop_mapping = 'POLYINTERP_NEAREST'
+            # apply
+            original_active_obj = bpy.context.view_layer.objects.active
+            bpy.context.view_layer.objects.active = target_mesh
+            bpy.ops.object.datalayout_transfer(modifier="DataTransfer")
+            bpy.ops.object.modifier_apply(modifier="DataTransfer")
+            bpy.context.view_layer.objects.active = original_active_obj
+                                  
             if mode in ["forward", "backward"]:
                 source_mesh = source_mesh_copied
         return {'FINISHED'}

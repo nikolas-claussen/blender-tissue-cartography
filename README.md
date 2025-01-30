@@ -34,6 +34,16 @@ This project is a work in progress and may change rapidly.
 do tissue cartography purely graphically within Blender, as well as a
 python library for custom and/or automatized pipelines.
 
+**System requirements** Both the Python library and the add-on have no
+minimum system requirements and can run on any modern laptop. For
+loading and processing large volumetric image data, you will need
+sufficient RAM (e.g. if you have a laptop with 8GB RAM, you will likely
+not be able to load an process a 2GB volumetric `.tif` file). Most
+operations in Blender, in particular rendering, will run *much* faster
+if your computer has a GPU. The MeshLab library which is required for
+some (non-essential) operations is not available of new ARM Apple
+computers.
+
 ### Blender add-on
 
 1.  Install the non-python programs: [Fiji](https://fiji.sc/)
