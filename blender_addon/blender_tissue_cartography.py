@@ -5,7 +5,7 @@ bl_info = {
 }
 
 import bpy
-from bpy.props import StringProperty, FloatVectorProperty, IntVectorProperty, FloatProperty, IntProperty, BoolProperty, EnumProperty
+from bpy.props import StringProperty, FloatProperty, FloatVectorProperty, IntProperty, IntVectorProperty, BoolProperty, EnumProperty
 from bpy.types import Operator, Panel
 import mathutils
 import bmesh
@@ -86,6 +86,17 @@ def normalize_quantiles(image, quantiles=(0.01, 0.99), channel_axis=None, clip=F
     if data_type is np.uint16:
         image_normalized = np.round((2**16-1)*image_normalized).astype(np.uint16)
     return image_normalized
+
+
+
+def axis_order_to_transpose(axis_order_string):
+    """Convert string describing axis order into tuple for use in np.transpose."""
+    assert ''.join(sorted(axis_order_string)) in ['xyz', 'cxyz'], "Must be xyz, cxyz, or permutation thereof"
+    if 'c' in axis_order_string:
+        transpose = [axis_order_string.index(k) for k in 'cxyz']
+    else:
+        transpose = [axis_order_string.index(k) for k in 'xyz']
+    return transpose
 
 
 ### Tissue cartography - projecting 3d images to UV textures
@@ -977,18 +988,23 @@ class LoadTIFFOperator(Operator):
             if not len(data.shape) in [3,4]:
                 self.report({'ERROR'}, "Selected TIFF must have 3 or 4 axes.")
                 return {'CANCELLED'}
+            # sort out axis order
+            axis_order_string = context.scene.tissue_cartography_axis_order
+            if not ''.join(sorted(axis_order_string)) in ['', 'xyz', 'cxyz']:
+                self.report({'ERROR'}, "Must be empty, xyz, cxyz, or permutation thereof")
+                return {'CANCELLED'}
+            if not len(axis_order_string) in [0, len(data.shape)]:
+                self.report({'ERROR'}, "Number of axes in axis order does not match tiff data.")
+                return {'CANCELLED'}
+            
+            if axis_order_string == '' and len(data.shape) == 4:
+                # ensure channel axis (assumed shortest axis) is 1st if no axis order provided.
+                channel_axis = np.argmin(data.shape)
+                data = np.moveaxis(data, channel_axis, 0)
+            if axis_order_string != '':
+                data = data.transpose(axis_order_to_transpose(axis_order_string))
             if len(data.shape) == 3: # add singleton channel axis to single channel-data 
                 data = data[np.newaxis]
-            # ensure channel axis (assumed shortest axis) is 1st
-            channel_axis = np.argmin(data.shape)
-            data = np.moveaxis(data, channel_axis, 0)
-            # permute axes
-            axis_order = list(context.scene.tissue_cartography_axis_order)
-            if not sorted(axis_order) == [0,1,2,3]:
-                self.report({'ERROR'}, "Axis order must be a permutation of [0,1,2,3] (e.g. [3,0,1,2])")
-                return {'CANCELLED'}
-            data = data.transpose(axis_order)
-            
             # display image shape in add-on
             context.scene.tissue_cartography_image_shape = str(data.shape[1:])
             context.scene.tissue_cartography_image_channels = data.shape[0]
@@ -1035,19 +1051,38 @@ class LoadSegmentationTIFFOperator(Operator):
                 return {'CANCELLED'}
             try:
                 data = tifffile.imread(file_path)
-                if len(data.shape) != 3:
-                    self.report({'ERROR'}, "Data must be volumetric!")
+                # sort out axis order
+                if not len(data.shape) in [3,4]:
+                    self.report({'ERROR'}, "Selected TIFF must have 3 or 4 axes.")
                     return {'CANCELLED'}
+                axis_order_string = context.scene.tissue_cartography_segmentation_axis_order
+                if not ''.join(sorted(axis_order_string)) in ['', 'xyz', 'cxyz']:
+                    self.report({'ERROR'}, "Must be empty, xyz, cxyz, or permutation thereof")
+                    return {'CANCELLED'}
+                if not len(axis_order_string) in [0, len(data.shape)]:
+                    self.report({'ERROR'}, "Number of axes in axis order does not match tiff data.")
+                    return {'CANCELLED'}
+                if axis_order_string == '' and len(data.shape) == 4:
+                    # ensure channel axis (assumed shortest axis) is 1st if no axis order provided.
+                    channel_axis = np.argmin(data.shape)
+                    data = np.moveaxis(data, channel_axis, 0)
+                if axis_order_string != '':
+                    data = data.transpose(axis_order_to_transpose(axis_order_string))
+                if len(data.shape) == 3: # add singleton channel axis to single channel-data 
+                    data = data[np.newaxis]
                 self.report({'INFO'}, f"TIFF file loaded with shape {data.shape}")
-                # smooth and normalize the segmentation
-                data = (data-data.min())/(data.max()-data.min())
-                sigma = context.scene.tissue_cartography_segmentation_sigma
-                data_smoothed = ndimage.gaussian_filter(data, sigma=sigma/resolution_array)
-                # compute mesh using marching cubes, and convert to mesh
-                verts, faces, _, _ = measure.marching_cubes(data_smoothed,
-                                                            level=0.5, spacing=(1.0,1.0,1.0))
-                verts = verts * resolution_array
-                create_mesh_from_numpy(f"{Path(file_path).stem}_mesh", verts, faces)
+                context.scene.tissue_cartography_segmentation_shape = str(data.shape[1:])
+                context.scene.tissue_cartography_segmentation_channels = data.shape[0]
+                # iterate over channels. each channel is one label
+                for ic, channel in enumerate(data):
+                    # smooth and normalize the segmentation
+                    channel = (channel-channel.min())/(channel.max()-channel.min())
+                    sigma = context.scene.tissue_cartography_segmentation_sigma
+                    channel = ndimage.gaussian_filter(channel, sigma=sigma/resolution_array)
+                    # compute mesh using marching cubes, and convert to mesh
+                    verts, faces, _, _ = measure.marching_cubes(channel, level=0.5, spacing=(1.0,1.0,1.0))
+                    verts = verts * resolution_array
+                    create_mesh_from_numpy(f"{Path(file_path).stem}_c{ic}", verts, faces)
                 
             except Exception as e:
                 self.report({'ERROR'}, f"Failed to load segmentation: {e}")
@@ -1503,8 +1538,9 @@ class TissueCartographyPanel(Panel):
         scene = context.scene
 
         layout.prop(scene, "tissue_cartography_file")
-        layout.prop(scene, "tissue_cartography_resolution")
-        layout.prop(scene, "tissue_cartography_axis_order")
+        row_tiff = layout.row()
+        row_tiff.prop(scene, "tissue_cartography_resolution")
+        row_tiff.prop(scene, "tissue_cartography_axis_order")
         layout.operator("scene.load_tiff", text="Load .tiff file")
         layout.label(text=f"Loaded Image Shape: {scene.tissue_cartography_image_shape}. Loaded Image Channels: {scene.tissue_cartography_image_channels}")
         layout.separator()
@@ -1512,8 +1548,10 @@ class TissueCartographyPanel(Panel):
         layout.prop(scene, "tissue_cartography_segmentation_file")
         row_segmentation = layout.row()
         row_segmentation.prop(scene, "tissue_cartography_segmentation_resolution")
+        row_segmentation.prop(scene, "tissue_cartography_segmentation_axis_order")
         row_segmentation.prop(scene, "tissue_cartography_segmentation_sigma")
         layout.operator("scene.load_segmentation", text="Get mesh(es) from binary segmentation .tiff file(s)")
+        layout.label(text=f"Loaded Segmentation Shape: {scene.tissue_cartography_segmentation_shape}. Loaded Segmentation Channels: {scene.tissue_cartography_segmentation_channels}")
         layout.separator()
         
         row_slice = layout.row()
@@ -1590,13 +1628,10 @@ def register():
         size=3,
         default=(1.0, 1.0, 1.0),
     )
-    bpy.types.Scene.tissue_cartography_axis_order= IntVectorProperty(
+    bpy.types.Scene.tissue_cartography_axis_order= StringProperty(
         name="Axis order",
-        description="Permute axes after loading image. Use if loaded image shape appears incorrect. (0, 1, 2, 3) =  no permutation. Channel axis should be first axis!",
-        size=4,
-        default=(0, 1, 2, 3),
-        min=0,
-        max=3,
+        description="Axis order, either xyz + permutations or xyz + permutations (multichannel data). Dynamic data should be loaded as one .tiff per timepoint. If not provided, inferred automatically.",
+        default="",
     )
     bpy.types.Scene.tissue_cartography_image_channels = IntProperty(
         name="Image Channels",
@@ -1620,12 +1655,28 @@ def register():
         size=3,
         default=(1.0, 1.0, 1.0),
     )
+    bpy.types.Scene.tissue_cartography_segmentation_axis_order= StringProperty(
+        name="Axis order segmentation",
+        description="Axis order of segmentation, either xyz + permutations or cxyz + permutations (multichannel data). Different channels for a segmentation mean different labels. Dynamic data should be loaded as one .tiff per timepoint. If not provided, inferred automatically.",
+        default="",
+    )
     bpy.types.Scene.tissue_cartography_segmentation_sigma = FloatProperty(
-        name="Segmentation Smoothing (µm)",
+        name="Smoothing (µm)",
         description="Smothing kernel for extracting mesh from segmentation, in µm",
         default=0,
         min=0
-    ) 
+    )
+    bpy.types.Scene.tissue_cartography_segmentation_channels = IntProperty(
+        name="Segmentation Channels",
+        description="Channels of the segmentation (read-only)",
+        default=0,
+        min=0,
+    )
+    bpy.types.Scene.tissue_cartography_segmentation_shape = StringProperty(
+        name="Segmentation Shape",
+        description="Shape of the loaded segmentation (read-only)",
+        default="Not loaded"
+    )
     bpy.types.Scene.tissue_cartography_slice_axis = EnumProperty(
         name="Slice Axis",
         description="Choose an axis",
@@ -1738,10 +1789,14 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_file 
     del bpy.types.Scene.tissue_cartography_resolution
     del bpy.types.Scene.tissue_cartography_axis_order
+    del bpy.types.Scene.tissue_cartography_image_channels
     del bpy.types.Scene.tissue_cartography_image_shape
     del bpy.types.Scene.tissue_cartography_segmentation_file
-    del bpy.types.Scene.tissue_cartography_segmentation_resolution 
+    del bpy.types.Scene.tissue_cartography_segmentation_resolution
+    del bpy.types.Scene.tissue_cartography_segmentation_axis_order
     del bpy.types.Scene.tissue_cartography_segmentation_sigma
+    del bpy.types.Scene.tissue_cartography_segmentation_channels
+    del bpy.types.Scene.tissue_cartography_segmentation_shape
     del bpy.types.Scene.tissue_cartography_offsets 
     del bpy.types.Scene.tissue_cartography_projection_resolution 
     del bpy.types.Scene.tissue_cartography_slice_axis 
@@ -1759,7 +1814,8 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_shrinkwarp_smooth
     del bpy.types.Scene.tissue_cartography_shrinkwarp_iterative
     
-    del bpy.types.Scene.tissue_cartography_interpolators
+    if bpy.types.Scene.tissue_cartography_interpolators in globals():
+        del bpy.types.Scene.tissue_cartography_interpolators
 
 ### Run the add-on
 
