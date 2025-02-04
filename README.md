@@ -59,7 +59,7 @@ computers.
 
     - If your operating system is not available, you can also download
       `blender_addon/blender_tissue_cartography.py`. In this case you
-      will need to install the pyhton libraries `scikit-image` in
+      will need to install the python library `scikit-image` in
       Blender’s Python interface.
 
 3.  [Install the
@@ -130,7 +130,9 @@ If you want to extend `blender_tissue_cartography`:
   downloaded here:
   https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials/
 
-- The
+- The methods paper explains the general idea of tissue cartography, the
+  design of `blender_tissue_cartography`, and shows several examples:
+  https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_tissue_cartography_methods_paper.pdf
 
 ## Basic usage
 
