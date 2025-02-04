@@ -123,12 +123,14 @@ If you want to extend `blender_tissue_cartography`:
 
 ## Documentation
 
-Full documentation (including tutorials) is available here:
-https://nikolas-claussen.github.io/blender-tissue-cartography/
+- Full documentation (including tutorials) is available here:
+  https://nikolas-claussen.github.io/blender-tissue-cartography/
 
-Datasets and interactive Jupyter notebooks for the tutorials can be
-downloaded here:
-https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials/
+- Datasets and interactive Jupyter notebooks for the tutorials can be
+  downloaded here:
+  https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials/
+
+- The
 
 ## Basic usage
 
