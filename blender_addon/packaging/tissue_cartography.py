@@ -17,17 +17,6 @@ from scipy import interpolate, ndimage, spatial, stats, linalg
 from skimage import measure
 
 
-### Installing dependencies
-
-def install_dependencies():
-    try:
-        import scipy
-        import skimage
-    except ImportError:
-        python_executable = sys.executable
-        subprocess.check_call([python_executable, "-m", "pip", "install", "scipy", "scikit-image", "tifffile"])
-
-
 ### I/O and image handling
 
 
@@ -1039,7 +1028,9 @@ class LoadSegmentationTIFFOperator(Operator):
         else:
             self.report({'ERROR'}, "Select a valid file or directory")
             return {'CANCELLED'}
-        for file_path in files_to_process:
+        for i, file_path in enumerate(files_to_process):
+            self.report({'INFO'}, f"Processing file {i+1}/{len(files_to_process)}")
+            bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
             if not file_path.suffix in [".tif", ".tiff"]:
                 self.report({'ERROR'}, "Selected file is not a TIFF")
                 return {'CANCELLED'}
@@ -1236,6 +1227,7 @@ class BatchProjectionOperator(Operator):
         
         for iobj, obj in enumerate(meshes_to_process):
             self.report({'INFO'}, f"Processing {iobj}/{len(meshes_to_process)}")
+            bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1) # refresh display
             if not obj.data.uv_layers:
                 self.report({'ERROR'}, f"Mesh {obj.name} does not have a UV map!")
                 return {'CANCELLED'}
@@ -1423,6 +1415,7 @@ class AlignOperator(Operator):
             target_mesh = context.active_object
             for source_mesh in [x for x in context.selected_objects if not x==target_mesh]:
                 self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
+                bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1) # refresh so that user can see the progress
                 if target_mesh.type != 'MESH'  or source_mesh.type != 'MESH':
                     self.report({'ERROR'}, "Selected object(s) is not a mesh.")
                     return {'CANCELLED'}
@@ -1471,6 +1464,7 @@ class ShrinkwrapOperator(Operator):
             targets = targets[::-1]
         for target_mesh in targets:
             self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
+            bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1) # refresh so that user can see the progress
             if target_mesh.type != 'MESH'  or source_mesh.type != 'MESH':
                 self.report({'ERROR'}, "Selected object(s) is not a mesh.")
                 return {'CANCELLED'}

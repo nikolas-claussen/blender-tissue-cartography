@@ -65,7 +65,7 @@ computers.
 3.  [Install the
     add-on](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html):
     Click “Edit -\> Preferences -\> Add-ons -\> Add-on Settings -\>
-    Install from disk” and select `blender_tissue_cartography_addon.py`.
+    Install from disk” and select the file you just downloaded.
 
 4.  Restart Blender. The add-on can now be found under “Scene -\> Tissue
     Cartography”.
@@ -125,6 +125,10 @@ If you want to extend `blender_tissue_cartography`:
 
 Full documentation (including tutorials) is available here:
 https://nikolas-claussen.github.io/blender-tissue-cartography/
+
+Datasets and interactive Jupyter notebooks for the tutorials can be
+downloaded here:
+https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials/
 
 ## Basic usage
 

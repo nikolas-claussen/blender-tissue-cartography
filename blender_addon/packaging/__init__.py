@@ -10,18 +10,18 @@ from . import tissue_cartography
 
 def register():
     """Add the add-on to the blender user interface"""
-    bpy.utils.register_class(TissueCartographyPanel)
-    bpy.utils.register_class(LoadTIFFOperator)
-    bpy.utils.register_class(LoadSegmentationTIFFOperator)
-    bpy.utils.register_class(CreateProjectionOperator)
-    bpy.utils.register_class(SaveProjectionOperator)
-    bpy.utils.register_class(BatchProjectionOperator)
-    bpy.utils.register_class(SlicePlaneOperator)
-    bpy.utils.register_class(VertexShaderInitializeOperator)
-    bpy.utils.register_class(VertexShaderRefreshOperator)
-    bpy.utils.register_class(AlignOperator)
-    bpy.utils.register_class(ShrinkwrapOperator)
-    bpy.utils.register_class(HelpPopupOperator)
+    bpy.utils.register_class(tissue_cartography.TissueCartographyPanel)
+    bpy.utils.register_class(tissue_cartography.LoadTIFFOperator)
+    bpy.utils.register_class(tissue_cartography.LoadSegmentationTIFFOperator)
+    bpy.utils.register_class(tissue_cartography.CreateProjectionOperator)
+    bpy.utils.register_class(tissue_cartography.SaveProjectionOperator)
+    bpy.utils.register_class(tissue_cartography.BatchProjectionOperator)
+    bpy.utils.register_class(tissue_cartography.SlicePlaneOperator)
+    bpy.utils.register_class(tissue_cartography.VertexShaderInitializeOperator)
+    bpy.utils.register_class(tissue_cartography.VertexShaderRefreshOperator)
+    bpy.utils.register_class(tissue_cartography.AlignOperator)
+    bpy.utils.register_class(tissue_cartography.ShrinkwrapOperator)
+    bpy.utils.register_class(tissue_cartography.HelpPopupOperator)
     
     bpy.types.Scene.tissue_cartography_file = StringProperty(
         name="File Path",
@@ -180,18 +180,18 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_class(TissueCartographyPanel)
-    bpy.utils.unregister_class(LoadTIFFOperator)
-    bpy.utils.unregister_class(LoadSegmentationTIFFOperator)
-    bpy.utils.unregister_class(CreateProjectionOperator)
-    bpy.utils.unregister_class(BatchProjectionOperator)
-    bpy.utils.unregister_class(SaveProjectionOperator)
-    bpy.utils.unregister_class(SlicePlaneOperator)
-    bpy.utils.unregister_class(VertexShaderInitializeOperator)
-    bpy.utils.unregister_class(VertexShaderRefreshOperator)
-    bpy.utils.unregister_class(AlignOperator)
-    bpy.utils.unregister_class(ShrinkwrapOperator)
-    bpy.utils.unregister_class(HelpPopupOperator)
+    bpy.utils.unregister_class(tissue_cartography.TissueCartographyPanel)
+    bpy.utils.unregister_class(tissue_cartography.LoadTIFFOperator)
+    bpy.utils.unregister_class(tissue_cartography.LoadSegmentationTIFFOperator)
+    bpy.utils.unregister_class(tissue_cartography.CreateProjectionOperator)
+    bpy.utils.unregister_class(tissue_cartography.BatchProjectionOperator)
+    bpy.utils.unregister_class(tissue_cartography.SaveProjectionOperator)
+    bpy.utils.unregister_class(tissue_cartography.SlicePlaneOperator)
+    bpy.utils.unregister_class(tissue_cartography.VertexShaderInitializeOperator)
+    bpy.utils.unregister_class(tissue_cartography.VertexShaderRefreshOperator)
+    bpy.utils.unregister_class(tissue_cartography.AlignOperator)
+    bpy.utils.unregister_class(tissue_cartography.ShrinkwrapOperator)
+    bpy.utils.unregister_class(tissue_cartography.HelpPopupOperator)
 
     del bpy.types.Scene.tissue_cartography_file 
     del bpy.types.Scene.tissue_cartography_resolution
@@ -221,5 +221,5 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_shrinkwarp_smooth
     del bpy.types.Scene.tissue_cartography_shrinkwarp_iterative
     
-    if bpy.types.Scene.tissue_cartography_interpolators in globals():
+    if hasattr(bpy.types.Scene, "tissue_cartography_interpolators"):
         del bpy.types.Scene.tissue_cartography_interpolators

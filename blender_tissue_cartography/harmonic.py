@@ -395,7 +395,7 @@ def wrap_coords_via_disk_cylinder(mesh_source, mesh_target, q=0.01, n_grid=1024)
                                                   distance_threshold=np.inf)
     return new_coords, overlap
 
-# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 65
+# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 74
 def stereographic_plane_to_sphere(uv):
     """
     Stereographic projection from plane to the unit sphere from the north pole (0,0,1).
@@ -417,7 +417,7 @@ def stereographic_sphere_to_plane(pts):
     assert np.allclose(np.linalg.norm(pts, axis=1), 1, rtol=1e-03, atol=1e-04), "Points not on unit sphere!"
     return (np.stack([pts[:,0], pts[:,1]], axis=0)/(1-pts[:,2])).T
 
-# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 68
+# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 77
 def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alpha=0.5):
     """
     Apply Moeboius inversions to minimize area distortion of a map from mesh to sphere.
@@ -463,7 +463,7 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
         Vs = ((1-np.linalg.norm(c)**2)*(Vs+c).T /np.linalg.norm(Vs+c, axis=1)**2).T + c
     return Vs, np.linalg.norm(mu)
 
-# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 74
+# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 83
 def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha=0.5, set_uvs=False):
     """
     Compute a map of mesh to the unit sphere.
@@ -543,7 +543,7 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
         
     return vertices_sphere
 
-# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 86
+# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 95
 def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coords_sphere_target,
                             allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
     """
@@ -645,7 +645,7 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
 
     return coords_sphere_source @ R_refined.T, R_refined, overlap
 
-# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 92
+# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 101
 def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, coords_sphere_target=None,
                            method="harmonic", n_iter_centering=10, alpha=0.5,
                            align=True, allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
