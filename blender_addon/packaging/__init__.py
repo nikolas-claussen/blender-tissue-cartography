@@ -1,28 +1,27 @@
 bl_info = {
-    "name": "Tissue Cartography Packaged",
+    "name": "Tissue Cartography",
     "blender": (4, 3, 0),
     "category": "Scene",
 }
-
 import bpy
-from bpy.props import StringProperty, FloatVectorProperty, IntVectorProperty, FloatProperty, IntProperty, BoolProperty, EnumProperty
+from bpy.props import StringProperty, FloatProperty, FloatVectorProperty, IntProperty, IntVectorProperty, BoolProperty, EnumProperty
 from . import tissue_cartography
-    
+
 
 def register():
     """Add the add-on to the blender user interface"""
-    bpy.utils.register_class(tissue_cartography.TissueCartographyPanel)
-    bpy.utils.register_class(tissue_cartography.LoadTIFFOperator)
-    bpy.utils.register_class(tissue_cartography.LoadSegmentationTIFFOperator)
-    bpy.utils.register_class(tissue_cartography.CreateProjectionOperator)
-    bpy.utils.register_class(tissue_cartography.SaveProjectionOperator)
-    bpy.utils.register_class(tissue_cartography.BatchProjectionOperator)
-    bpy.utils.register_class(tissue_cartography.SlicePlaneOperator)
-    bpy.utils.register_class(tissue_cartography.VertexShaderInitializeOperator)
-    bpy.utils.register_class(tissue_cartography.VertexShaderRefreshOperator)
-    bpy.utils.register_class(tissue_cartography.AlignOperator)
-    bpy.utils.register_class(tissue_cartography.ShrinkwrapOperator)
-    bpy.utils.register_class(tissue_cartography.HelpPopupOperator)
+    bpy.utils.register_class(TissueCartographyPanel)
+    bpy.utils.register_class(LoadTIFFOperator)
+    bpy.utils.register_class(LoadSegmentationTIFFOperator)
+    bpy.utils.register_class(CreateProjectionOperator)
+    bpy.utils.register_class(SaveProjectionOperator)
+    bpy.utils.register_class(BatchProjectionOperator)
+    bpy.utils.register_class(SlicePlaneOperator)
+    bpy.utils.register_class(VertexShaderInitializeOperator)
+    bpy.utils.register_class(VertexShaderRefreshOperator)
+    bpy.utils.register_class(AlignOperator)
+    bpy.utils.register_class(ShrinkwrapOperator)
+    bpy.utils.register_class(HelpPopupOperator)
     
     bpy.types.Scene.tissue_cartography_file = StringProperty(
         name="File Path",
@@ -35,13 +34,10 @@ def register():
         size=3,
         default=(1.0, 1.0, 1.0),
     )
-    bpy.types.Scene.tissue_cartography_axis_order= IntVectorProperty(
+    bpy.types.Scene.tissue_cartography_axis_order= StringProperty(
         name="Axis order",
-        description="Permute axes after loading image. Use if loaded image shape appears incorrect. (0, 1, 2, 3) =  no permutation. Channel axis should be first axis!",
-        size=4,
-        default=(0, 1, 2, 3),
-        min=0,
-        max=3,
+        description="Axis order, either xyz + permutations or xyz + permutations (multichannel data). Dynamic data should be loaded as one .tiff per timepoint. If not provided, inferred automatically.",
+        default="",
     )
     bpy.types.Scene.tissue_cartography_image_channels = IntProperty(
         name="Image Channels",
@@ -65,12 +61,28 @@ def register():
         size=3,
         default=(1.0, 1.0, 1.0),
     )
+    bpy.types.Scene.tissue_cartography_segmentation_axis_order= StringProperty(
+        name="Axis order segmentation",
+        description="Axis order of segmentation, either xyz + permutations or cxyz + permutations (multichannel data). Different channels for a segmentation mean different labels. Dynamic data should be loaded as one .tiff per timepoint. If not provided, inferred automatically.",
+        default="",
+    )
     bpy.types.Scene.tissue_cartography_segmentation_sigma = FloatProperty(
-        name="Segmentation Smoothing (µm)",
+        name="Smoothing (µm)",
         description="Smothing kernel for extracting mesh from segmentation, in µm",
         default=0,
         min=0
-    ) 
+    )
+    bpy.types.Scene.tissue_cartography_segmentation_channels = IntProperty(
+        name="Segmentation Channels",
+        description="Channels of the segmentation (read-only)",
+        default=0,
+        min=0,
+    )
+    bpy.types.Scene.tissue_cartography_segmentation_shape = StringProperty(
+        name="Segmentation Shape",
+        description="Shape of the loaded segmentation (read-only)",
+        default="Not loaded"
+    )
     bpy.types.Scene.tissue_cartography_slice_axis = EnumProperty(
         name="Slice Axis",
         description="Choose an axis",
@@ -165,30 +177,33 @@ def register():
                ('backward', "Iterative Backward", "Shrink-wrap active mesh to selected meshes iteratively, starting with alpha-numerically last")],
         default='one-to-all'
     )
-    
-    bpy.types.Scene.tissue_cartography_interpolators = dict()
+
 
 def unregister():
-    bpy.utils.unregister_class(tissue_cartography.TissueCartographyPanel)
-    bpy.utils.unregister_class(tissue_cartography.LoadTIFFOperator)
-    bpy.utils.unregister_class(tissue_cartography.LoadSegmentationTIFFOperator)
-    bpy.utils.unregister_class(tissue_cartography.CreateProjectionOperator)
-    bpy.utils.unregister_class(tissue_cartography.BatchProjectionOperator)
-    bpy.utils.unregister_class(tissue_cartography.SaveProjectionOperator)
-    bpy.utils.unregister_class(tissue_cartography.SlicePlaneOperator)
-    bpy.utils.unregister_class(tissue_cartography.VertexShaderInitializeOperator)
-    bpy.utils.unregister_class(tissue_cartography.VertexShaderRefreshOperator)
-    bpy.utils.unregister_class(tissue_cartography.AlignOperator)
-    bpy.utils.unregister_class(tissue_cartography.ShrinkwrapOperator)
-    bpy.utils.unregister_class(tissue_cartography.HelpPopupOperator)
+    bpy.utils.unregister_class(TissueCartographyPanel)
+    bpy.utils.unregister_class(LoadTIFFOperator)
+    bpy.utils.unregister_class(LoadSegmentationTIFFOperator)
+    bpy.utils.unregister_class(CreateProjectionOperator)
+    bpy.utils.unregister_class(BatchProjectionOperator)
+    bpy.utils.unregister_class(SaveProjectionOperator)
+    bpy.utils.unregister_class(SlicePlaneOperator)
+    bpy.utils.unregister_class(VertexShaderInitializeOperator)
+    bpy.utils.unregister_class(VertexShaderRefreshOperator)
+    bpy.utils.unregister_class(AlignOperator)
+    bpy.utils.unregister_class(ShrinkwrapOperator)
+    bpy.utils.unregister_class(HelpPopupOperator)
 
     del bpy.types.Scene.tissue_cartography_file 
     del bpy.types.Scene.tissue_cartography_resolution
     del bpy.types.Scene.tissue_cartography_axis_order
+    del bpy.types.Scene.tissue_cartography_image_channels
     del bpy.types.Scene.tissue_cartography_image_shape
     del bpy.types.Scene.tissue_cartography_segmentation_file
-    del bpy.types.Scene.tissue_cartography_segmentation_resolution 
+    del bpy.types.Scene.tissue_cartography_segmentation_resolution
+    del bpy.types.Scene.tissue_cartography_segmentation_axis_order
     del bpy.types.Scene.tissue_cartography_segmentation_sigma
+    del bpy.types.Scene.tissue_cartography_segmentation_channels
+    del bpy.types.Scene.tissue_cartography_segmentation_shape
     del bpy.types.Scene.tissue_cartography_offsets 
     del bpy.types.Scene.tissue_cartography_projection_resolution 
     del bpy.types.Scene.tissue_cartography_slice_axis 
