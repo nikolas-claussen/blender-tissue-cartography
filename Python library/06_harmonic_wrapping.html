@@ -1,0 +1,2217 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>harmonic_wrapping – blender-tissue-cartography</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-0652833b129a4aecb7d8777fd89a11f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="blender-tissue-cartography">
+<meta property="og:description" content="Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender">
+<meta property="og:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/06_harmonic_wrapping_files/figure-html/cell-5-output-2.png">
+<meta property="og:site_name" content="blender-tissue-cartography">
+<meta property="og:image:height" content="413">
+<meta property="og:image:width" content="547">
+<meta name="twitter:title" content="blender-tissue-cartography">
+<meta name="twitter:description" content="Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender">
+<meta name="twitter:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/06_harmonic_wrapping_files/figure-html/cell-5-output-2.png">
+<meta name="twitter:image-height" content="413">
+<meta name="twitter:image-width" content="547">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">blender-tissue-cartography</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Python library/io.html">Python library</a></li><li class="breadcrumb-item"><a href="../Python library/06_harmonic_wrapping.html">Harmonic mapping</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">blender-tissue-cartography</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../00_tissue_cartography_overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tissue cartography with <code>blender_tisssue_cartography</code></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_blender_addon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Blender add-on</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Python library</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/io.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Image I/O</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01b_mesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh data structure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01c_interface_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>pymeshlab</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01d_interface_trimesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>trimesh</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01e_morphsnakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Morphsnakes segmentation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/02_cartographic_interpolation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cartographic interpolation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/differential_geometry.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Surface differential geometry</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/remeshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/remeshing_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing with MeshLab</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/04c_smoothing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh smoothing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/registration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rigid-body registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/registration_rotation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3D-rotation registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/05c_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Shrink-wrapping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/06_harmonic_wrapping.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Harmonic mapping</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/01_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/02_blender_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2. Blender tutorial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/03_blender_addon_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3. <code>blender_tissue_cartography</code> blender add-on</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/04_btc_python_library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4. <code>blender_tissue_cartography</code> Python library</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/05_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5. Tissue cartography with “seams”</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/06_improving_UV_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">6. Iteratively improving cartographic projections</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/07_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7. Advanced segmentation and meshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/08_multiple_recordings_and_reference_meshes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8. Consistent cartographic projections across multiple recordings</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/09_movies_and_dynamic_surfaces.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">9. Time-lapse imaging and dynamic surfaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/10_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">10. 3D Image analysis with cartographic projections</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#harmonic-mapping" id="toc-harmonic-mapping" class="nav-link active" data-scroll-target="#harmonic-mapping">Harmonic mapping</a></li>
+  <li><a href="#disk" id="toc-disk" class="nav-link" data-scroll-target="#disk">Disk</a>
+  <ul class="collapse">
+  <li><a href="#map_to_disk" id="toc-map_to_disk" class="nav-link" data-scroll-target="#map_to_disk">map_to_disk</a></li>
+  <li><a href="#get_rot_mat2d" id="toc-get_rot_mat2d" class="nav-link" data-scroll-target="#get_rot_mat2d">get_rot_mat2d</a></li>
+  <li><a href="#rotational_align_disk" id="toc-rotational_align_disk" class="nav-link" data-scroll-target="#rotational_align_disk">rotational_align_disk</a></li>
+  <li><a href="#mesh-registration" id="toc-mesh-registration" class="nav-link" data-scroll-target="#mesh-registration">Mesh registration</a></li>
+  <li><a href="#wrap_coords_via_disk" id="toc-wrap_coords_via_disk" class="nav-link" data-scroll-target="#wrap_coords_via_disk">wrap_coords_via_disk</a></li>
+  </ul></li>
+  <li><a href="#cylinder" id="toc-cylinder" class="nav-link" data-scroll-target="#cylinder">Cylinder</a>
+  <ul class="collapse">
+  <li><a href="#moebius_disk" id="toc-moebius_disk" class="nav-link" data-scroll-target="#moebius_disk">moebius_disk</a></li>
+  <li><a href="#complex_to_xy" id="toc-complex_to_xy" class="nav-link" data-scroll-target="#complex_to_xy">complex_to_xy</a></li>
+  <li><a href="#xy_to_complex" id="toc-xy_to_complex" class="nav-link" data-scroll-target="#xy_to_complex">xy_to_complex</a></li>
+  <li><a href="#polygon_centroid" id="toc-polygon_centroid" class="nav-link" data-scroll-target="#polygon_centroid">polygon_centroid</a></li>
+  <li><a href="#polygon_area" id="toc-polygon_area" class="nav-link" data-scroll-target="#polygon_area">polygon_area</a></li>
+  <li><a href="#map_cylinder_to_disk" id="toc-map_cylinder_to_disk" class="nav-link" data-scroll-target="#map_cylinder_to_disk">map_cylinder_to_disk</a></li>
+  <li><a href="#wrap_coords_via_disk_cylinder" id="toc-wrap_coords_via_disk_cylinder" class="nav-link" data-scroll-target="#wrap_coords_via_disk_cylinder">wrap_coords_via_disk_cylinder</a></li>
+  </ul></li>
+  <li><a href="#sphere" id="toc-sphere" class="nav-link" data-scroll-target="#sphere">Sphere</a>
+  <ul class="collapse">
+  <li><a href="#strereographic-projection" id="toc-strereographic-projection" class="nav-link" data-scroll-target="#strereographic-projection">Strereographic projection</a></li>
+  <li><a href="#stereographic_sphere_to_plane" id="toc-stereographic_sphere_to_plane" class="nav-link" data-scroll-target="#stereographic_sphere_to_plane">stereographic_sphere_to_plane</a></li>
+  <li><a href="#stereographic_plane_to_sphere" id="toc-stereographic_plane_to_sphere" class="nav-link" data-scroll-target="#stereographic_plane_to_sphere">stereographic_plane_to_sphere</a></li>
+  <li><a href="#moebius-centering-algorithm" id="toc-moebius-centering-algorithm" class="nav-link" data-scroll-target="#moebius-centering-algorithm">Moebius centering algorithm</a></li>
+  <li><a href="#center_moebius" id="toc-center_moebius" class="nav-link" data-scroll-target="#center_moebius">center_moebius</a></li>
+  <li><a href="#putting-it-all-together" id="toc-putting-it-all-together" class="nav-link" data-scroll-target="#putting-it-all-together">Putting it all together …</a></li>
+  <li><a href="#map_to_sphere" id="toc-map_to_sphere" class="nav-link" data-scroll-target="#map_to_sphere">map_to_sphere</a></li>
+  <li><a href="#rotation-alignment-using-rotation-module" id="toc-rotation-alignment-using-rotation-module" class="nav-link" data-scroll-target="#rotation-alignment-using-rotation-module">Rotation alignment using <code>rotation</code> module</a></li>
+  <li><a href="#rotational_align_sphere" id="toc-rotational_align_sphere" class="nav-link" data-scroll-target="#rotational_align_sphere">rotational_align_sphere</a></li>
+  <li><a href="#interpolation" id="toc-interpolation" class="nav-link" data-scroll-target="#interpolation">Interpolation</a></li>
+  <li><a href="#wrap_coords_via_sphere" id="toc-wrap_coords_via_sphere" class="nav-link" data-scroll-target="#wrap_coords_via_sphere">wrap_coords_via_sphere</a></li>
+  </ul></li>
+  <li><a href="#stuff-that-did-not-work-out-well" id="toc-stuff-that-did-not-work-out-well" class="nav-link" data-scroll-target="#stuff-that-did-not-work-out-well">Stuff that did not work out well</a>
+  <ul class="collapse">
+  <li><a href="#non-rigid-icp" id="toc-non-rigid-icp" class="nav-link" data-scroll-target="#non-rigid-icp">Non-rigid ICP</a></li>
+  <li><a href="#laplace-beltrami-descriptors" id="toc-laplace-beltrami-descriptors" class="nav-link" data-scroll-target="#laplace-beltrami-descriptors">Laplace Beltrami descriptors</a></li>
+  <li><a href="#functional-mapping" id="toc-functional-mapping" class="nav-link" data-scroll-target="#functional-mapping">Functional mapping</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Python library/io.html">Python library</a></li><li class="breadcrumb-item"><a href="../Python library/06_harmonic_wrapping.html">Harmonic mapping</a></li></ol></nav></header>
+
+
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="harmonic-mapping" class="level2">
+<h2 class="anchored" data-anchor-id="harmonic-mapping">Harmonic mapping</h2>
+<blockquote class="blockquote">
+<p>Morph one surface mesh onto another via map to reference shape (disk, sphere). Part of the pipeline for dynamic data.</p>
+</blockquote>
+<p>In this notebook, we present some additional wrapping algorithms. So far, we have wrapped two meshes by simply projection each source mesh vertex onto the closest position on the target mesh and carrying out some on-surface smoothing. This works but is not necessarily extremely robust, and can lead to very deformed UV maps when there are large, localized deformations.</p>
+<p>Here, we’ll implement an alternative algorithm that works by (a) mapping each mesh into a common reference in a mathematically standardized way -<a href="https://hhoppe.com/mra.pdf">harmonic maps</a>- and then (b) chaining together the map from the source mesh to the common reference and from the reference to the target mesh to get a surface-surface map.</p>
+<p>We provide algorithms for meshes of disk, cylindrical, and spherical topology (potentially with holes). For arbitrary genus (i.e.&nbsp;handles, like a torus), one can take a look at hyperbolic orbifolds https://github.com/noamaig/hyperbolic_orbifolds/. Not implemented here.</p>
+<section id="loading-test-data" class="level4">
+<h4 class="anchored" data-anchor-id="loading-test-data">Loading test data</h4>
+<p>Let’s load the test meshes from the fly midgut dataset.</p>
+<div id="306db2a3" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>mesh_initial_UV <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"datasets/movie_example/initial_uv.obj"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>mesh_final_UV <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"datasets/movie_example/final_uv.obj"</span>) <span class="co"># this is a UV map defined for tpt 20</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>mesh_1 <span class="op">=</span> tcmesh.read_other_formats_without_uv(<span class="ss">f"datasets/movie_example/meshes/mesh_</span><span class="sc">{</span><span class="bu">str</span>(<span class="dv">1</span>)<span class="sc">.</span>zfill(<span class="dv">2</span>)<span class="sc">}</span><span class="ss">.ply"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>mesh_2 <span class="op">=</span> tcmesh.read_other_formats_without_uv(<span class="ss">f"datasets/movie_example/meshes/mesh_</span><span class="sc">{</span><span class="bu">str</span>(<span class="dv">2</span>)<span class="sc">.</span>zfill(<span class="dv">2</span>)<span class="sc">}</span><span class="ss">.ply"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>mesh_60 <span class="op">=</span> tcmesh.read_other_formats_without_uv(<span class="ss">f"datasets/movie_example/meshes/mesh_</span><span class="sc">{</span><span class="bu">str</span>(<span class="dv">60</span>)<span class="sc">.</span>zfill(<span class="dv">2</span>)<span class="sc">}</span><span class="ss">.ply"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o mesh_01_cylinder_seams_uv
+Warning: readOBJ() ignored non-comment line 3:
+  o mesh_20_uv</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="disk" class="level2">
+<h2 class="anchored" data-anchor-id="disk">Disk</h2>
+<p>Following https://libigl.github.io/libigl-python-bindings/tut-chapter4/. We first map each mesh to the unit disk using harmonic coordinates. Boundary conditions are such that the boundary loop is mapped to the unit circle isometrically (i.e.&nbsp;relative distances are preserved).</p>
+<p>There is still a remaining rotation degree of freedom. This is fixed by optimizing the match of the conformal factors (i.e.&nbsp;the area distortion of the maps to the disk) using phase correlation.</p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L28" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="map_to_disk" class="level3">
+<h3 class="anchored" data-anchor-id="map_to_disk">map_to_disk</h3>
+<blockquote class="blockquote">
+<pre><code> map_to_disk (mesh, bnd=None, set_uvs=False)</code></pre>
+</blockquote>
+<p>*Map mesh to unit disk by computing harmonic UV coordinates.</p>
+<p>The longest boundary loop of the mesh is mapped to the unit circle. Follows https://libigl.github.io/libigl-python-bindings/tut-chapter4/. Note: the disk is centered at (1/2, 1/2).</p>
+<p>The disk rotation angle is arbitrary*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mesh</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a disk (potentially with holes),<br>and should be triangular.</td>
+</tr>
+<tr class="even">
+<td>bnd</td>
+<td>NoneType</td>
+<td>None</td>
+<td>Boundary to map to the unit circle. If None, computed automatically.</td>
+</tr>
+<tr class="odd">
+<td>set_uvs</td>
+<td>bool</td>
+<td>False</td>
+<td>whether to set the disk coordinates as UV coordinates of the mesh.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array</strong></td>
+<td></td>
+<td><strong>2d vertex coordinates mapping the mesh to the unit disk in [0,1]^1</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="acecebb7" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"datasets/movie_example/plane_example.obj"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>disk_coordinates <span class="op">=</span> map_to_disk(mesh, set_uvs<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o Grid</code></pre>
+</div>
+</div>
+<div id="cdcd133b" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>plt.triplot(<span class="op">*</span>disk_coordinates.T, mesh.tris)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"equal"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(-0.049841709467476805,
+ 1.049992462355594,
+ -0.04994346724076043,
+ 1.0496419841918154)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_harmonic_wrapping_files/figure-html/cell-5-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="67ac9172" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>igl.flipped_triangles(disk_coordinates, mesh.tris)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([], shape=(0, 0), dtype=int64)</code></pre>
+</div>
+</div>
+<section id="rotational-alignment" class="level4">
+<h4 class="anchored" data-anchor-id="rotational-alignment">Rotational alignment</h4>
+<p>The disk can still be rotated freely. Use method from the <a href="https://www.cs.cmu.edu/~kmcrane/Projects/MobiusRegistration/paper.pdf">Moebius registration paper</a>:</p>
+<p>“We next seek the rotation that best aligns the two parameterizations. To do so, we first sample the conformal factors of each mesh onto a regular spherical grid (Figure 6, top right). We then find the rotation that maximizes the correlation between conformal factors, via a fast spectral transform.”</p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L76" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="get_rot_mat2d" class="level3">
+<h3 class="anchored" data-anchor-id="get_rot_mat2d">get_rot_mat2d</h3>
+<blockquote class="blockquote">
+<pre><code> get_rot_mat2d (phi)</code></pre>
+</blockquote>
+<p><em>Get 2d rotation matrix with angle phi.</em></p>
+<div id="96bda41c" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>mesh_a <span class="op">=</span> deepcopy(mesh)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>mesh_b <span class="op">=</span> deepcopy(mesh)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="op">-</span><span class="fl">0.8</span><span class="op">*</span>np.pi</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>mesh_b.texture_vertices <span class="op">=</span> ((mesh_a.texture_vertices<span class="op">-</span>np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>]))<span class="op">@</span>get_rot_mat2d(phi)<span class="op">+</span>np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>]))</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># test orientation flip</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>flip <span class="op">=</span> np.diag([<span class="op">-</span><span class="dv">1</span>,<span class="dv">1</span>])</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>mesh_b.texture_vertices <span class="op">=</span> ((mesh_b.texture_vertices<span class="op">-</span>np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>]))<span class="op">@</span>flip<span class="op">+</span>np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>]))</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>mesh_b.faces <span class="op">=</span> [fc[::<span class="op">-</span><span class="dv">1</span>] <span class="cf">for</span> fc <span class="kw">in</span> mesh_b.faces]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="af677ae4" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>plt.triplot(<span class="op">*</span>mesh_a.texture_vertices.T, mesh_a.texture_tris)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>plt.triplot(<span class="op">*</span>mesh_b.texture_vertices.T, mesh_b.texture_tris)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"equal"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(-0.049841709467476805,
+ 1.049992462355594,
+ -0.049963925863437814,
+ 1.0499208937180065)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_harmonic_wrapping_files/figure-html/cell-9-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>To copy over attributes -like vertex 3d position- from one mesh to another, given a common parametrization, we can use barycentric interpolation.</p>
+<p>We compute the remaining degree of freedom - rotations of the unit disk - by aligning the conformal factors of the map to the disk.</p>
+<div id="f609d27f" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>mesh_source, mesh_target <span class="op">=</span> (mesh_a, mesh_b)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>q <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>n_grid <span class="op">=</span> <span class="dv">1024</span> </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>allow_flip <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>disk_uv_source <span class="op">=</span> np.copy(mesh_source.texture_vertices)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>disk_tris_source <span class="op">=</span> mesh_source.texture_tris</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>disk_uv_target <span class="op">=</span> np.copy(mesh_target.texture_vertices)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>disk_tris_target <span class="op">=</span> mesh_target.texture_tris</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="co"># compute conformal factors and clip outliers</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>conformal_factor_source <span class="op">=</span> tcdfg.compute_per_vertex_area_distortion(disk_uv_source, disk_tris_source,</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>                                                                   mesh_source.vertices, mesh_source.tris)</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>conformal_factor_source <span class="op">=</span> np.clip(conformal_factor_source, np.quantile(conformal_factor_source, q),</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>                                  np.quantile(conformal_factor_source, <span class="dv">1</span><span class="op">-</span>q))</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>conformal_factor_target <span class="op">=</span> tcdfg.compute_per_vertex_area_distortion(disk_uv_target, disk_tris_target,</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>                                                                   mesh_target.vertices, mesh_target.tris)</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>conformal_factor_target <span class="op">=</span> np.clip(conformal_factor_target, np.quantile(conformal_factor_target, q),</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>                                  np.quantile(conformal_factor_target, <span class="dv">1</span><span class="op">-</span>q))</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="co"># interpolate into UV square</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>u, v <span class="op">=</span> <span class="dv">2</span><span class="op">*</span>[np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, n_grid),]</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>UV <span class="op">=</span> np.stack(np.meshgrid(u, v), axis<span class="op">=-</span><span class="dv">1</span>).reshape((<span class="op">-</span><span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>interpolated_source <span class="op">=</span> tcinterp.interpolate_barycentric(UV, disk_uv_source, disk_tris_source,</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>                                                       conformal_factor_source, distance_threshold<span class="op">=</span>np.inf)</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>interpolated_source <span class="op">=</span> interpolated_source.reshape((n_grid, n_grid))[::<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>interpolated_target <span class="op">=</span> tcinterp.interpolate_barycentric(UV, disk_uv_target, disk_tris_target,</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>                                                       conformal_factor_target, distance_threshold<span class="op">=</span>np.inf)</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>interpolated_target <span class="op">=</span> interpolated_target.reshape((n_grid, n_grid))[::<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a><span class="co"># compute rotational alignment</span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>interpolated_source_polar <span class="op">=</span> transform.warp_polar(interpolated_source, radius<span class="op">=</span>n_grid<span class="op">/</span><span class="dv">2</span><span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>interpolated_target_polar <span class="op">=</span> transform.warp_polar(interpolated_target, radius<span class="op">=</span>n_grid<span class="op">/</span><span class="dv">2</span><span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>shifts, error, _ <span class="op">=</span> registration.phase_cross_correlation(interpolated_source_polar, interpolated_target_polar,</span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>                                                        normalization<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> allow_flip:</span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>    interpolated_source_polar_flipped <span class="op">=</span> interpolated_source_polar[::<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>    shifts_flipped, error_flipped, _ <span class="op">=</span> registration.phase_cross_correlation(interpolated_source_polar_flipped,</span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>                                                    interpolated_target_polar,</span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>                                                    normalization<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> error <span class="op">&gt;</span> error_flipped:</span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a>        rot_angle <span class="op">=</span> shifts_flipped[<span class="dv">0</span>]<span class="op">*</span>np.pi<span class="op">/</span><span class="dv">180</span></span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a>        rot_mat <span class="op">=</span> <span class="op">-</span>get_rot_mat2d(rot_angle)</span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a>        new_texture_vertices <span class="op">=</span> (disk_uv_source<span class="op">-</span>np.array([<span class="fl">0.5</span>,<span class="fl">0.5</span>]))<span class="op">@</span>rot_mat.T</span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a>        new_texture_vertices <span class="op">+=</span> np.array([<span class="fl">0.5</span>,<span class="fl">0.5</span>])</span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a>rot_angle <span class="op">=</span> shifts[<span class="dv">0</span>]<span class="op">*</span>np.pi<span class="op">/</span><span class="dv">180</span></span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a>rot_mat <span class="op">=</span> get_rot_mat2d(rot_angle)</span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a>new_texture_vertices <span class="op">=</span> (disk_uv_source<span class="op">-</span>np.array([<span class="fl">0.5</span>,<span class="fl">0.5</span>]))<span class="op">@</span>rot_mat.T</span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a>new_texture_vertices <span class="op">+=</span> np.array([<span class="fl">0.5</span>,<span class="fl">0.5</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="2828840e" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2, ax3) <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">5</span>), ncols<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>ax1.imshow(interpolated_source_polar)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>ax2.imshow(interpolated_source_polar_flipped)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>ax3.imshow(interpolated_target_polar)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code></code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_harmonic_wrapping_files/figure-html/cell-11-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L81" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="rotational_align_disk" class="level3">
+<h3 class="anchored" data-anchor-id="rotational_align_disk">rotational_align_disk</h3>
+<blockquote class="blockquote">
+<pre><code> rotational_align_disk (mesh_source, mesh_target, disk_uv_source=None,
+                        disk_uv_target=None, allow_flip=True, q=0.01,
+                        n_grid=1024)</code></pre>
+</blockquote>
+<p>*Rotationally align two UV maps to the disk by the conformal factor.</p>
+<p>Computes aligned UV coordinates. Assumes that the UV coordinates are in [0,1]^2. This works by computing the conformal factor (how much triangle size changes as it is mapped to the plane, and finding the optimal rotation to align the conformal factors via phase correlation.*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mesh_source</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a disk (potentially with holes),<br>and should be triangular.</td>
+</tr>
+<tr class="even">
+<td>mesh_target</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a disk (potentially with holes),<br>and should be triangular.</td>
+</tr>
+<tr class="odd">
+<td>disk_uv_source</td>
+<td>NoneType</td>
+<td>None</td>
+<td>Disk coordinates for each vertex in the source mesh. Optional.<br>If None, the UV coordinates of mesh_source are used.</td>
+</tr>
+<tr class="even">
+<td>disk_uv_target</td>
+<td>NoneType</td>
+<td>None</td>
+<td>Disk coordinates for each vertex in the target mesh. Optional.<br>If None, the UV coordinates of disk_uv_target are used.</td>
+</tr>
+<tr class="odd">
+<td>allow_flip</td>
+<td>bool</td>
+<td>True</td>
+<td>Whether to allow flips (improper rotations). If a flip<br>occurs, np.linalg.det(rot_mat) &lt; 0</td>
+</tr>
+<tr class="even">
+<td>q</td>
+<td>float</td>
+<td>0.01</td>
+<td>Conformal factors are clipped at this quantile to avoid outliers.</td>
+</tr>
+<tr class="odd">
+<td>n_grid</td>
+<td>int</td>
+<td>1024</td>
+<td>Grid for interpolation of conformal factor during alignment</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array, np.array, float</strong></td>
+<td></td>
+<td><strong>new_texture_vertices_mesh_source : np.array<br> Rotationally aligned texture vertices<br>rot_mat : np.array of shape (2,2)<br> Rotation matrix<br>overlap : float<br> Overlap between aligned conformal factors. 1 = perfect alignment.</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="88f3dc28" class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>mesh_a <span class="op">=</span> deepcopy(mesh)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>mesh_b <span class="op">=</span> deepcopy(mesh)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="op">-</span><span class="fl">0.8</span><span class="op">*</span>np.pi</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>mesh_b.texture_vertices <span class="op">=</span> ((mesh_a.texture_vertices<span class="op">-</span>np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>]))<span class="op">@</span>get_rot_mat2d(phi)<span class="op">+</span>np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>]))</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>flip <span class="op">=</span> np.diag([<span class="op">-</span><span class="dv">1</span>,<span class="dv">1</span>])</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>mesh_b.texture_vertices <span class="op">=</span> ((mesh_b.texture_vertices<span class="op">-</span>np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>]))<span class="op">@</span>flip<span class="op">+</span>np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>]))</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>mesh_b.faces <span class="op">=</span> [fc[::<span class="op">-</span><span class="dv">1</span>] <span class="cf">for</span> fc <span class="kw">in</span> mesh_b.faces]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="8519ece9" class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>new_vertices, rot_mat, overlap <span class="op">=</span> rotational_align_disk(mesh_a, mesh_b, allow_flip<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>overlap</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>0.9995530944863507</code></pre>
+</div>
+</div>
+<div id="318c135f" class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2, ax3) <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">5</span>), ncols<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>ax1.triplot(<span class="op">*</span>mesh_a.texture_vertices.T, mesh_a.texture_tris)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>ax2.triplot(<span class="op">*</span>mesh_b.texture_vertices.T, mesh_b.texture_tris)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>ax3.triplot(<span class="op">*</span>new_vertices.T, mesh_b.texture_tris)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>ax3.triplot(<span class="op">*</span>mesh_b.texture_vertices.T, mesh_b.texture_tris)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax <span class="kw">in</span> [ax1, ax2, ax3]:</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    ax.axis(<span class="st">"equal"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_harmonic_wrapping_files/figure-html/cell-15-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="mesh-registration" class="level3">
+<h3 class="anchored" data-anchor-id="mesh-registration">Mesh registration</h3>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L178" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="wrap_coords_via_disk" class="level3">
+<h3 class="anchored" data-anchor-id="wrap_coords_via_disk">wrap_coords_via_disk</h3>
+<blockquote class="blockquote">
+<pre><code> wrap_coords_via_disk (mesh_source, mesh_target, disk_uv_source=None,
+                       disk_uv_target=None, align=True, q=0.01,
+                       n_grid=1024)</code></pre>
+</blockquote>
+<p>*Map 3d coordinates of source mesh to target mesh via a disk parametrization.</p>
+<p>Disk parametrization can be provided or computed on the fly via harmonic coordinates. If desired, the two disks are also rotationally aligned.*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mesh_source</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a disk (potentially with holes),<br>and should be triangular.</td>
+</tr>
+<tr class="even">
+<td>mesh_target</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a disk (potentially with holes),<br>and should be triangular.</td>
+</tr>
+<tr class="odd">
+<td>disk_uv_source</td>
+<td>NoneType</td>
+<td>None</td>
+<td>Disk coordinates for each vertex in the source mesh. Optional.<br>If None, computed via map_to_disk.</td>
+</tr>
+<tr class="even">
+<td>disk_uv_target</td>
+<td>NoneType</td>
+<td>None</td>
+<td>Disk coordinates for each vertex in target mesh. Optional.<br>If None, computed via map_to_disk.</td>
+</tr>
+<tr class="odd">
+<td>align</td>
+<td>bool</td>
+<td>True</td>
+<td>Whether to rotationally align the parametrizations. If False, they are used as-is.</td>
+</tr>
+<tr class="even">
+<td>q</td>
+<td>float</td>
+<td>0.01</td>
+<td>Conformal factors are clipped at this quantile to avoid outliers.</td>
+</tr>
+<tr class="odd">
+<td>n_grid</td>
+<td>int</td>
+<td>1024</td>
+<td>Grid for interpolation of conformal factor during alignment.<br>Higher values increase alignment precision.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array</strong></td>
+<td></td>
+<td><strong>New 3d vertex coordinates for mesh_source, lying on the surface<br>defined by mesh_target</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="5f85e12d" class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>mesh_source <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"datasets/movie_example/plane_example.obj"</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>mesh_target <span class="op">=</span> deepcopy(mesh_source)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>random_rot <span class="op">=</span> stats.special_ortho_group.rvs(<span class="dv">3</span>)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>mesh_target.vertices <span class="op">=</span> mesh_target.vertices<span class="op">@</span>random_rot <span class="op">+</span> np.array([<span class="dv">2</span>, <span class="dv">9</span>, <span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o Grid</code></pre>
+</div>
+</div>
+<div id="db48e220" class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>mesh_source <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"datasets/movie_example/plane_example.obj"</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>mesh_target <span class="op">=</span> deepcopy(mesh_source)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>random_rot <span class="op">=</span> stats.special_ortho_group.rvs(<span class="dv">3</span>)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>mesh_target.vertices <span class="op">=</span> mesh_target.vertices<span class="op">@</span>random_rot <span class="op">+</span> np.array([<span class="dv">2</span>, <span class="dv">9</span>, <span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o Grid</code></pre>
+</div>
+</div>
+<div id="028c3c8b" class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>new_coords, overlap <span class="op">=</span> wrap_coords_via_disk(mesh_source, mesh_target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="d5c501fb" class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>np.linalg.norm(new_coords<span class="op">-</span>mesh_target.vertices, axis<span class="op">=-</span><span class="dv">1</span>).mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>1.3403645763230948e-15</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="cylinder" class="level2">
+<h2 class="anchored" data-anchor-id="cylinder">Cylinder</h2>
+<p>Map a cylinder to the disk: fill one boundary with an extra vertex, map to the disk harmonically, use Moebius to move the extra vertex to the disk center.</p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L253" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="moebius_disk" class="level3">
+<h3 class="anchored" data-anchor-id="moebius_disk">moebius_disk</h3>
+<blockquote class="blockquote">
+<pre><code> moebius_disk (pts, b)</code></pre>
+</blockquote>
+<p><em>Compute a Moebius transformation of the disk. Moves disk origin by b. pts.shape is (…, 2)</em></p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L249" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="complex_to_xy" class="level3">
+<h3 class="anchored" data-anchor-id="complex_to_xy">complex_to_xy</h3>
+<blockquote class="blockquote">
+<pre><code> complex_to_xy (arr)</code></pre>
+</blockquote>
+<p><em>Map x+iy to (x, y). Return shape==(…,2 )</em></p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L245" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="xy_to_complex" class="level3">
+<h3 class="anchored" data-anchor-id="xy_to_complex">xy_to_complex</h3>
+<blockquote class="blockquote">
+<pre><code> xy_to_complex (arr)</code></pre>
+</blockquote>
+<p><em>Map (x,y) to x+iy. arr.shape==(…,2 )</em></p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L237" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="polygon_centroid" class="level3">
+<h3 class="anchored" data-anchor-id="polygon_centroid">polygon_centroid</h3>
+<blockquote class="blockquote">
+<pre><code> polygon_centroid (pts)</code></pre>
+</blockquote>
+<p><em>See https://en.wikipedia.org/wiki/Centroid. pts.shape is (…, 2)</em></p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L233" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="polygon_area" class="level3">
+<h3 class="anchored" data-anchor-id="polygon_area">polygon_area</h3>
+<blockquote class="blockquote">
+<pre><code> polygon_area (pts)</code></pre>
+</blockquote>
+<p><em>Polygon area via shoe-lace formula. Assuming no self-intersection. pts.shape is (…, 2)</em></p>
+<div id="246b10d4" class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">#mesh = tcmesh.ObjMesh.read_obj("movie_example/cylinder.obj") # cylinder_clean</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co">#mesh = tcmesh.ObjMesh.read_obj("movie_example/mesh_1_cylinder_cut.obj") # cylinder_clean</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"datasets/movie_example/mesh_1_cylinder_cut_non_centered.obj"</span>) <span class="co"># cylinder_clean</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 3:
+  o mesh_01</code></pre>
+</div>
+</div>
+<div id="356690de" class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># determine the boundary </span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>first_boundary <span class="op">=</span> igl.boundary_loop(mesh.tris)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>all_boundary_edges <span class="op">=</span> igl.boundary_facets(mesh.tris)</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>second_boundary <span class="op">=</span> igl.edges_to_path(np.stack([e <span class="cf">for</span> e <span class="kw">in</span> all_boundary_edges <span class="cf">if</span> <span class="kw">not</span> e[<span class="dv">0</span>] <span class="kw">in</span> first_boundary]))[<span class="dv">0</span>][:<span class="op">-</span><span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="2c4138bd" class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># add an extra vertex and triangles</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>filled_tris <span class="op">=</span> igl.topological_hole_fill(mesh.tris, [second_boundary])</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>center_second_boundary <span class="op">=</span> mesh.vertices[second_boundary].mean(axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>filled_vertices <span class="op">=</span> np.vstack([mesh.vertices, [center_second_boundary]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="b6ca4bb7" class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>filled_vertices.shape[<span class="dv">0</span>], mesh.vertices.shape[<span class="dv">0</span>], filled_tris.shape[<span class="dv">0</span>]<span class="op">-</span>mesh.tris.shape[<span class="dv">0</span>], second_boundary.shape[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(20002, 20001, 16, 16)</code></pre>
+</div>
+</div>
+<div id="eaba5664" class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># check - looks good</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>mesh_filled <span class="op">=</span> tcmesh.ObjMesh(vertices<span class="op">=</span>filled_vertices, faces<span class="op">=</span>filled_tris)</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>mesh_filled.write_obj(<span class="st">"datasets/movie_example/mesh_1_cylinder_cut_non_centered_filled.obj"</span>) <span class="co"># cylinder_clean</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="5b2ef072" class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># map to disk via harmonic map</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>bnd_uv <span class="op">=</span> <span class="dv">1</span> <span class="op">*</span> igl.map_vertices_to_circle(filled_vertices, first_boundary)</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>uv <span class="op">=</span> igl.harmonic(filled_vertices, filled_tris, first_boundary, bnd_uv, <span class="dv">1</span>)</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a><span class="co"># map the center of the second boundary to disk center</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>uv <span class="op">=</span> moebius_disk(uv, <span class="op">-</span>uv[<span class="op">-</span><span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="b287001e" class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>uv[<span class="op">-</span><span class="dv">1</span>] <span class="co"># last point -at the center of filled cylinder opening- is mapped to center of</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([0., 0.])</code></pre>
+</div>
+</div>
+<div id="d2798675" class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>plt.triplot(<span class="op">*</span>uv.T, filled_tris, lw<span class="op">=</span><span class="fl">0.25</span>)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"equal"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(-1.096551335368751,
+ 1.0954288401027532,
+ -1.0993918966333553,
+ 1.0999552780113782)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_harmonic_wrapping_files/figure-html/cell-33-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L260" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="map_cylinder_to_disk" class="level3">
+<h3 class="anchored" data-anchor-id="map_cylinder_to_disk">map_cylinder_to_disk</h3>
+<blockquote class="blockquote">
+<pre><code> map_cylinder_to_disk (mesh, outer_boundary='longest',
+                       first_boundary=None, second_boundary=None,
+                       set_uvs=False, return_filled=False)</code></pre>
+</blockquote>
+<p>*Map cylinder mesh to unit disk by computing harmonic UV coordinates.</p>
+<p>One boundary loop of the mesh is mapped to the circle with a diameter 1/2. The second boundary is filled by adding an extra vertex at its center, which is mapped to the disk center.</p>
+<p>Which of the two circular boundaries is mapped to the center resp. the outer circle is set by the option outer_boundary.</p>
+<p>The disk rotation angle is arbitrary.*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mesh</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a disk (potentially with holes),<br>and should be triangular.</td>
+</tr>
+<tr class="even">
+<td>outer_boundary</td>
+<td>str</td>
+<td>longest</td>
+<td>Boundary to map to the unit circle. If “longest”/“shortest”, <br>the longer/shorter one is mapped to the unit circle. If int,<br>the boundary containing the vertex defined by the int is used.</td>
+</tr>
+<tr class="odd">
+<td>first_boundary</td>
+<td>NoneType</td>
+<td>None</td>
+<td>First boundary loop of cylinder. If None, computed automatically.</td>
+</tr>
+<tr class="even">
+<td>second_boundary</td>
+<td>NoneType</td>
+<td>None</td>
+<td>Second boundary loop of cylinder. If None, computed automatically.</td>
+</tr>
+<tr class="odd">
+<td>set_uvs</td>
+<td>bool</td>
+<td>False</td>
+<td>whether to set the disk coordinates as UV coordinates of the mesh.</td>
+</tr>
+<tr class="even">
+<td>return_filled</td>
+<td>bool</td>
+<td>False</td>
+<td>Whether to return vertices and faces with filled hole.</td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>np.array, np.array, np.array</strong></td>
+<td></td>
+<td><strong>uv : np.array<br> 2d vertex coordinates mapping the mesh to the unit disk in [0,1]^1.<br> If filled_vertices is True, the last entry is the coordinate of the added point.<br>filled_vertices : np.array<br> 3d vertices with extra vertex to fill second boundary<br>filled_faces : np.array<br> Faces with added faces to fill the second boundary.</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="7ab79c02" class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"datasets/movie_example/cylinder.obj"</span>) <span class="co"># cylinder_clean</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="07c77bcc" class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>uv <span class="op">=</span> map_cylinder_to_disk(mesh, outer_boundary<span class="op">=</span><span class="st">"longest"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="c5ca795b" class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>igl.flipped_triangles(uv, mesh.tris)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([], shape=(0, 0), dtype=int64)</code></pre>
+</div>
+</div>
+<div id="a31f28ee" class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>plt.triplot(<span class="op">*</span>uv.T, mesh.tris, lw<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"equal"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(-0.049183316665476866,
+ 1.049654650031695,
+ -0.04980286502601551,
+ 1.0499106507897504)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_harmonic_wrapping_files/figure-html/cell-38-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="d3cbdc31" class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co">## let's try a more challenging example - midgut mesh with two cuts to make it a cylinder</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"datasets/movie_example/mesh_1_cylinder_cut.obj"</span>) <span class="co"># cylinder_clean</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 3:
+  o mesh_01</code></pre>
+</div>
+</div>
+<div id="c81de0af" class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>uv <span class="op">=</span> map_cylinder_to_disk(mesh, outer_boundary<span class="op">=</span><span class="st">"longest"</span>,)</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>uv_reverse <span class="op">=</span> map_cylinder_to_disk(mesh, outer_boundary<span class="op">=</span><span class="st">"shortest"</span>, )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="2f8cc7be" class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>plt.triplot(<span class="op">*</span>uv.T, mesh.tris, lw<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"equal"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(-0.04881346336073662,
+ 1.0499255590960166,
+ -0.049218476987450965,
+ 1.0493085140972238)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_harmonic_wrapping_files/figure-html/cell-41-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="aab376f2" class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>plt.triplot(<span class="op">*</span>uv_reverse.T, mesh.tris, lw<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"equal"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(-0.04834689694663298,
+ 1.047823750534748,
+ -0.04965982618548542,
+ 1.0499708292802348)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_harmonic_wrapping_files/figure-html/cell-42-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L336" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="wrap_coords_via_disk_cylinder" class="level3">
+<h3 class="anchored" data-anchor-id="wrap_coords_via_disk_cylinder">wrap_coords_via_disk_cylinder</h3>
+<blockquote class="blockquote">
+<pre><code> wrap_coords_via_disk_cylinder (mesh_source, mesh_target, q=0.01,
+                                n_grid=1024)</code></pre>
+</blockquote>
+<p>*Map 3d coordinates of source mesh to target mesh via an annulus parametrization.</p>
+<p>Annulus parametrization can be provided or computed on the fly via harmonic coordinates. If desired, the two disks are also rotationally aligned. Meshes must be cylindrical. Two choices exist for mapping a cylinder to the plane (depending on which boundary circle is mapped to the disk boundary resp. center). Both options are tried, and the one leading to better alignment is used.</p>
+<p>If you already have a map to the disk, use wrap_coords_via_disk instead.*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mesh_source</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a cylinder and should be triangular.</td>
+</tr>
+<tr class="even">
+<td>mesh_target</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a cylinder and should be triangular.</td>
+</tr>
+<tr class="odd">
+<td>q</td>
+<td>float</td>
+<td>0.01</td>
+<td>Conformal factors are clipped at this quantile to avoid outliers.</td>
+</tr>
+<tr class="even">
+<td>n_grid</td>
+<td>int</td>
+<td>1024</td>
+<td>Grid for interpolation of conformal factor during alignment.<br>Higher values increase alignment precision.</td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>np.array, float</strong></td>
+<td></td>
+<td><strong>new_coords : np.array<br> New 3d vertex coordinates for mesh_source, lying on the surface<br> defined by mesh_target<br>overlap : float<br> Measure of geometry overlap. 1 = perfect alignment</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="53e4d265" class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>mesh_source <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"datasets/movie_example/mesh_1_cylinder_cut.obj"</span>) <span class="co"># cylinder_clean</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>mesh_target <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"datasets/movie_example/mesh_1_cylinder_cut_non_centered.obj"</span>) <span class="co"># cylinder_clean</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 3:
+  o mesh_01
+Warning: readOBJ() ignored non-comment line 3:
+  o mesh_01</code></pre>
+</div>
+</div>
+<div id="1deecf94" class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>new_coords, overlap <span class="op">=</span> wrap_coords_via_disk_cylinder(mesh_source, mesh_target,</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>                                                    q<span class="op">=</span><span class="fl">0.01</span>, n_grid<span class="op">=</span><span class="dv">1024</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="a3290d74" class="cell">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>mesh_wraped <span class="op">=</span> tcmesh.ObjMesh(vertices<span class="op">=</span>new_coords, faces<span class="op">=</span>mesh_source.faces, texture_vertices<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>mesh_wraped.write_obj(<span class="st">"datasets/movie_example/mesh_1_cylinder_cut_wrapepd.obj"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="sphere" class="level2">
+<h2 class="anchored" data-anchor-id="sphere">Sphere</h2>
+<p>For the sphere, we follow https://www.cs.cmu.edu/~kmcrane/Projects/MobiusRegistration/paper.pdf. The Riemann mapping theorem guarantees there is a conformal map of our surface to the unit sphere. This map is unique up to Moebius transformations (inversion about a point in the unit ball, and rotations). We fix the inversions by choosing the conformal map with the least amount of area distortion, and the rotation by registering the conformal factors as functions on the unit sphere using spherical harmonics</p>
+<ul>
+<li>Cut sphere to disk by removing a single vertex</li>
+<li>Map disk to plane conformally using harmonic coordinates. Turns out the least-squares conformal map is lousy at preserving angles (at least in <code>igl</code>)</li>
+<li>Map disk to a sphere using stereographic projection, adding the removed vertex at the north pole</li>
+<li>Fix Moebius inversion by choosing a conformal map with minimal distortion using Algorithm 1 from https://www.cs.cmu.edu/~kmcrane/Projects/MobiusRegistration/paper.pdf</li>
+<li>Rotational registration using spherical harmonics (see notebook 03c)</li>
+<li>Interpolation of vertex positions using spherical parametrization</li>
+</ul>
+<div id="e61bdede" class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> deepcopy(mesh_final_UV)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="5f248efa" class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this is what the map of the mesh sans north pole to the plane looks like</span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> plt.figure(figsize<span class="op">=</span>(<span class="dv">4</span>,<span class="dv">4</span>))</span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>plt.triplot(<span class="op">*</span>uv.T, faces_disk, lw<span class="op">=</span><span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_harmonic_wrapping_files/figure-html/cell-48-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="866ff08b-27e2-4299-a38a-67c10becc9aa" class="cell" data-execution_count="45">
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="45">
+<pre><code>array([[ 3.79091394e-08, -3.37472892e-08],
+       [ 1.14168121e-07, -8.80032609e-08],
+       [ 3.26394385e-08, -2.57627128e-08],
+       ...,
+       [ 4.22076492e-06, -5.00112042e-06],
+       [ 4.04931220e-05, -5.08178908e-06],
+       [ 3.67645301e-05,  5.33854828e-05]])</code></pre>
+</div>
+</div>
+<div id="9bd831fd-e12d-47a9-bd9c-3682ccc5328e" class="cell" data-execution_count="42">
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>np.diag(average_op.toarray())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="42">
+<pre><code>array([0., 0., 0., ..., 0., 0., 0.])</code></pre>
+</div>
+</div>
+<section id="strereographic-projection" class="level3">
+<h3 class="anchored" data-anchor-id="strereographic-projection">Strereographic projection</h3>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L409" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="stereographic_sphere_to_plane" class="level3">
+<h3 class="anchored" data-anchor-id="stereographic_sphere_to_plane">stereographic_sphere_to_plane</h3>
+<blockquote class="blockquote">
+<pre><code> stereographic_sphere_to_plane (pts)</code></pre>
+</blockquote>
+<p>*Stereographic projection from unit sphere to plane from the north pole (0,0,1).</p>
+<p>See https://en.wikipedia.org/wiki/Stereographic_projection. Convention: the plane is at z=0, unit sphere centered at the origin. pts should be an array of shape (…, 3)*</p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L399" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="stereographic_plane_to_sphere" class="level3">
+<h3 class="anchored" data-anchor-id="stereographic_plane_to_sphere">stereographic_plane_to_sphere</h3>
+<blockquote class="blockquote">
+<pre><code> stereographic_plane_to_sphere (uv)</code></pre>
+</blockquote>
+<p>*Stereographic projection from plane to the unit sphere from the north pole (0,0,1).</p>
+<p>See https://en.wikipedia.org/wiki/Stereographic_projection. Convention: plane is at z=0, unit sphere centered at origin. uv should be an array of shape (…, 2)*</p>
+<div id="42086019" class="cell">
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>(np.allclose(np.linalg.norm(stereographic_plane_to_sphere(uv), axis<span class="op">=</span><span class="dv">1</span>), <span class="dv">1</span>),</span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a> np.allclose(stereographic_sphere_to_plane(stereographic_plane_to_sphere(uv)), uv))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(True, True)</code></pre>
+</div>
+</div>
+</section>
+<section id="moebius-centering-algorithm" class="level3">
+<h3 class="anchored" data-anchor-id="moebius-centering-algorithm">Moebius centering algorithm</h3>
+<p>Algorithm 1 from https://www.cs.cmu.edu/~kmcrane/Projects/MobiusRegistration/paper.pdf</p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L421" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="center_moebius" class="level3">
+<h3 class="anchored" data-anchor-id="center_moebius">center_moebius</h3>
+<blockquote class="blockquote">
+<pre><code> center_moebius (vertices_3d, vertices_sphere, tris, n_iter_centering=10,
+                 alpha=0.5)</code></pre>
+</blockquote>
+<p>*Apply Moeboius inversions to minimize area distortion of a map from mesh to sphere.</p>
+<p>Implementation of Algorithm 1 from: https://www.cs.cmu.edu/~kmcrane/Projects/MobiusRegistration/paper.pdf*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>vertices_3d</td>
+<td>np.array of shape (n_verts, 3)</td>
+<td></td>
+<td>3d mesh vertices</td>
+</tr>
+<tr class="even">
+<td>vertices_sphere</td>
+<td>np.array of shape (n_verts, 3)</td>
+<td></td>
+<td>Initial vertex positions on unit sphere</td>
+</tr>
+<tr class="odd">
+<td>tris</td>
+<td>np.array of shape (n_faces, 3) and type int</td>
+<td></td>
+<td>Faces of a triangular mesh</td>
+</tr>
+<tr class="even">
+<td>n_iter_centering</td>
+<td>int</td>
+<td>10</td>
+<td>Centering algorithm iterations.</td>
+</tr>
+<tr class="odd">
+<td>alpha</td>
+<td>float</td>
+<td>0.5</td>
+<td>Learning rate. Lower values make the algorithm more stable</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array, float</strong></td>
+<td></td>
+<td><strong>vertices_sphere_centered : np.array of shape (n_verts, 3)<br> Centered sphere coordinates<br>com_norm : float<br> Distance of sphere vertex center of mass from origin. Low values<br> indicate convergence of the algorithm.</strong></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="putting-it-all-together" class="level3">
+<h3 class="anchored" data-anchor-id="putting-it-all-together">Putting it all together …</h3>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L467" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="map_to_sphere" class="level3">
+<h3 class="anchored" data-anchor-id="map_to_sphere">map_to_sphere</h3>
+<blockquote class="blockquote">
+<pre><code> map_to_sphere (mesh, method='harmonic', R_max=100, n_iter_centering=20,
+                alpha=0.5, set_uvs=False)</code></pre>
+</blockquote>
+<p>*Compute a map of mesh to the unit sphere.</p>
+<p>First, remove one vertex (the last one), and map the resulting disk-topology mesh to the plane using least squares conformal maps. Then map the plane to the sphere using stereographic projection.</p>
+<p>The conformal map is chosen so that area distortion is as small as possible by (a) optimizing over the scale (“radius”) of the map to the disk and (b) “centering” the map using Algorithm 1 from cs.cmu.edu/~kmcrane/Projects/MobiusRegistration/paper.pdf.</p>
+<p>This means the map is canonical up to rotations of the sphere.*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mesh</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a sphere, and should be triangular.</td>
+</tr>
+<tr class="even">
+<td>method</td>
+<td>str</td>
+<td>harmonic</td>
+<td>Method for computing the map from mesh without the north pole to the plane.<br>Recommended: harmonic.</td>
+</tr>
+<tr class="odd">
+<td>R_max</td>
+<td>int</td>
+<td>100</td>
+<td>Maximum radius to consider when computing inverse stereographic<br>projection. If you get weird results, try a lower value.</td>
+</tr>
+<tr class="even">
+<td>n_iter_centering</td>
+<td>int</td>
+<td>20</td>
+<td>Centering algorithm iterations. If 0, no centering is performed</td>
+</tr>
+<tr class="odd">
+<td>alpha</td>
+<td>float</td>
+<td>0.5</td>
+<td>Learning rate. Lower values make the centering algorithm more stable</td>
+</tr>
+<tr class="even">
+<td>set_uvs</td>
+<td>bool</td>
+<td>False</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div id="f1e17acf" class="cell">
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> deepcopy(mesh_final_UV)</span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>coords_sphere <span class="op">=</span> map_to_sphere(mesh, n_iter_centering<span class="op">=</span><span class="dv">10</span>, method<span class="op">=</span><span class="st">"harmonic"</span>)</span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>tcmesh.ObjMesh(vertices<span class="op">=</span>coords_sphere, faces<span class="op">=</span>mesh.tris).write_obj(<span class="st">"datasets/movie_example/map_to_sphere.obj"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="e346a9d7" class="cell">
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>angles_3d <span class="op">=</span> igl.internal_angles(mesh.vertices, mesh.tris)</span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>angles_sphere <span class="op">=</span> igl.internal_angles(coords_sphere, mesh.tris)</span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a>np.nanmean(np.<span class="bu">abs</span>(angles_sphere.flatten()<span class="op">-</span>angles_3d.flatten())) <span class="co"># map to sphere is close to conformal/angle-preserving</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="rotation-alignment-using-rotation-module" class="level3">
+<h3 class="anchored" data-anchor-id="rotation-alignment-using-rotation-module">Rotation alignment using <code>rotation</code> module</h3>
+<p>For a map to the sphere, we can compute the amount of area distortion at each point on the sphere. We can then use this “conformal factor” as a signal to rotationally align two maps (from different meshes) to the sphere.</p>
+<div id="6db1e62c" class="cell">
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this is what the conformal factor (area distortion) looks like plotted vs phi, theta, for an example</span></span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a><span class="co"># (the same mesh mapped to the sphere, but arbitrarily rotated)</span></span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2) <span class="op">=</span> plt.subplots(ncols<span class="op">=</span><span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
+<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-6"><a href="#cb80-6" aria-hidden="true" tabindex="-1"></a>ax1.scatter(phi_source, theta_source, c<span class="op">=</span>signal_source, s<span class="op">=</span><span class="dv">1</span>, vmin<span class="op">=-</span><span class="dv">3</span>, vmax<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb80-7"><a href="#cb80-7" aria-hidden="true" tabindex="-1"></a>ax2.scatter(phi_target, theta_target, c<span class="op">=</span>signal_target, s<span class="op">=</span><span class="dv">1</span>, vmin<span class="op">=-</span><span class="dv">3</span>, vmax<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb80-8"><a href="#cb80-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-9"><a href="#cb80-9" aria-hidden="true" tabindex="-1"></a>ax1.axis(<span class="st">"equal"</span>)<span class="op">;</span></span>
+<span id="cb80-10"><a href="#cb80-10" aria-hidden="true" tabindex="-1"></a>ax2.axis(<span class="st">"equal"</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_harmonic_wrapping_files/figure-html/cell-61-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L547" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="rotational_align_sphere" class="level3">
+<h3 class="anchored" data-anchor-id="rotational_align_sphere">rotational_align_sphere</h3>
+<blockquote class="blockquote">
+<pre><code> rotational_align_sphere (mesh_source, mesh_target, coords_sphere_source,
+                          coords_sphere_target, allow_flip=False,
+                          max_l=10, n_angle=100, n_subdiv_axes=1,
+                          maxfev=100)</code></pre>
+</blockquote>
+<p>*Rotationally align two UV maps to the sphere by the conformal factor.</p>
+<p>Computes aligned spherical coordinates. Rotational alignment works by computing the conformal factor (how much triangle size changes as it is mapped to the sphere) and optimizing over rotations to find the one which leads to the best alignment. This works via an expansion in spherical harmonics. See tcrot.rotational_alignment*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mesh_source</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a sphere (potentially with holes),<br>and should be triangular.</td>
+</tr>
+<tr class="even">
+<td>mesh_target</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a sphere (potentially with holes),<br>and should be triangular.</td>
+</tr>
+<tr class="odd">
+<td>coords_sphere_source</td>
+<td>np.array or None</td>
+<td></td>
+<td>Sphere coordinates for each vertex in the source mesh.<br>If None, the UV coordinates are interpreted as angles 2<em>pi</em>u=phi,<br>2<em>pi</em>v=theta.</td>
+</tr>
+<tr class="even">
+<td>coords_sphere_target</td>
+<td>np.array or None</td>
+<td></td>
+<td>Sphere coordinates for each vertex in the source mesh.<br>If None, the UV coordinates are interpreted as angles 2<em>pi</em>u=phi,<br>2<em>pi</em>v=theta.</td>
+</tr>
+<tr class="odd">
+<td>allow_flip</td>
+<td>bool</td>
+<td>False</td>
+<td>Whether to allow improper rotations with determinant -1.</td>
+</tr>
+<tr class="even">
+<td>max_l</td>
+<td>int</td>
+<td>10</td>
+<td>Maximum angular momentum. If None, the maximum value available in the input<br>spherical harmonics is used.</td>
+</tr>
+<tr class="odd">
+<td>n_angle</td>
+<td>int</td>
+<td>100</td>
+<td>Number of trial rotation angles [0,…, 2*pi]</td>
+</tr>
+<tr class="even">
+<td>n_subdiv_axes</td>
+<td>int</td>
+<td>1</td>
+<td>Controls the number of trial rotation axes. Rotation axes are vertices of<br>the icosphere which can be subdivided. There will be roughly<br>40*4**n_subdiv_axes trial axes. This parameter has the strongest influence<br>on the run time.</td>
+</tr>
+<tr class="odd">
+<td>maxfev</td>
+<td>int</td>
+<td>100</td>
+<td>Number of function evaluations during fine optimization.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array, np.array, float</strong></td>
+<td></td>
+<td><strong>coords_sphere_source_rotated : np.array<br> Rotationally aligned sphere vertices<br>rot_mat : np.array of shape (3,3)<br> Rotation matrix<br>overlap : float<br> How well the conformal factors overlap. 1 = perfect overlap.</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="1f885301" class="cell">
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first test case: same mesh, but map to the sphere rotatated</span></span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>mesh_source <span class="op">=</span> deepcopy(mesh_final_UV)</span>
+<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a>mesh_target <span class="op">=</span> deepcopy(mesh_final_UV)</span>
+<span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-6"><a href="#cb82-6" aria-hidden="true" tabindex="-1"></a>coords_sphere_source <span class="op">=</span> map_to_sphere(mesh_source)</span>
+<span id="cb82-7"><a href="#cb82-7" aria-hidden="true" tabindex="-1"></a>rot_mat <span class="op">=</span> stats.special_ortho_group.rvs(<span class="dv">3</span>)</span>
+<span id="cb82-8"><a href="#cb82-8" aria-hidden="true" tabindex="-1"></a>coords_sphere_target <span class="op">=</span> coords_sphere_source <span class="op">@</span> rot_mat.T</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="9197f990" class="cell">
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>transformed, R, overlap <span class="op">=</span> rotational_align_sphere(mesh_source, mesh_target,</span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>                                                  coords_sphere_source, coords_sphere_target,</span>
+<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a>                                                  allow_flip<span class="op">=</span><span class="va">False</span>, max_l<span class="op">=</span><span class="dv">10</span>, n_angle<span class="op">=</span><span class="dv">100</span>, n_subdiv_axes<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb83-4"><a href="#cb83-4" aria-hidden="true" tabindex="-1"></a>                                                  maxfev<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb83-5"><a href="#cb83-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb83-6"><a href="#cb83-6" aria-hidden="true" tabindex="-1"></a>np.linalg.norm(R<span class="op">-</span>rot_mat), overlap</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(0.0004874609816821069, 0.9999997693026267)</code></pre>
+</div>
+</div>
+<div id="b04bf8bf" class="cell">
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="co"># second test case: meshes for two frames of a movie</span></span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>mesh_source <span class="op">=</span> deepcopy(mesh_2) <span class="co"># mesh_final_UV</span></span>
+<span id="cb85-4"><a href="#cb85-4" aria-hidden="true" tabindex="-1"></a>mesh_target <span class="op">=</span> deepcopy(mesh_1) <span class="co"># mesh_initial_UV</span></span>
+<span id="cb85-5"><a href="#cb85-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb85-6"><a href="#cb85-6" aria-hidden="true" tabindex="-1"></a>coords_sphere_source <span class="op">=</span> map_to_sphere(mesh_source)</span>
+<span id="cb85-7"><a href="#cb85-7" aria-hidden="true" tabindex="-1"></a>coords_sphere_target <span class="op">=</span> map_to_sphere(mesh_target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="d24d658d" class="cell">
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>transformed, R, overlap <span class="op">=</span> rotational_align_sphere(mesh_source, mesh_target,</span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>                                                  coords_sphere_source, coords_sphere_target,</span>
+<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a>                                                  allow_flip<span class="op">=</span><span class="va">False</span>, max_l<span class="op">=</span><span class="dv">10</span>, n_angle<span class="op">=</span><span class="dv">100</span>, n_subdiv_axes<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb86-4"><a href="#cb86-4" aria-hidden="true" tabindex="-1"></a>                                                  maxfev<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb86-5"><a href="#cb86-5" aria-hidden="true" tabindex="-1"></a>overlap</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>0.9908056596783977</code></pre>
+</div>
+</div>
+</section>
+<section id="interpolation" class="level3">
+<h3 class="anchored" data-anchor-id="interpolation">Interpolation</h3>
+<p>Now that we have (a) mapped both meshes to the sphere, (b) minized distortion via Moebius centering, and (c) rotationally aligned the two maps via spherical harmonics, we can interpolate the coordinates of mesh B onto mesh A.</p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/harmonic.py#L649" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="wrap_coords_via_sphere" class="level3">
+<h3 class="anchored" data-anchor-id="wrap_coords_via_sphere">wrap_coords_via_sphere</h3>
+<blockquote class="blockquote">
+<pre><code> wrap_coords_via_sphere (mesh_source, mesh_target,
+                         coords_sphere_source=None,
+                         coords_sphere_target=None, method='harmonic',
+                         n_iter_centering=10, alpha=0.5, align=True,
+                         allow_flip=False, max_l=10, n_angle=100,
+                         n_subdiv_axes=1, maxfev=100)</code></pre>
+</blockquote>
+<p>*Map 3d coordinates of source mesh to target mesh via a sphere parametrization.</p>
+<p>Sphere parametrizations can be provided or computed on the fly using the least-area distorting conformal map to the sphere (see map_to_sphere). If desired, the two parametrizations are also aligned with respect to 3d rotations using mesh shape, using spherical harmonics. See rotational_align_sphere for details.*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mesh_source</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a disk (potentially with holes),<br>and should be triangular.</td>
+</tr>
+<tr class="even">
+<td>mesh_target</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh. Must be topologically a disk (potentially with holes),<br>and should be triangular.</td>
+</tr>
+<tr class="odd">
+<td>coords_sphere_source</td>
+<td>NoneType</td>
+<td>None</td>
+<td>Sphere coordinates for each vertex in the source mesh. Optional.<br>If None, computed via map_to_sphere.</td>
+</tr>
+<tr class="even">
+<td>coords_sphere_target</td>
+<td>NoneType</td>
+<td>None</td>
+<td>Sphere coordinates for each vertex in the target mesh. Optional.<br>If None, computed via map_to_sphere.</td>
+</tr>
+<tr class="odd">
+<td>method</td>
+<td>str</td>
+<td>harmonic</td>
+<td>Method for comuting the map from sphere without north pole to plane</td>
+</tr>
+<tr class="even">
+<td>n_iter_centering</td>
+<td>int</td>
+<td>10</td>
+<td>Centering algorithm iterations for computing map to the sphere. If 0, no centering is performed</td>
+</tr>
+<tr class="odd">
+<td>alpha</td>
+<td>float</td>
+<td>0.5</td>
+<td>Learning rate for computing map to the sphere. Lower values make the centering algorithm more stable.</td>
+</tr>
+<tr class="even">
+<td>align</td>
+<td>bool</td>
+<td>True</td>
+<td>Whether to rotationally align the parametrizations. If False, they are used as-is.</td>
+</tr>
+<tr class="odd">
+<td>allow_flip</td>
+<td>bool</td>
+<td>False</td>
+<td>Whether to allow improper rotations with determinant -1 for rotational alignment.</td>
+</tr>
+<tr class="even">
+<td>max_l</td>
+<td>int</td>
+<td>10</td>
+<td>Maximum angular momentum. If None, the maximum value available in the input<br>spherical harmonics is used.</td>
+</tr>
+<tr class="odd">
+<td>n_angle</td>
+<td>int</td>
+<td>100</td>
+<td>Number of trial rotation angles [0,…, 2*pi]</td>
+</tr>
+<tr class="even">
+<td>n_subdiv_axes</td>
+<td>int</td>
+<td>1</td>
+<td>Controls the number of trial rotation axes. Rotation axes are vertices of<br>the icosphere which can be subdivided. There will be roughly<br>40*4**n_subdiv_axes trial axes. This parameter has the strongest influence<br>on the run time.</td>
+</tr>
+<tr class="odd">
+<td>maxfev</td>
+<td>int</td>
+<td>100</td>
+<td>Number of function evaluations during fine optimization for rotational alignment.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array, float</strong></td>
+<td></td>
+<td><strong>new_coords : np.array<br> New 3d vertex coordinates for mesh_source, lying on the surface<br> defined by mesh_target<br>overlap : np.array<br> Overlap of conformal factor (area distortion) on sphere of the two meshes. Only returned if align is True.<br> 1 indicates perfect overlap.</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="0ee01dbd" class="cell">
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="co">#mesh_source = deepcopy(mesh_1)</span></span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a><span class="co">#mesh_target = deepcopy(mesh_1)</span></span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a><span class="co">#mesh_source = deepcopy(mesh_1)</span></span>
+<span id="cb89-5"><a href="#cb89-5" aria-hidden="true" tabindex="-1"></a><span class="co">#mesh_target = deepcopy(mesh_2)</span></span>
+<span id="cb89-6"><a href="#cb89-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-7"><a href="#cb89-7" aria-hidden="true" tabindex="-1"></a>mesh_source <span class="op">=</span> deepcopy(mesh_final_UV)</span>
+<span id="cb89-8"><a href="#cb89-8" aria-hidden="true" tabindex="-1"></a>mesh_target <span class="op">=</span> deepcopy(mesh_initial_UV)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="482aaf9d" class="cell">
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>mesh_source.vertices[<span class="op">-</span><span class="dv">1</span>], mesh_target.vertices[<span class="op">-</span><span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(array([ 398.323151,  570.099976, -977.260376]),
+ array([457.797119, 947.645935, 547.180786]))</code></pre>
+</div>
+</div>
+<div id="0aea75fb" class="cell">
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>new_coords, overlap  <span class="op">=</span> wrap_coords_via_sphere(mesh_source, mesh_target,</span>
+<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a>                                              coords_sphere_source<span class="op">=</span><span class="va">None</span>, coords_sphere_target<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a>                                              n_iter_centering<span class="op">=</span><span class="dv">20</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, align<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb92-4"><a href="#cb92-4" aria-hidden="true" tabindex="-1"></a>                                              method<span class="op">=</span><span class="st">"harmonic"</span>,</span>
+<span id="cb92-5"><a href="#cb92-5" aria-hidden="true" tabindex="-1"></a>                                              allow_flip<span class="op">=</span><span class="va">True</span>, max_l<span class="op">=</span><span class="dv">10</span>, n_angle<span class="op">=</span><span class="dv">100</span>, n_subdiv_axes<span class="op">=</span><span class="dv">1</span>, maxfev<span class="op">=</span><span class="dv">200</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="1caa3c89" class="cell">
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>overlap <span class="co"># mesh_final_UV, mesh_initial_UV 0.918 with harmonic map, 0.919 harmonic-free-boundary</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>0.9181743310396068</code></pre>
+</div>
+</div>
+<div id="07165e33" class="cell">
+<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>mesh_wrapped <span class="op">=</span> deepcopy(mesh_source)</span>
+<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a>mesh_wrapped.vertices <span class="op">=</span> new_coords</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="8040b6fc" class="cell">
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>mesh_source.write_obj(<span class="st">"datasets/movie_example/source_moebius.obj"</span>)</span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>mesh_target.write_obj(<span class="st">"datasets/movie_example/target_moebius.obj"</span>)</span>
+<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a>mesh_wrapped.write_obj(<span class="st">"datasets/movie_example/wrapped_moebius.obj"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="stuff-that-did-not-work-out-well" class="level2">
+<h2 class="anchored" data-anchor-id="stuff-that-did-not-work-out-well">Stuff that did not work out well</h2>
+<section id="non-rigid-icp" class="level3">
+<h3 class="anchored" data-anchor-id="non-rigid-icp">Non-rigid ICP</h3>
+<p>Try it out first using trimesh, then do myself to avoid dependency. Use <code>trimesh.registration.nricp_sumner</code></p>
+<p>-&gt; No good, takes forever and my laptop runs out of memory. Also lots of parameters to tune whose meaning I don’t know.</p>
+</section>
+<section id="laplace-beltrami-descriptors" class="level3">
+<h3 class="anchored" data-anchor-id="laplace-beltrami-descriptors">Laplace Beltrami descriptors</h3>
+<p>Idea - compute the eigenfunctions <span class="math inline">\(\phi_i\)</span> of the Laplace operator <span class="math inline">\(\Delta\)</span> on the surface, and the embed each point <span class="math inline">\(p\)</span> on the surface as <span class="math inline">\(p\mapsto \phi_i(p)/\sqrt{\lambda_i}\)</span>.</p>
+<p>Not suitable - the spectral shapes of the midgut example mesh become extremely degenerate.</p>
+<p>See https://www.cs.jhu.edu/~misha/ReadingSeminar/Papers/Rustamov07.pdf, https://web.archive.org/web/20100626223753id_/http://www.cs.jhu.edu/~misha/Fall07/Notes/Rustamov07.pdf</p>
+</section>
+<section id="functional-mapping" class="level3">
+<h3 class="anchored" data-anchor-id="functional-mapping">Functional mapping</h3>
+<p>[https://people.csail.mit.edu/jsolomon/assets/fmaps.pdf] - uses Laplace Beltrami descriptors. There appears to be an existing implementation in <a href="https://github.com/RobinMagnet/pyFM">python</a>. Let’s try out their <a href="https://github.com/RobinMagnet/pyFM/blob/master/examples/mesh_and_matching/basic_functions.ipynb">example notebook</a></p>
+<p>It does not work that well. Ok for matching from mapping timepoints 1-&gt;2, bad for 1-&gt;20, or 20-&gt;30. I get “patchy correspondences”: the map mesh A -&gt; mesh B is not continuous and tears up mesh A into multiple patches that are stitched together in somewhat random order on mesh B. Also kinda slow.</p>
+<p>As Dillon pointed out, shape descriptors of Laplace-Beltrami kind fundamentally use <em>metric</em> information. Laplace Beltrami is equivalent to a metric. Good for isometric deformations, like joint movements, bad for non-isometric, which is often the case for us.</p>
+<p>So in principle, this is a nice method, but not quite what we need.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/nikolas-claussen\.github\.io\/blender-tissue-cartography");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

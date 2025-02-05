@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>9. Time-lapse imaging and dynamic surfaces – blender-tissue-cartography</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-0652833b129a4aecb7d8777fd89a11f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="9. Time-lapse imaging and dynamic surfaces – blender-tissue-cartography">
+<meta property="og:description" content="Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender">
+<meta property="og:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/09_movies_and_dynamic_surfaces_files/figure-html/48996fd9-1-a314362a-1d2e-4e54-8f65-24d3226566be.png">
+<meta property="og:site_name" content="blender-tissue-cartography">
+<meta property="og:image:height" content="627">
+<meta property="og:image:width" content="1238">
+<meta name="twitter:title" content="9. Time-lapse imaging and dynamic surfaces – blender-tissue-cartography">
+<meta name="twitter:description" content="Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender">
+<meta name="twitter:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/09_movies_and_dynamic_surfaces_files/figure-html/48996fd9-1-a314362a-1d2e-4e54-8f65-24d3226566be.png">
+<meta name="twitter:image-height" content="627">
+<meta name="twitter:image-width" content="1238">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">blender-tissue-cartography</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Tutorials/01_segmentation_with_ilastik.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../Tutorials/09_movies_and_dynamic_surfaces.html">9. Time-lapse imaging and dynamic surfaces</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">blender-tissue-cartography</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../00_tissue_cartography_overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tissue cartography with <code>blender_tisssue_cartography</code></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_blender_addon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Blender add-on</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Python library</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/io.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Image I/O</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01b_mesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh data structure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01c_interface_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>pymeshlab</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01d_interface_trimesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>trimesh</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01e_morphsnakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Morphsnakes segmentation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/02_cartographic_interpolation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cartographic interpolation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/differential_geometry.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Surface differential geometry</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/remeshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/remeshing_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing with MeshLab</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/04c_smoothing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh smoothing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/registration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rigid-body registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/registration_rotation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3D-rotation registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/05c_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Shrink-wrapping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/06_harmonic_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Harmonic mapping</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/01_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/02_blender_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2. Blender tutorial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/03_blender_addon_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3. <code>blender_tissue_cartography</code> blender add-on</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/04_btc_python_library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4. <code>blender_tissue_cartography</code> Python library</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/05_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5. Tissue cartography with “seams”</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/06_improving_UV_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">6. Iteratively improving cartographic projections</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/07_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7. Advanced segmentation and meshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/08_multiple_recordings_and_reference_meshes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8. Consistent cartographic projections across multiple recordings</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/09_movies_and_dynamic_surfaces.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">9. Time-lapse imaging and dynamic surfaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/10_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">10. 3D Image analysis with cartographic projections</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#load-meshes" id="toc-load-meshes" class="nav-link active" data-scroll-target="#load-meshes">Load meshes</a></li>
+  <li><a href="#aside---fixing-uv-maps" id="toc-aside---fixing-uv-maps" class="nav-link" data-scroll-target="#aside---fixing-uv-maps">Aside - fixing UV maps</a></li>
+  <li><a href="#load-image-data" id="toc-load-image-data" class="nav-link" data-scroll-target="#load-image-data">Load image data</a></li>
+  <li><a href="#mesh-registration" id="toc-mesh-registration" class="nav-link" data-scroll-target="#mesh-registration">Mesh registration</a></li>
+  <li><a href="#shrink-wrapping-pipeline" id="toc-shrink-wrapping-pipeline" class="nav-link" data-scroll-target="#shrink-wrapping-pipeline">Shrink-wrapping pipeline</a></li>
+  <li><a href="#inspect-in-blender" id="toc-inspect-in-blender" class="nav-link" data-scroll-target="#inspect-in-blender">Inspect in blender</a>
+  <ul class="collapse">
+  <li><a href="#operate-in-reverse-time" id="toc-operate-in-reverse-time" class="nav-link" data-scroll-target="#operate-in-reverse-time">Operate in reverse time</a></li>
+  <li><a href="#inspect-in-blender-1" id="toc-inspect-in-blender-1" class="nav-link" data-scroll-target="#inspect-in-blender-1">Inspect in blender</a></li>
+  <li><a href="#remeshing" id="toc-remeshing" class="nav-link" data-scroll-target="#remeshing">Remeshing</a></li>
+  <li><a href="#large-deformations" id="toc-large-deformations" class="nav-link" data-scroll-target="#large-deformations">Large deformations</a></li>
+  <li><a href="#cartographic-projections" id="toc-cartographic-projections" class="nav-link" data-scroll-target="#cartographic-projections">Cartographic projections</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Tutorials/01_segmentation_with_ilastik.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../Tutorials/09_movies_and_dynamic_surfaces.html">9. Time-lapse imaging and dynamic surfaces</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">9. Time-lapse imaging and dynamic surfaces</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>In previous tutorials, we saw how to do tissue cartography with a single volumetric image. But often, we have multiple images of very similarly shaped objects - either the successive frames of a movie or multiple recordings of biological structures with very consistent shapes, like the <em>Drosophila</em> egg.</p>
+<p>For each recording/frame, we have a mesh representing our surface of interest. We want to use “the same” UV map/cartographic projection for all of the meshes - both so that we don’t need to redo the work of creating the UV map, and to facilitate comparison across recordings/frames</p>
+<p>There are two possible strategies for getting “the same” UV map:</p>
+<ol type="1">
+<li>Compute the cartographic projection for each mesh individually, but using a consistent algorithmic procedure.</li>
+</ol>
+<p>This approach works well for simple shapes, for example mildly deformed planes (use an axial projection, “UV -&gt; Project from view” in Blender’s UV editor), or surfaces resembling spheres or cylinders ( “UV -&gt; Unwrap -&gt; Sphere/Cylinder Project”). Simply load all meshes of interest into Blender, and apply the projection (see Tutorial 3).</p>
+<p>However, we will not pursue this approach further here: for more complex shapes a simple axial or clyinder projection will no longer work. There are more sophisticated algorithms (see e.g.&nbsp;<a href="https://www.nature.com/articles/s41592-023-02081-w">Mitchell &amp; Cislo, 2023</a>) - but using them can require a lot of expertise. Also using a fixed algorithm means that you cannot define your UV maps in a graphical and interactive way.</p>
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<ol start="2" type="1">
+<li>Define a UV map for a <em>reference</em> or <a href="https://en.wikipedia.org/wiki/Key_frame"><em>keyframe</em></a> mesh - for example, the first frame of a movie. Next <em>wrap/deform</em> your keyframe mesh to match the shape of all other meshes (e.g.&nbsp;from other frames) as well as possible. The deformed reference mesh now fits the volumetric data but still carries the UV map, and can now be used to create a cartographic projection.</li>
+</ol>
+<p>This allows you to graphically design the UV map for the reference mesh in whatever way you want. Here is a simple illustration, with reference mesh in green and target mesh from the data in orange:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/48996fd9-1-a314362a-1d2e-4e54-8f65-24d3226566be.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Below, we explain the nuts and bolts of approach 2, also called <em>texture tranfer</em> or <em>surface to surface registration</em> in some detail, and showcase the tools provided by the <code>blender_tissue_cartography</code> python library, using the <code>registration</code>, <code>wrapping</code> and <code>harmonic</code> modules. Most of these tools are also available in the blender add-on (see tutorial 3).</p>
+<section id="meshing-and-segmentation-for-a-movie" class="level4">
+<h4 class="anchored" data-anchor-id="meshing-and-segmentation-for-a-movie">Meshing and segmentation for a movie</h4>
+<p>As a starting point for any of the approaches above, you will need a mesh of your surface at each movie time point. The process of segmenting your data for mesh creation is often the most time-consuming part of the tissue cartography pipeline, and for movies, it can often be accelerated by reusing information from the previous frame: 1. Train a single ilastik model to work for all (or at least multiple time points). You can use ilastik’s “batch predict” tab for this. In this case, it is important to <em>standardize</em> the ilastik input data (i.e.&nbsp;ensure consistent brightness and contrast). See <code>io.normalize_quantiles_zstack</code> 2. If you use the <code>morphsnakes</code> module to convert your ilastik probabilities into a segmentation, you can use the previous timepoint’s segmentation as a seed point for the next one, which greatly improves results.</p>
+</section>
+<section id="a-note-on-remeshing" class="level4">
+<h4 class="anchored" data-anchor-id="a-note-on-remeshing">A note on remeshing</h4>
+<p>With meshes, we represent a surface as a collection of points (vertices) and faces connecting them. The combinatorial configuration of faces and vertices is called the mesh <em>topology</em> (not to be confused with the topology of the surface, e.g.&nbsp;sphere, torus, etc.). The same surface can be represented by different meshes, for example, triangular vs quad meshes. <em>Remeshing</em> is the process of modifying a mesh so that it has a “nicer” topology without changing the shape of the surface - e.g.&nbsp;to ensure faces are of uniform size and not extremely deformed, or to get the right “resolution” (number of vertices) to represent the surface shape.</p>
+<p>For single recordings, the mesh topology does not matter too much. But once we start deforming our meshes, it becomes very important. 1. Most remeshing will destroy UV mapping information. Therefore, try to do all your remeshing before you create UV maps. 2. Especially for your keyframe meshes, ensure you have a “good” topology (uniform triangle size, no deformed triangles). For this, you can use pymeshlab (<code>remesh_pymeshlab.remesh_pymeshlab</code>) or blender (<a href="https://docs.blender.org/manual/en/latest/modeling/modifiers/generate/remesh.html">Modifiers -&gt; Remesh modifier</a>). 3. Some remesh algorithm can preserve your UV maps. You can use them to improve the topology of your deformed keyframes, as explained below.</p>
+</section>
+<section id="dynamic-data-fixed-surface" class="level4">
+<h4 class="anchored" data-anchor-id="dynamic-data-fixed-surface">1. Dynamic data, fixed surface</h4>
+<p>In the simplest case, even though there are some interesting dynamics in the fluorescence microscopy data, our surface of interest does not change over time. For example, there are many instances during development where cells are moving across an essentially fixed surface, for example during Zebrafish epiboly or germband extension in <em>Drosophila</em>. In this case, we are in luck: we can simply re-use the same mesh and UV map we created for the first timepoint to make cartographic projections for the subsequent frames. You can do this via a Python script (see below), or using the add-on’s “Batch process” button</p>
+</section>
+<section id="surface-undergoing-rigid-motion" class="level4">
+<h4 class="anchored" data-anchor-id="surface-undergoing-rigid-motion">2. Surface undergoing rigid motion</h4>
+<p>A slightly more general case can also be handled easily: the surface of interest does not deform, and only moves, rotates, or changes in scale. In this case, we just need to translate/rotate/scale our original mesh and we are done. The tools for this are provided in the <code>registration</code> module, as well as in the add-on’s “Align Meshes” button.</p>
+</section>
+<section id="surface-undergoing-non-rigid-deformation" class="level4">
+<h4 class="anchored" data-anchor-id="surface-undergoing-non-rigid-deformation">3. Surface undergoing non-rigid deformation</h4>
+<p>If the surface of interest is dynamically changing its shape, the problem becomes, in general, <em>considerably</em> more difficult. Indeed, it is in general not a well-defined mathematical question what a “consistent” cartographic projection for potentially very different-looking surfaces would be.</p>
+</section>
+<section id="small-non-rigid-deformation" class="level4">
+<h4 class="anchored" data-anchor-id="small-non-rigid-deformation">Small non-rigid deformation</h4>
+<p>If the deformations are not too drastic, we can use an extremely simple method: 1. Align the keyframe mesh to the mesh of the target timepoint using rigid transformations as best as possible. 2. Project each vertex on the keyframe mesh onto the closest point on the target timepoint mesh. We will call this “shrink-wrapping”, and it is implemented in the <code>wrapping</code> module. 3. Smooth the shrink-wrapped mesh to smooth out creases created by shrink-wrapping.</p>
+<p>Here is an illustration: <img src="09_movies_and_dynamic_surfaces_files/figure-html/f601fb6c-a033-4952-8b4e-aa9b7c637311-1-aa69dc89-5438-4649-a2a2-626e98a86135.png" class="img-fluid" alt="image.png"></p>
+<p>This process can be done <em>iteratively</em>: first shrinkwrap the keyframe mesh to the mesh of the subsequent frame, then use that result and shrinkwrap it to the next-to-subsequent frame, etc. It is generally a good idea to use your most “complicated” shape as a keyframe. In developmental biology, where shapes generally start simple and become more complicated over time, this means using the last timepoint as keyframe and propagating it backward in time.</p>
+<p>As you iterative the shrink-wrapping, you may run into trouble if your keyframe becomes too deformed. We provide some tools for fixing this via remeshing (<code>remesh</code> and <a href="https://nikolas-claussen.github.io/blender-tissue-cartography/Python%20library/remeshing_pymeshlab.html#remesh_pymeshlab"><code>remesh_pymeshlab</code></a> modules), but you may have to define <em>multiple keyframes</em>.</p>
+<p>Iterative shrink-wrapping is also supported in the blender add-on (“Shrinkwrap Meshes” button).</p>
+</section>
+<section id="large-non-rigid-deformation" class="level4">
+<h4 class="anchored" data-anchor-id="large-non-rigid-deformation">Large non-rigid deformation</h4>
+<p>If there is a lot of deformation between your time points, shrink-wrapping will not work. We need a more powerful algorithm for computing a map from our keyframe mesh to the target mesh. There is a large literature on this question from the computer graphics literature, and we will provide some pointers below. Here, we implement a simple-to-use algorithm that does not require landmarks or any other user input. It is based on mapping each mesh to a reference shape - a disk, punctured disk, or a sphere, depending on whether the surface topology is that of a disk, cylinder, or sphere.</p>
+<p>In the reference shape, one only has to optimize over (2d and 3d, respectively) rotations to match the two shapes. This approach, called <a href="https://www.cs.cmu.edu/~kmcrane/Projects/MobiusRegistration/paper.pdf">Moebius registration</a>, can handle very large deformations. Here is an illustration:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/f7878cb3-1078-4a19-80a4-69ec9b7738a7-1-b40a9884-892a-48e1-ada8-1981badcb5a3.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>The rainbow texture represents the signal used to align the reference shapes by rotation - namely the area distortion of the map from each mesh to the reference shape.</p>
+</section>
+<section id="some-pointers-to-the-literature-and-other-useful-software" class="level4">
+<h4 class="anchored" data-anchor-id="some-pointers-to-the-literature-and-other-useful-software">Some pointers to the literature and other useful software</h4>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=jMWJ79EpyfQ">A lecture about surface-surface mapping</a></li>
+<li>Another approach for mesh-to-mesh mapping is provided by so-called “functional maps”, implemented in Python by <a href="https://github.com/RobinMagnet/pyFM">pyFM</a>.</li>
+<li><a href="https://www.cs.cmu.edu/~kmcrane/">Keenan Crane</a> has a great <a href="http://www.cs.cmu.edu/~kmcrane/Projects/Other/OverviewConformalGeometryProcessing.pdf">overview of surface parametrization</a></li>
+</ul>
+<div id="4b2d29b5" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> io <span class="im">as</span> tcio</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> mesh <span class="im">as</span> tcmesh</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> interpolation <span class="im">as</span> tcinterp</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> registration <span class="im">as</span> tcreg</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> smoothing <span class="im">as</span> tcsmooth</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> wrapping <span class="im">as</span> tcwrap</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> rotation <span class="im">as</span> tcrot</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> harmonic <span class="im">as</span> tcharmonic</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> remesh <span class="im">as</span> tcremesh</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> igl</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> stats</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib <span class="im">as</span> mpl</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> skimage <span class="im">import</span> transform</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> copy <span class="im">import</span> deepcopy</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.notebook <span class="im">import</span> tqdm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="16a3ee0d" class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pymeshlab</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> interface_pymeshlab <span class="im">as</span> intmsl</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> remesh_pymeshlab <span class="im">as</span> tcremesh_pymeshlab</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Warning:
+Unable to load the following plugins:
+
+    libio_e57.so: libio_e57.so does not seem to be a Qt Plugin.
+
+Cannot load library /home/nikolas/Programs/miniconda3/envs/blender-tissue-cartography/lib/python3.11/site-packages/pymeshlab/lib/plugins/libio_e57.so: (/lib/x86_64-linux-gnu/libp11-kit.so.0: undefined symbol: ffi_type_pointer, version LIBFFI_BASE_7.0)
+</code></pre>
+</div>
+</div>
+<div id="1e2c5c7d" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> importlib <span class="im">import</span> <span class="bu">reload</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="6302b3d7" class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">reload</span>(tcwrap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>&lt;module 'blender_tissue_cartography.wrapping' from '/home/nikolas/Documents/UCSB/streichan/numerics/code/python code/jupyter notebooks/blender-tissue-cartography/blender_tissue_cartography/wrapping.py'&gt;</code></pre>
+</div>
+</div>
+<div id="17b23966" class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>tcremesh_pymeshlab.remesh_pymeshlab</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>&lt;function blender_tissue_cartography.remesh_pymeshlab.remesh_pymeshlab(mesh, targetlen=1, iterations=10)&gt;</code></pre>
+</div>
+</div>
+<div id="f8e9ff94" class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>np.set_printoptions(suppress<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="load-meshes" class="level3">
+<h3 class="anchored" data-anchor-id="load-meshes">Load meshes</h3>
+<p>This dataset shows the developing <em>Drosophila</em> midgut, courtesy of N. Mitchell. See <a href="https://elifesciences.org/articles/77355">Mitchell et al 2022</a>. The gut undergoes dramatic shape changes (constriction and coiling) as it develops. It is therefore a very challenging test case for a movie pipeline.</p>
+<p>We will use meshes of the gut surface already computed by Mitchell et al using a combination of Ilastik + Morphological Snakes + MeshLab, as we show in tutorial 6:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/160c5423-1-image-2.png" class="img-fluid figure-img"></p>
+<figcaption>image-2.png</figcaption>
+</figure>
+</div>
+<p>We have a mesh for every timepoint. Let’s read them in.</p>
+<div id="59204f0f" class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>metadata_dict <span class="op">=</span> {<span class="st">'resolution_in_microns'</span>: (<span class="fl">0.786</span>, <span class="fl">0.786</span>, <span class="fl">0.786</span>)}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="f51033f2" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>meshes_dict <span class="op">=</span> {i: tcmesh.read_other_formats_without_uv(<span class="ss">f"midgut_example/meshes/mesh_</span><span class="sc">{</span><span class="bu">str</span>(i)<span class="sc">.</span>zfill(<span class="dv">2</span>)<span class="sc">}</span><span class="ss">.obj"</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>               <span class="cf">for</span> i <span class="kw">in</span> tqdm(<span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">21</span>))}</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># the function "tcmesh.read_other_formats_without_uv" can be used to read meshes of various file formats</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># (if they don't contain UV info)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"c5a32bf8f2094ef1ba433dd49987a5c2","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+<p>We also have UV maps for the first and last timepoint in our time series.</p>
+<div id="c12f0e38" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>mesh_initial_UV <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"midgut_example/initial_uv.obj"</span>) <span class="co"># time point 1</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>mesh_final_UV <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"midgut_example/final_uv.obj"</span>) <span class="co"># time point 20</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="aside---fixing-uv-maps" class="level3">
+<h3 class="anchored" data-anchor-id="aside---fixing-uv-maps">Aside - fixing UV maps</h3>
+<p>Especially for more complicated shapes, methods like the cylindrical or spherical projection can give you UV maps with flipped triangles, i.e.&nbsp;the map from the mesh to the plane has self-intersections. This is not ideal for cartographic interpolation (although it will not cause cartographic interpolation to fail, just gives you a warning).</p>
+<p>We can often fix this issue by smoothing out vertices in UV space while keeping the boundaries of the UV “islands” fixed. Let’s take a look.</p>
+<div id="620bfeeb" class="cell" data-scrolled="true">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the mesh has some flipped triangles</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>igl.flipped_triangles(mesh_final_UV.texture_vertices, mesh_final_UV.texture_tris)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([  210,   245,   246,   261,   330, 11394, 11395, 11396, 11397,
+       11398, 11399, 11400, 11570, 11571, 11572, 11573, 11574, 11575,
+       11576, 11577, 11578, 11579, 11580, 11581, 11586, 11684, 11725,
+       11726, 11730, 11731, 11732, 11733, 11734, 11736, 11737, 11738,
+       11832, 11833, 11834, 11835, 11836, 11837, 11838, 11852, 11853,
+       11855, 11856, 11857, 11858, 11859, 11860, 11865, 11866, 11867,
+       11868, 11956, 11959, 11963, 11964, 11967, 11973, 11974, 11975,
+       11976, 11977, 12093, 12094, 12098, 12102, 12105, 12106, 12108,
+       12109, 12110, 12111, 12112, 12113, 12114, 12115, 12120, 12121,
+       12129, 12130, 12131, 12132, 12133, 12134, 12135, 12136, 12137,
+       12138, 12139, 12140, 12141, 12142, 12143, 12144, 12145, 12149,
+       12150, 12151, 12152, 12153, 12154, 12160, 12175, 12183, 12199,
+       12241, 12242, 12243, 12244, 12245, 12246, 12247, 12355, 12356,
+       12360, 12361, 12362, 12363, 12366, 12367, 12371, 12372, 12373,
+       12374, 12376, 12377, 12393, 12394, 12395, 12396, 12397, 12398,
+       12399, 12400, 12401, 12402, 20553, 20561, 20562, 20611, 20632,
+       20721, 39948, 39952, 39954, 39960, 39961, 39962, 39964, 39965,
+       39966, 39967, 39984, 39988, 39989, 39990, 39991, 39993, 39995,
+       39996, 39997, 39998, 39999, 40001, 40002, 40003, 40004, 40005,
+       40006, 40007, 40008, 40009, 40010, 40011, 40012, 40013, 40014,
+       40015, 40016, 40017, 40018, 40019, 40020, 40021, 40022, 40023,
+       40024, 40025, 40026, 40027, 40028, 40046, 40047, 40048, 40051,
+       40052, 40053, 40054, 40074, 40097, 40098, 40099, 40100, 40101,
+       40110, 40111, 40112, 40113, 40114, 40115, 40116, 40117, 40118,
+       40119, 40120, 40121, 40122, 40123, 40124, 40125, 40126, 40127,
+       40128, 40129, 40130, 40131, 40132, 40133, 40134, 40135, 40136,
+       40137, 40138, 40139, 40140, 40141, 40142, 40143, 40144, 40145,
+       40146, 40150, 40151, 40152, 40153, 40154, 40156, 40158, 40160,
+       40161, 40162, 40163, 40164, 40165, 40166, 40167, 40168, 40169,
+       40170, 40171, 40172, 40173, 40174, 40175, 40176, 40177, 40178,
+       40179, 40197, 40198, 40208, 40209, 40210, 40213, 40214, 40215,
+       40216, 40217, 40218, 40219, 40220, 40221, 40222, 40223, 40224,
+       40225, 40226, 40227, 40228, 40229, 40230, 40231, 40232, 40233,
+       40234, 40235, 40239, 40242, 40243, 40274, 40275, 40276, 40277,
+       40278, 40279, 40280, 40281, 40282, 40283, 40284, 40285, 40286,
+       40287, 40288, 40289, 40290, 40291, 40292, 40293, 40294, 40295,
+       40296, 40297, 40298, 40299, 40300, 40301, 40302, 40303, 40304,
+       40305, 40306, 40307, 40308, 40309, 40310, 40311, 40312, 40313,
+       40314, 40315, 40316, 40317, 40318, 40319, 40320, 40321, 40322,
+       40323, 40324, 40325, 40326, 40327, 40328, 40329, 40330, 40331,
+       40332, 40333, 40334, 40335, 40336, 40337, 40338, 40339, 40351,
+       40352, 40353, 40354, 40355, 40356, 40357, 40358, 40359, 40360,
+       40367, 40368, 40461, 40462, 40463, 40464, 40465, 40466, 40467,
+       40468, 40483, 40484, 40485, 40486, 40487, 40488, 40489, 40490,
+       40491, 40492, 40493, 40494, 40495, 40496, 40497, 40498, 40499,
+       40500, 40501, 40502, 40503, 40504, 40505, 40506, 40507, 40508,
+       40509, 40510, 40511, 40512, 40513, 40514, 40515, 40516, 40517,
+       40518, 40519, 40520, 40521, 40522, 40523, 40524, 40525, 40526,
+       40527, 40528, 40529, 40530, 40531, 40532, 40533, 40534, 40535,
+       40536, 40537, 40538, 40539, 40540, 40541, 40542, 40543, 40544,
+       40545, 40548, 40549, 40552, 40554, 40555, 40556, 40557, 40558,
+       40561, 40562, 40567, 40569, 40570, 40571, 40572, 40574, 40601,
+       40602, 40603, 40604, 40606, 40608, 40653, 40654, 40655, 40656,
+       40657, 40658, 40659, 40660, 40661, 40662, 40663, 40664, 40665,
+       40666, 40669, 40670, 40679, 40680, 40681, 40682, 42996, 42997,
+       43008, 43009, 44014, 44015, 44018, 44019, 44023, 44024, 44026,
+       44028, 44029])</code></pre>
+</div>
+</div>
+<div id="29c203ca" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>mesh_final_UV <span class="op">=</span> tcsmooth.smooth_laplacian_texture(mesh_final_UV, lamb<span class="op">=</span><span class="fl">0.5</span>, n_iter<span class="op">=</span><span class="dv">2500</span>, boundary<span class="op">=</span><span class="st">"fixed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="a5586292" class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># and now they are mostly fixed</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>igl.flipped_triangles(mesh_final_UV.texture_vertices, mesh_final_UV.texture_tris)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array(261)</code></pre>
+</div>
+</div>
+<div id="479464c8" class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the shape of the UV islands did not change.</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>plt.scatter(<span class="op">*</span>mesh_final_UV.texture_vertices.T, s<span class="op">=</span><span class="fl">0.1</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"equal"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/cell-14-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="load-image-data" class="level2">
+<h2 class="anchored" data-anchor-id="load-image-data">Load image data</h2>
+<p>The image data shows fluorescently marked nuclei. The large “hole” in the center of the embryo is the developing midgut.</p>
+<div id="7acc9c67" class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> tcio.adjust_axis_order(tcio.imread(<span class="st">"midgut_example/downsampled_3x/Time_000001_c1_stab-3x.tif"</span>))</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"image shape:"</span>, image.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>image shape: (1, 247, 413, 200)</code></pre>
+</div>
+</div>
+<div id="477943c8" class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>slice_image, slice_vertices <span class="op">=</span> tcinterp.get_cross_section_vertices_normals(<span class="dv">0</span>, <span class="dv">150</span>, image,</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>                            mesh_initial_UV, metadata_dict[<span class="st">"resolution_in_microns"</span>], width<span class="op">=</span><span class="dv">2</span>, get_normals<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="6a26ec9d" class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>plt.scatter(<span class="op">*</span>slice_vertices.T, s<span class="op">=</span><span class="dv">5</span>, c<span class="op">=</span><span class="st">"tab:red"</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>plt.imshow(slice_image[<span class="dv">0</span>], vmax<span class="op">=</span><span class="dv">10000</span>, origin<span class="op">=</span><span class="st">"lower"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/cell-17-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="mesh-registration" class="level2">
+<h2 class="anchored" data-anchor-id="mesh-registration">Mesh registration</h2>
+<p>Let’s first see how we can register two meshes using rigid body transformations.</p>
+<div id="8523d324" class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>mesh_source <span class="op">=</span> deepcopy(meshes_dict[<span class="dv">1</span>]) <span class="co"># the "source" mesh is the one we want to tranform to match the target</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>mesh_target <span class="op">=</span> deepcopy(meshes_dict[<span class="dv">1</span>]) <span class="co"># for the target mesh, we take a copy that we will rotate+scale+translate</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>random_rotation <span class="op">=</span> stats.special_ortho_group.rvs(<span class="dv">3</span>)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>mesh_target.vertices <span class="op">=</span> <span class="fl">1.1</span> <span class="op">*</span> mesh_target.vertices <span class="op">@</span> random_rotation <span class="op">+</span> np.array([<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="a869c0d0" class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># registration proceeds in two steps: first, a coarse step gets an initial guess for the transformation</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>trafo_initial, _ <span class="op">=</span> tcreg.align_by_centroid_and_intertia(mesh_source.vertices, mesh_target.vertices,</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>                                                        scale<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># and then the transformation is improved by the ICP algorithm (en.wikipedia.org/wiki/Iterative_closest_point)</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>trafo_icp, _, _ <span class="op">=</span> tcreg.icp(mesh_source.vertices, mesh_target.vertices, initial<span class="op">=</span>trafo_initial,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>                            threshold<span class="op">=</span><span class="fl">1e-4</span>, max_iterations<span class="op">=</span><span class="dv">200</span>, include_scaling<span class="op">=</span><span class="va">True</span>, n_samples<span class="op">=</span><span class="dv">10000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="47072243" class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># a transformation is represented by a 4*4 matrix (en.wikipedia.org/wiki/Affine_transformation#Augmented_matrix)</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>trafo_icp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([[ -0.33481982,   0.5663229 ,   0.88130666, 100.12547619],
+       [ -0.92947084,   0.26932741,  -0.52252474,   0.03525151],
+       [ -0.48907168,  -0.90324193,   0.39543405,   0.21661484],
+       [  0.        ,   0.        ,   0.        ,   1.        ]])</code></pre>
+</div>
+</div>
+<div id="44e01b60" class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's apply the transformation and check we get the target mesh</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>mesh_registered <span class="op">=</span> mesh_source.apply_affine_to_mesh(trafo_icp)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co"># indeed, the distance between the vertices is very small.</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>np.linalg.norm(mesh_registered.vertices<span class="op">-</span>mesh_target.vertices, axis<span class="op">=-</span><span class="dv">1</span>).mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>0.12687255365401112</code></pre>
+</div>
+</div>
+</section>
+<section id="shrink-wrapping-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="shrink-wrapping-pipeline">Shrink-wrapping pipeline</h2>
+<p>Now let’s try to serially shrink-wrap our initial mesh onto the subsequent timepoints, as described above. We use the function <code>tcwrap.shrinkwrap_igl</code> for this. It is useful to slightly smooth both the keyframe and the target of the shrinkwrap a little before shrinkwrapping, which you can control using the arguments <code>n_iter_smooth_target, n_iter_smooth_wrapped</code>.</p>
+<p>You can also try out shrinkwrapping in blender, using the shrinkwrap modifier as explained in tutorial 7.</p>
+<p>After wrapping, we use <em>on surface smoothing</em> to remove creases potentially created by the shrink-wrapping.</p>
+<p>You may need to experiment with the parameters a little.</p>
+<div id="8150b156" class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># we initialize the list of shrink-wrapped meshes with our keyframe</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>meshes_wrapped <span class="op">=</span> {<span class="dv">1</span>: mesh_initial_UV}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="9fa6b375" class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> tqdm(<span class="bu">range</span>(<span class="dv">2</span>, <span class="dv">21</span>)):</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># we use the most recent deformed keyframe as input in the shrink-wrapping algorithm</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    mesh_source <span class="op">=</span> meshes_wrapped[i<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    mesh_target <span class="op">=</span> meshes_dict[i]</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># register using ICP</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    trafo_initial, _ <span class="op">=</span> tcreg.align_by_centroid_and_intertia(mesh_source.vertices, mesh_target.vertices,</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>                                                            scale<span class="op">=</span><span class="va">True</span>, choose_minimal_rotation<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    trafo_icp, _, _ <span class="op">=</span> tcreg.icp(mesh_source.vertices, mesh_target.vertices, initial<span class="op">=</span>trafo_initial,</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>                                max_iterations<span class="op">=</span><span class="dv">100</span>, n_samples<span class="op">=</span><span class="dv">5000</span>)</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    mesh_registered <span class="op">=</span> mesh_source.apply_affine_to_mesh(trafo_icp)</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># shrink-wrap</span></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    mesh_wrapped <span class="op">=</span> tcwrap.shrinkwrap_igl(mesh_registered, mesh_target,</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>                                         n_iter_smooth_target<span class="op">=</span><span class="dv">1</span>, n_iter_smooth_wrapped<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># smooth out deformation on-surface - important!</span></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>    mesh_wrapped <span class="op">=</span> tcsmooth.smooth_laplacian_on_surface(mesh_wrapped, n_iter<span class="op">=</span><span class="dv">5</span>, lamb<span class="op">=</span><span class="fl">0.5</span>, n_iter_laplace<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># append to list</span></span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>    mesh_wrapped.write_obj(<span class="ss">f"midgut_example/meshes_wrapped/mesh_</span><span class="sc">{</span><span class="bu">str</span>(i)<span class="sc">.</span>zfill(<span class="dv">2</span>)<span class="sc">}</span><span class="ss">_wrapped.obj"</span>)</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>    meshes_wrapped[i] <span class="op">=</span> mesh_wrapped</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"6d9fbf569353461e8f0e67265a688f05","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/home/nikolas/Documents/UCSB/streichan/numerics/code/python code/jupyter notebooks/blender-tissue-cartography/blender_tissue_cartography/wrapping.py:206: RuntimeWarning: Warning: 2 normal(s) flipped during shrink-wrapping
+  warnings.warn(f"Warning: {np.sum(dots&lt;0)} normal(s) flipped during shrink-wrapping", RuntimeWarning)
+/home/nikolas/Documents/UCSB/streichan/numerics/code/python code/jupyter notebooks/blender-tissue-cartography/blender_tissue_cartography/wrapping.py:206: RuntimeWarning: Warning: 5 normal(s) flipped during shrink-wrapping
+  warnings.warn(f"Warning: {np.sum(dots&lt;0)} normal(s) flipped during shrink-wrapping", RuntimeWarning)</code></pre>
+</div>
+</div>
+<div id="e97463ba" class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the wrapped meshes contain the same UV map information as the original mesh</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>np.allclose(meshes_wrapped[<span class="dv">20</span>].texture_vertices, mesh_initial_UV.texture_vertices)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+</section>
+<section id="inspect-in-blender" class="level2">
+<h2 class="anchored" data-anchor-id="inspect-in-blender">Inspect in blender</h2>
+<p>Let’s inspect the results in blender (<code>midgut_example/wrapping.blend</code>).</p>
+<p>For the first, say 10 time points, this approach looks decent. After that, we encounter a problem: the surface if the gut deforms very strongly (by forming constrictions). If we do not use on-surface smoothing, we get poor results:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/1950ffa9-1-image-3.png" class="img-fluid figure-img"></p>
+<figcaption>image-3.png</figcaption>
+</figure>
+</div>
+<p>On-surface smoothing improves this a lot:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/1950ffa9-2-image-4.png" class="img-fluid figure-img"></p>
+<figcaption>image-4.png</figcaption>
+</figure>
+</div>
+<section id="operate-in-reverse-time" class="level3">
+<h3 class="anchored" data-anchor-id="operate-in-reverse-time">Operate in reverse time</h3>
+<p>However, the shrink-wrapped mesh fails to capture some sharp details of the target meshes (close to the constrictions, for example).</p>
+<p>As described above, it is generally best to use your most complicated shape as a keyframe (here, the last timepoint), and deform it towards the simpler shapes. Hence, let us define a UV map for timepoint 20 and shrink-wrap reverse in time.</p>
+<div id="55672dd5" class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>t_final <span class="op">=</span> <span class="dv">20</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>meshes_wrapped_reverse <span class="op">=</span> {<span class="dv">20</span>: mesh_final_UV}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="6fb1bf9a" class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> tqdm(<span class="bu">reversed</span>(<span class="bu">range</span>(<span class="dv">1</span>, t_final))):</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(i)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    mesh_source <span class="op">=</span> meshes_wrapped_reverse[i<span class="op">+</span><span class="dv">1</span>]</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    mesh_target <span class="op">=</span> meshes_dict[i]</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># register using ICP</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    trafo_initial, _ <span class="op">=</span> tcreg.align_by_centroid_and_intertia(mesh_source.vertices, mesh_target.vertices,</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>                                                            shear<span class="op">=</span><span class="va">True</span>, choose_minimal_rotation<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    trafo_icp, _, _ <span class="op">=</span> tcreg.icp(mesh_source.vertices, mesh_target.vertices, initial<span class="op">=</span>trafo_initial,</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>                                max_iterations<span class="op">=</span><span class="dv">100</span>, include_scaling<span class="op">=</span><span class="va">True</span>, n_samples<span class="op">=</span><span class="dv">5000</span>)</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>    mesh_registered <span class="op">=</span> mesh_source.apply_affine_to_mesh(trafo_icp)</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># shrink-wrap</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>    mesh_wrapped <span class="op">=</span> tcwrap.shrinkwrap_igl(mesh_registered, mesh_target,</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>                                         n_iter_smooth_target<span class="op">=</span><span class="dv">1</span>, n_iter_smooth_wrapped<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># smooth out deformation on-surface</span></span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>    mesh_wrapped <span class="op">=</span> tcsmooth.smooth_laplacian_on_surface(mesh_wrapped, n_iter<span class="op">=</span><span class="dv">5</span>, lamb<span class="op">=</span><span class="fl">0.5</span>, n_iter_laplace<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># append to list</span></span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>    mesh_wrapped.write_obj(<span class="ss">f"midgut_example/meshes_wrapped_reverse/mesh_</span><span class="sc">{</span><span class="bu">str</span>(i)<span class="sc">.</span>zfill(<span class="dv">2</span>)<span class="sc">}</span><span class="ss">_wrapped_reverse.obj"</span>)</span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a>    meshes_wrapped_reverse[i] <span class="op">=</span> mesh_wrapped</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"56c6f3f232a84c998e18e7a8405168ef","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>19</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/home/nikolas/Documents/UCSB/streichan/numerics/code/python code/jupyter notebooks/blender-tissue-cartography/blender_tissue_cartography/wrapping.py:206: RuntimeWarning: Warning: 3 normal(s) flipped during shrink-wrapping
+  warnings.warn(f"Warning: {np.sum(dots&lt;0)} normal(s) flipped during shrink-wrapping", RuntimeWarning)</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>18
+17
+16
+15
+14
+13
+12
+11
+10</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/home/nikolas/Documents/UCSB/streichan/numerics/code/python code/jupyter notebooks/blender-tissue-cartography/blender_tissue_cartography/wrapping.py:206: RuntimeWarning: Warning: 1 normal(s) flipped during shrink-wrapping
+  warnings.warn(f"Warning: {np.sum(dots&lt;0)} normal(s) flipped during shrink-wrapping", RuntimeWarning)</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>9
+8
+7
+6
+5
+4
+3
+2
+1</code></pre>
+</div>
+</div>
+</section>
+<section id="inspect-in-blender-1" class="level3">
+<h3 class="anchored" data-anchor-id="inspect-in-blender-1">Inspect in blender</h3>
+<p>The results look decent enough.</p>
+<p>Let’s visualize the UV maps on the wrapped meshes by adding an image texture in the shading workspace. We can use a <em>color grid</em> to visualize the correspondence between the meshes:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/d7cbb39e-2-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Let’s show the keyframe mesh <code>final_uv</code>, and the shrink-wrapped one side by side:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/d7cbb39e-1-image-2.png" class="img-fluid figure-img"></p>
+<figcaption>image-2.png</figcaption>
+</figure>
+</div>
+<p>Looks good (except for the fact that I flipped the mesh orientations …)</p>
+</section>
+<section id="remeshing" class="level3">
+<h3 class="anchored" data-anchor-id="remeshing">Remeshing</h3>
+<p>As noted above, most remeshing algorithms destroy UV information. However, there are two exceptions: 1. Subdivision - this type of algorithm refines meshes by adding new vertices and faces to a mesh according to a pre-determined rule (for example, place a new vertex at each triangle midpoint). Since there is a well-defined map between the topology before and after subdivision, the UV info is preserved. Note: subdivision will greatly increase the size of your mesh, and it may become too large computationally. A variant is adaptive subdivision (subdividing certain parts of the mesh only, e.g.&nbsp;deformed triangles). 2. Edge flips - this changes the configuration of faces whithout moving vertices. Only implemented for triangle meshes.</p>
+<p>These algorithms may become very useful to improve the mesh quality of your keyframed mesh as you deform it, and are implemented in the <code>remesh</code> module. Adaptive subdivision requires pymeshlab, see <a href="https://nikolas-claussen.github.io/blender-tissue-cartography/Python%20library/remeshing_pymeshlab.html#remesh_pymeshlab"><code>remesh_pymeshlab</code></a> module.</p>
+<div id="a3422fbc" class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's test this</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>mesh_test <span class="op">=</span> deepcopy(mesh_final_UV)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="428a28ac" class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>mesh_subdiv <span class="op">=</span> tcremesh.subdivide_igl(mesh_test, reglue<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="21832dc1" class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># as you can see, the mesh resolution is greatly increased</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2) <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">5</span>), ncols<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>ax1.triplot(<span class="op">*</span>mesh_test.texture_vertices.T, mesh_test.texture_tris, lw<span class="op">=</span><span class="fl">0.2</span>)</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>ax2.triplot(<span class="op">*</span>mesh_subdiv.texture_vertices.T, mesh_subdiv.texture_tris, lw<span class="op">=</span><span class="fl">0.2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/cell-29-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="4b59a9bf" class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the second algorithm involves changing the faces of the mesh by "edge flips" without moving vertices</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="co"># with the goal to make the mesh triangles more regularly sized (so-called Delaunay triangulation)</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>mesh_flipped <span class="op">=</span> tcremesh.make_delaunay(mesh_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>&lt;blender_tissue_cartography.io.ObjMesh&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="large-deformations" class="level3">
+<h3 class="anchored" data-anchor-id="large-deformations">Large deformations</h3>
+<p>For very large deformations, shrink-wrapping does not work. As noted above, we provide an implementation of Moebius registration, which first maps the two meshes of interest to the sphere, and then aligns them via 3d rotations. This algorithm is more time-consuming but can handle large deformations. It is implemented in the <code>harmonic</code> module as <code>harmonic.wrap_coords_via_sphere</code>.</p>
+<p>For meshes with disk or cylinder topology, similar algorithms are provided, <code>harmonic.wrap_coords_via_disk</code> and <code>harmonic.wrap_coords_via_disk_cylinder</code>.</p>
+<p>For the individual components of the algorithms, namely (a) the map to sphere/disk and (b) rotational alignment, see the documentation in notebook 03d. Note that you can also use your own methods to map surfaces to the sphere or disk, or use an external tool like <a href="https://github.com/GeometryCollective/boundary-first-flattening">boundary-first-flattening</a>.</p>
+<p>A general-purpose code for shrink-wrapping via a shared parametrization is also provided.</p>
+<div id="20c9c0c8" class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's try to shrink-wrap the final onto the initial mesh</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="co">#mesh_source = deepcopy(mesh_final_UV)</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a><span class="co">#mesh_target = deepcopy(meshes_dict[1])</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>mesh_source <span class="op">=</span> deepcopy(mesh_initial_UV)</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>mesh_target <span class="op">=</span> deepcopy(meshes_dict[<span class="dv">20</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="d29a44d5" class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># compute the new coordinates for the keyframe mesh mesh_source.</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="co"># for the meaning of the parameters, type help(wrap_coords_via_sphere)</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>new_coords, overlap <span class="op">=</span> tcharmonic.wrap_coords_via_sphere(mesh_source, mesh_target, method<span class="op">=</span><span class="st">"harmonic"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="e43e9f9b" class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 'overlap' measures the overlap between source and target geometry and gives an idea of how different the</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="co"># two shapes are and how well the wrapping worked. 1 is perfect alignment</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>overlap</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>0.918174332653755</code></pre>
+</div>
+</div>
+<div id="dac7f014" class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's save the mesh and display it in blender</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>mesh_wrapped <span class="op">=</span> deepcopy(mesh_source)</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>mesh_wrapped.vertices <span class="op">=</span> new_coords</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>mesh_wrapped.set_normals()</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>mesh_wrapped.write_obj(<span class="st">"midgut_example/wrapped_moebius_20.obj"</span>)</span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a><span class="co"># we could combine this with some on-surface smoothing if desired</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/59c771c3-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>We can also overlay it with the mesh from timepoint 1 to see that they match perfectly.</p>
+</section>
+<section id="cartographic-projections" class="level3">
+<h3 class="anchored" data-anchor-id="cartographic-projections">Cartographic projections</h3>
+<p>Finally, let’s use the results to make some cartographic projections</p>
+<div id="a619ac78" class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>normal_offsets <span class="op">=</span> [<span class="dv">0</span>,] <span class="co">#np.linspace(-5, 5, 11) # in microns</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>metadata_dict[<span class="st">"normal_offsets"</span>] <span class="op">=</span> normal_offsets <span class="co"># add the info to the metadata</span></span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>uv_grid_steps <span class="op">=</span> <span class="dv">1024</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="60be73f2" class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>projected_data_tpt_20, projected_coordinates_tpt_20, projected_normals_tpt_20 <span class="op">=</span> tcinterp.create_cartographic_projections(</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span><span class="st">"midgut_example/downsampled_3x/Time_000020_c1_stab-3x.tif"</span>,</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>    mesh<span class="op">=</span><span class="st">"midgut_example/wrapped_moebius_20.obj"</span>,</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>    resolution<span class="op">=</span>metadata_dict[<span class="st">"resolution_in_microns"</span>],</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>    normal_offsets<span class="op">=</span>normal_offsets,</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>    uv_grid_steps<span class="op">=</span>uv_grid_steps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="afb902f1" class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>plt.imshow(projected_data_tpt_20[<span class="dv">0</span>][<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/cell-37-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="67305078" class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>projected_data_tpt_1, projected_coordinates_tpt_1, projected_normals_tpt_1 <span class="op">=</span> tcinterp.create_cartographic_projections(</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span><span class="st">"midgut_example/downsampled_3x/Time_000001_c1_stab-3x.tif"</span>,</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>    mesh<span class="op">=</span>mesh_initial_UV,</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>    resolution<span class="op">=</span>metadata_dict[<span class="st">"resolution_in_microns"</span>],</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>    normal_offsets<span class="op">=</span>normal_offsets,</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>    uv_grid_steps<span class="op">=</span>uv_grid_steps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="1465f41a" class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>plt.imshow(projected_data_tpt_1[<span class="dv">0</span>][<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09_movies_and_dynamic_surfaces_files/figure-html/cell-39-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script type="application/vnd.jupyter.widget-state+json">
+{"state":{},"version_major":2,"version_minor":0}
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/nikolas-claussen\.github\.io\/blender-tissue-cartography");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

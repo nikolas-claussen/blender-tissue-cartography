@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/00_tissue_cartography_overview.html</loc>
+    <lastmod>2025-02-05T01:36:24.270Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/08_multiple_recordings_and_reference_meshes.html</loc>
+    <lastmod>2025-02-05T01:36:29.414Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/09_movies_and_dynamic_surfaces.html</loc>
+    <lastmod>2025-02-05T01:36:29.325Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/02_blender_tutorial.html</loc>
+    <lastmod>2025-02-05T01:36:29.319Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/03_blender_addon_tutorial.html</loc>
+    <lastmod>2025-02-05T01:36:29.162Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/04_btc_python_library.html</loc>
+    <lastmod>2025-02-05T01:36:28.983Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/01_blender_addon.html</loc>
+    <lastmod>2025-02-05T01:36:24.249Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/io.html</loc>
+    <lastmod>2025-02-05T01:36:26.627Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/02_cartographic_interpolation.html</loc>
+    <lastmod>2025-02-05T01:36:26.231Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/remeshing_pymeshlab.html</loc>
+    <lastmod>2025-02-05T01:36:25.677Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/04c_smoothing.html</loc>
+    <lastmod>2025-02-05T01:36:25.765Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/01b_mesh.html</loc>
+    <lastmod>2025-02-05T01:36:25.085Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/01c_interface_pymeshlab.html</loc>
+    <lastmod>2025-02-05T01:36:24.805Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/registration_rotation.html</loc>
+    <lastmod>2025-02-05T01:36:55.134Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/01d_interface_trimesh.html</loc>
+    <lastmod>2025-02-05T01:36:24.972Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/05c_wrapping.html</loc>
+    <lastmod>2025-02-05T01:36:25.202Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/differential_geometry.html</loc>
+    <lastmod>2025-02-05T01:36:25.732Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/01e_morphsnakes.html</loc>
+    <lastmod>2025-02-05T01:36:25.391Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/06_harmonic_wrapping.html</loc>
+    <lastmod>2025-02-05T01:36:26.217Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/registration.html</loc>
+    <lastmod>2025-02-05T01:36:25.963Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/remeshing.html</loc>
+    <lastmod>2025-02-05T01:36:27.469Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/10_analysis_in_3d.html</loc>
+    <lastmod>2025-02-05T01:36:28.445Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/01_segmentation_with_ilastik.html</loc>
+    <lastmod>2025-02-05T01:36:28.963Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/05_UV_maps_with_seams.html</loc>
+    <lastmod>2025-02-05T01:36:29.173Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/07_advanced_segmentation_and_meshing.html</loc>
+    <lastmod>2025-02-05T01:36:29.238Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/06_improving_UV_maps.html</loc>
+    <lastmod>2025-02-05T01:36:29.402Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nikolas-claussen.github.io/blender-tissue-cartography/index.html</loc>
+    <lastmod>2025-02-05T01:36:24.314Z</lastmod>
+  </url>
+</urlset>

@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>1. 3d segmentation with Ilastik – blender-tissue-cartography</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-0652833b129a4aecb7d8777fd89a11f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="1. 3d segmentation with Ilastik – blender-tissue-cartography">
+<meta property="og:description" content="Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender">
+<meta property="og:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/01_segmentation_with_ilastik_files/figure-html/c8f84101-63e9-4aa1-8242-c652822bc814-1-7030e885-41ed-4b35-837b-92847b11e71a.png">
+<meta property="og:site_name" content="blender-tissue-cartography">
+<meta property="og:image:height" content="843">
+<meta property="og:image:width" content="961">
+<meta name="twitter:title" content="1. 3d segmentation with Ilastik – blender-tissue-cartography">
+<meta name="twitter:description" content="Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender">
+<meta name="twitter:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/01_segmentation_with_ilastik_files/figure-html/c8f84101-63e9-4aa1-8242-c652822bc814-1-7030e885-41ed-4b35-837b-92847b11e71a.png">
+<meta name="twitter:image-height" content="843">
+<meta name="twitter:image-width" content="961">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">blender-tissue-cartography</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Tutorials/01_segmentation_with_ilastik.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../Tutorials/01_segmentation_with_ilastik.html">1. 3d segmentation with Ilastik</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">blender-tissue-cartography</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../00_tissue_cartography_overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tissue cartography with <code>blender_tisssue_cartography</code></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_blender_addon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Blender add-on</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Python library</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/io.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Image I/O</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01b_mesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh data structure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01c_interface_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>pymeshlab</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01d_interface_trimesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>trimesh</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01e_morphsnakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Morphsnakes segmentation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/02_cartographic_interpolation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cartographic interpolation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/differential_geometry.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Surface differential geometry</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/remeshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/remeshing_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing with MeshLab</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/04c_smoothing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh smoothing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/registration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rigid-body registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/registration_rotation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3D-rotation registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/05c_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Shrink-wrapping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/06_harmonic_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Harmonic mapping</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/01_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/02_blender_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2. Blender tutorial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/03_blender_addon_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3. <code>blender_tissue_cartography</code> blender add-on</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/04_btc_python_library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4. <code>blender_tissue_cartography</code> Python library</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/05_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5. Tissue cartography with “seams”</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/06_improving_UV_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">6. Iteratively improving cartographic projections</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/07_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7. Advanced segmentation and meshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/08_multiple_recordings_and_reference_meshes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8. Consistent cartographic projections across multiple recordings</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/09_movies_and_dynamic_surfaces.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">9. Time-lapse imaging and dynamic surfaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/10_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">10. 3D Image analysis with cartographic projections</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#loading-and-downsampling-the-data" id="toc-loading-and-downsampling-the-data" class="nav-link active" data-scroll-target="#loading-and-downsampling-the-data">Loading and downsampling the data</a>
+  <ul class="collapse">
+  <li><a href="#fiji-version" id="toc-fiji-version" class="nav-link" data-scroll-target="#fiji-version">Fiji version</a></li>
+  <li><a href="#python-version" id="toc-python-version" class="nav-link" data-scroll-target="#python-version">Python version</a></li>
+  </ul></li>
+  <li><a href="#create-3d-segmentation" id="toc-create-3d-segmentation" class="nav-link" data-scroll-target="#create-3d-segmentation">Create 3d segmentation</a>
+  <ul class="collapse">
+  <li><a href="#attention-axis-order" id="toc-attention-axis-order" class="nav-link" data-scroll-target="#attention-axis-order">Attention: Axis order</a></li>
+  <li><a href="#feature-selection" id="toc-feature-selection" class="nav-link" data-scroll-target="#feature-selection">Feature selection</a></li>
+  <li><a href="#training" id="toc-training" class="nav-link" data-scroll-target="#training">Training</a></li>
+  <li><a href="#prediction-export" id="toc-prediction-export" class="nav-link" data-scroll-target="#prediction-export">Prediction Export</a></li>
+  <li><a href="#batch-processing" id="toc-batch-processing" class="nav-link" data-scroll-target="#batch-processing">Batch processing</a></li>
+  </ul></li>
+  <li><a href="#creating-a-mesh-from-the-segmentation" id="toc-creating-a-mesh-from-the-segmentation" class="nav-link" data-scroll-target="#creating-a-mesh-from-the-segmentation">Creating a mesh from the segmentation</a>
+  <ul class="collapse">
+  <li><a href="#loading-segmentation-into-jupyter" id="toc-loading-segmentation-into-jupyter" class="nav-link" data-scroll-target="#loading-segmentation-into-jupyter">Loading segmentation into jupyter</a></li>
+  <li><a href="#computational-post-processing" id="toc-computational-post-processing" class="nav-link" data-scroll-target="#computational-post-processing">Computational post-processing</a></li>
+  <li><a href="#meshing" id="toc-meshing" class="nav-link" data-scroll-target="#meshing">Meshing</a></li>
+  </ul></li>
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps">Next steps</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Tutorials/01_segmentation_with_ilastik.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../Tutorials/01_segmentation_with_ilastik.html">1. 3d segmentation with Ilastik</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">1. 3d segmentation with Ilastik</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>In this notebook, we show how to use <a href="https://www.ilastik.org/">Ilastik</a> for 3d image segmentation. Obtaining a 3d segmentation of your sample of interest is the first step in the tissue cartography pipeline. The surface to be extracted from the 3d microscopy data is then defined as the segmentation boundary, i.e.&nbsp;between “inside” and “outside”. This should become a lot clearer by working through a concrete example - the mildly curved surface of an epithelium from a confocal <span class="math inline">\(z\)</span>-stack (data from <a href="https://doi.org/10.1371/journal.pbio.3002611">Lye et al.&nbsp;2024</a>.</p>
+<p>There are many tools available for segmenting 3d data, and you can use whichever one you would like. The only thing that matters is that it provides you with a 3d mask that defines which part of the image is “inside” and which part is “outside”, and that can be loaded into Python to create a mesh. There are also other methods to create a mesh that do not require a segmentation but only a list of points on your surface (see tutorial “Advanced segmentation”), or you can provide the mesh directly.</p>
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>However, in our experience, Ilastik is the most extremely robust and versatile tool for getting segmentations and meshes, and we use it in almost all of our tissue cartography pipelines. This is why we recommend it as a starting point.</p>
+<p>Ilastik uses machine learning algorithms to segment and classify your data. You draw the labels on your data, and the algorithm predicts a segmentation. You correct the errors interactively until you are happy. No machine learning expertise is required.</p>
+<p>Ilastik works great because it makes a “custom” model for your dataset. This means you don’t need to worry about whether your data is similar or not to the training data of some segmentation algorithm or fiddle with parameters. Once trained, you can reuse Ilastik models for batch prediction.</p>
+<section id="loading-and-downsampling-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="loading-and-downsampling-the-data">Loading and downsampling the data</h2>
+<p><strong>Data description</strong> myosin + membrane ventral view of Drosophila embryo during germband extension, from Lye et al.&nbsp;2024.</p>
+<p>Let’s load the dataset, and downsample it for segmentation purposes. This will make the segmentation run much faster, without sacrificing much detail on the surface of interest. You can either do this graphically in Fiji, or in pyhton.</p>
+<section id="fiji-version" class="level3">
+<h3 class="anchored" data-anchor-id="fiji-version">Fiji version</h3>
+<p>Let’s open our example dataset: <code>Tutorials/ilastik_example/basics_example.tif</code> in Fiji. Now downscale it by a factor x3:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_segmentation_with_ilastik_files/figure-html/c8f84101-63e9-4aa1-8242-c652822bc814-1-7030e885-41ed-4b35-837b-92847b11e71a.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Then save the result as a <code>.h5</code> file. This will allow Ilastik to work much more efficiently in the next step: File -&gt; Save as -&gt; HD5. Let’s call the result <code>basics_example_subsampled.h5</code>.</p>
+</section>
+<section id="python-version" class="level3">
+<h3 class="anchored" data-anchor-id="python-version">Python version</h3>
+<p>Let’s start by loading the relavant python libraries</p>
+<div id="52eeaa79" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># these are the modules with the tissue cartography code</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> io <span class="im">as</span> tcio <span class="co"># for file reading and saving</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> mesh <span class="im">as</span> tcmesh <span class="co"># for mesh handling</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> remesh <span class="im">as</span> tcremesh <span class="co"># for creating a surface mesh</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="8b7480fe" class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> skimage <span class="im">import</span> transform</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="2346a597" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># start by entering the filename   </span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>metadata_dict <span class="op">=</span> {<span class="st">'filename'</span>: <span class="st">'ilastik_example/basics_example'</span>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="b1fa308e" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> tcio.adjust_axis_order(tcio.imread(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">.tif"</span>))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"image shape:"</span>, image.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>image shape: (2, 26, 454, 511)</code></pre>
+</div>
+</div>
+<section id="resolution-info-and-subsampling" class="level4">
+<h4 class="anchored" data-anchor-id="resolution-info-and-subsampling">Resolution info and subsampling</h4>
+<p>From the image shape, we can see that the spatial axes are in <span class="math inline">\(z-x-y\)</span> order. We use this information to correctly enter the resolution in microns/pixel for each axis. You can typically get this info from the <code>.tif</code> metadata. We then subsample the image for rapid segmentation. This will greatly speed up the segmentation process. It is usually a good idea to make the subsampled image approximately isotropic. Subsample so much that the geometry of your object of interest is still visible (i.e.&nbsp;curvature and/or wrinkles in your surface).</p>
+<div id="0d94566d" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>metadata_dict[<span class="st">'resolution_in_microns'</span>] <span class="op">=</span> (<span class="dv">1</span>, <span class="fl">0.36</span>, <span class="fl">0.36</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>metadata_dict[<span class="st">'subsampling_factors'</span>] <span class="op">=</span> (<span class="dv">1</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="1756531b" class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's plot the data in a cross section</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>plt.imshow(image[<span class="dv">1</span>,:,:,<span class="dv">250</span>],</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>           aspect<span class="op">=</span>metadata_dict[<span class="st">'resolution_in_microns'</span>][<span class="dv">0</span>]<span class="op">/</span>metadata_dict[<span class="st">'resolution_in_microns'</span>][<span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="01_segmentation_with_ilastik_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="1981c01d" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>subsampled_image <span class="op">=</span> transform.rescale(image, metadata_dict[<span class="st">'subsampling_factors'</span>],</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                                     channel_axis<span class="op">=</span><span class="dv">0</span>, preserve_range<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"subsampled image shape:"</span>, subsampled_image.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>subsampled image shape: (2, 26, 151, 170)</code></pre>
+</div>
+</div>
+<p>We now save the subsampled image as a <code>.h5</code> file for input into ilastik for segmentation. <code>.h5</code> files are faster to read for ilastik and perform much better than <code>.tif</code>’s.</p>
+<div id="62c33c8b" class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>tcio.write_h5(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_subsampled.h5"</span>, subsampled_image, axis_order<span class="op">=</span><span class="st">"CZYX"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="create-3d-segmentation" class="level2">
+<h2 class="anchored" data-anchor-id="create-3d-segmentation">Create 3d segmentation</h2>
+<p>We now use <a href="https://www.ilastik.org/documentation/pixelclassification/pixelclassification">ilastik binary pixel classification</a>.</p>
+<p>Start Ilastik, and select binary pixel classification:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_segmentation_with_ilastik_files/figure-html/901857d3-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Save the project <code>.ilp</code> file to the <code>ilastik_example</code> directory.</p>
+<p>Now let’s add the dataset:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_segmentation_with_ilastik_files/figure-html/99a60c83-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Click “add separate images” and select <code>basics_example_subsampled.h5</code> from the <code>ilastik_example</code> directory.</p>
+<section id="attention-axis-order" class="level3">
+<h3 class="anchored" data-anchor-id="attention-axis-order">Attention: Axis order</h3>
+<p>Ilastik does not always know what the axes in your input data mean. The <code>axis_order</code> argument in <code>tcio.write_h5</code> allows you to write the axis order into the <code>.h5</code> file. If, nevertheless, ilastik thinks the “channel” axis is the “z” axis, we can fix it as follows. “Right click” on the dataset and “edit properties”:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_segmentation_with_ilastik_files/figure-html/8f843c6f-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Our dataset is in <code>CZYX</code> order (where <code>C</code>=channel). By convention, <code>blender_tissue_cartography</code> always puts the channel as the first axis. Ilastik should show you three cross-sections of your data in red/green color.</p>
+<p>Click on “Feature selection” on the left toolbar to continue.</p>
+</section>
+<section id="feature-selection" class="level3">
+<h3 class="anchored" data-anchor-id="feature-selection">Feature selection</h3>
+<p>Ilastik internally works by applying a bunch of different image filters (like smoothing, or edge detection) to your data, and using the results as input for a machine-learning model. You now select which filters (“Features”) you want. In general, it is safe to just select everything. If you get an error, it may be the case that the size of the filter is bigger than the smallest axis (e.g.&nbsp;the <span class="math inline">\(z\)</span>-axis) in your image. In this case, click the top bar to make the filter “2d”:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_segmentation_with_ilastik_files/figure-html/3d381d4f-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+</section>
+<section id="training" class="level3">
+<h3 class="anchored" data-anchor-id="training">Training</h3>
+<p>We now continue to “Training”. Zoom in to one of the cross sections, and paint the “inside” of the sample in yellow, and the “outside” in blue. You can also add more labels, but here we will just need two. You just need to make a few brush strokes and ilastik will start making predictions. Click the “Live Update” button:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_segmentation_with_ilastik_files/figure-html/2e95f495-1-image-2.png" class="img-fluid figure-img"></p>
+<figcaption>image-2.png</figcaption>
+</figure>
+</div>
+<p>On the left, you can adjust the lookup table for your data, and decide what features of the prediction you want to see. I find it very helpful to look at “Uncertainty” which shows you in light blue where the algorithm is still unsure:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_segmentation_with_ilastik_files/figure-html/2e95f495-2-image-3.png" class="img-fluid figure-img"></p>
+<figcaption>image-3.png</figcaption>
+</figure>
+</div>
+<p>Now paint more labels until you are happy with the classification. Target the regions of high uncertainty, and look in all three cross sections. It is important that the classification boundary tightly matches the surface you want to extract!</p>
+</section>
+<section id="prediction-export" class="level3">
+<h3 class="anchored" data-anchor-id="prediction-export">Prediction Export</h3>
+<p>Once you are happy with the results, let’s go to “Prediction Export” on the left toolbar. Use “Source: Probabilities” and click “export all”:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_segmentation_with_ilastik_files/figure-html/33d72a56-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>You can adjust the axis order and output format under “Choose Export Image Settings” if you need.</p>
+</section>
+<section id="batch-processing" class="level3">
+<h3 class="anchored" data-anchor-id="batch-processing">Batch processing</h3>
+<p>You can apply the Ilastik model to multiple datasets, using the “Batch Processing” tab on the left toolbar. In general, I recommend doing this only for datasets that are highly “comparable”, e.g.&nbsp;recorded with exactly the same microscopy settings. Since it’s fairly easy and quick to train a new ilastik model for each dataset, trying to build a model that will work across all your recordings is often not worth it.</p>
+<p><strong>Attention: data normalization</strong></p>
+<p>If you plan on reusing the same model, it is recommended to normalize your data, so that the pixel values are always of the same approximate magnitude. Do this <em>before</em> you save the data as <code>.h5</code>’s, for example using the provided <a href="https://nikolas-claussen.github.io/blender-tissue-cartography/Python%20library/io.html#normalize_quantiles"><code>normalize_quantiles</code></a>-function:</p>
+<div id="3e34dd73" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>tcio.write_h5(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_subsampled_normalized.h5"</span>,</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>              tcio.normalize_quantiles(subsampled_image))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="creating-a-mesh-from-the-segmentation" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-mesh-from-the-segmentation">Creating a mesh from the segmentation</h2>
+<p>The next step is to convert the segmentation of our sample into a mesh representing the surface of interest. If you are using the add-on version of <code>blender_tissue_cartography</code>, see tutorial 3, “Tissue cartography Blender add-on”. If you are using the Pyhton library, see below.</p>
+<section id="loading-segmentation-into-jupyter" class="level3">
+<h3 class="anchored" data-anchor-id="loading-segmentation-into-jupyter">Loading segmentation into jupyter</h3>
+<p>After creating an ilastik project, training the model, and exporting the probabilities, we load the exported probabilities back into Python.</p>
+<p>The resulting segmentation has two channels for the probability of a pixel being “inside” and “outside”.</p>
+<div id="16e77650" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>segmentation <span class="op">=</span> tcio.read_h5(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_subsampled-image_Probabilities.h5"</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>segmentation <span class="op">=</span> segmentation[<span class="dv">0</span>] <span class="co"># select the first channel of the segmentation - it's the probablity a pixel</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                               <span class="co"># is part of the sample</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"segmentation shape:"</span>, segmentation.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>segmentation shape: (26, 151, 170)</code></pre>
+</div>
+</div>
+<div id="ba35599c" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># look at the segmentation in a cross section</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>plt.imshow(segmentation[:,:,<span class="dv">50</span>], vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="01_segmentation_with_ilastik_files/figure-html/cell-12-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="computational-post-processing" class="level3">
+<h3 class="anchored" data-anchor-id="computational-post-processing">Computational post-processing</h3>
+<p>In our simple example, the segmentation story ends here, since the ilastik output already provides a great segmentation of our data. But we are not always so lucky, and sometimes extra processing is necessary.</p>
+<p>I can recommend the <a href="https://docs.scipy.org/doc/scipy/reference/ndimage.html"><code>scipy.ndimage</code></a> module (for fixing holes, removing small erroneous “blobs” in your segmentation, etc.), and the <a href="https://github.com/pmneila/morphsnakes">morphsnakes</a> package which works by computationally “inflating a balloon” at a seed point, with the ilastik probability output acting as a barrier. See this example, with the “balloon” in blue: <img src="01_segmentation_with_ilastik_files/figure-html/226a4785-1-image.png" class="img-fluid" alt="image.png"> This is very helpful when your ilastik output defines the <em>boundary</em> of the object you want to segment, not its volume. The morphsnakes package is explained in tutorial 6.</p>
+<p>Don’t worry if your segmentation contains some small errors. We can fix the resulting errors in the surface in blender’s graphical user interface in the next step.</p>
+</section>
+<section id="meshing" class="level3">
+<h3 class="anchored" data-anchor-id="meshing">Meshing</h3>
+<p>We can convert the segmentation into a triangular mesh using the marching cubes method, and save the mesh. We save all meshes in as wavefront <code>.obj</code> files (see <a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file">wikipedia</a>).</p>
+<p><strong>Important convention</strong> For sanities sake, we will always store all mesh coordinates in microns. This means rescaling appropriately after calculating the mesh from the 3d segmentation.</p>
+<p>We then save the mesh to disk. In the next tutorial, we will load this mesh in the 3d software <a href="https://www.blender.org/">blender</a> which is the heart of the tissue cartography pipeline</p>
+<div id="8c717f80" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># now we create a 3d mesh of using the marching cubes method</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>vertices, faces <span class="op">=</span> tcremesh.marching_cubes(segmentation, isovalue<span class="op">=</span><span class="fl">0.5</span>, sigma_smoothing<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co"># EXTREMELY IMPORTANT - we now rescale the vertex coordinates so that they are in microns.</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>vertices_in_microns <span class="op">=</span> vertices <span class="op">*</span> (np.array(metadata_dict[<span class="st">'resolution_in_microns'</span>])</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>                                 <span class="op">/</span>np.array(metadata_dict[<span class="st">'subsampling_factors'</span>]))</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh(vertices_in_microns, faces)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>mesh.name <span class="op">=</span> <span class="st">"basics_example_mesh_marching_cubes"</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>mesh.write_obj(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_mesh_marching_cubes.obj"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="next-steps" class="level2">
+<h2 class="anchored" data-anchor-id="next-steps">Next steps</h2>
+<p>Now we will switch to blender to inspect our mesh and map it to the plane.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/nikolas-claussen\.github\.io\/blender-tissue-cartography");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

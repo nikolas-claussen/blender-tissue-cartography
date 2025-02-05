@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>6. Iteratively improving cartographic projections – blender-tissue-cartography</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-0652833b129a4aecb7d8777fd89a11f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="6. Iteratively improving cartographic projections – blender-tissue-cartography">
+<meta property="og:description" content="Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender">
+<meta property="og:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/06_improving_UV_maps_files/figure-html/cell-8-output-1.png">
+<meta property="og:site_name" content="blender-tissue-cartography">
+<meta property="og:image:height" content="413">
+<meta property="og:image:width" content="422">
+<meta name="twitter:title" content="6. Iteratively improving cartographic projections – blender-tissue-cartography">
+<meta name="twitter:description" content="Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender">
+<meta name="twitter:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/06_improving_UV_maps_files/figure-html/cell-8-output-1.png">
+<meta name="twitter:image-height" content="413">
+<meta name="twitter:image-width" content="422">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">blender-tissue-cartography</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Tutorials/01_segmentation_with_ilastik.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../Tutorials/06_improving_UV_maps.html">6. Iteratively improving cartographic projections</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">blender-tissue-cartography</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../00_tissue_cartography_overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tissue cartography with <code>blender_tisssue_cartography</code></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_blender_addon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Blender add-on</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Python library</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/io.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Image I/O</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01b_mesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh data structure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01c_interface_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>pymeshlab</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01d_interface_trimesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>trimesh</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01e_morphsnakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Morphsnakes segmentation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/02_cartographic_interpolation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cartographic interpolation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/differential_geometry.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Surface differential geometry</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/remeshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/remeshing_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing with MeshLab</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/04c_smoothing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh smoothing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/registration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rigid-body registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/registration_rotation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3D-rotation registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/05c_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Shrink-wrapping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/06_harmonic_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Harmonic mapping</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/01_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/02_blender_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2. Blender tutorial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/03_blender_addon_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3. <code>blender_tissue_cartography</code> blender add-on</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/04_btc_python_library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4. <code>blender_tissue_cartography</code> Python library</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/05_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5. Tissue cartography with “seams”</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/06_improving_UV_maps.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">6. Iteratively improving cartographic projections</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/07_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7. Advanced segmentation and meshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/08_multiple_recordings_and_reference_meshes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8. Consistent cartographic projections across multiple recordings</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/09_movies_and_dynamic_surfaces.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">9. Time-lapse imaging and dynamic surfaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/10_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">10. 3D Image analysis with cartographic projections</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#load-dataset" id="toc-load-dataset" class="nav-link active" data-scroll-target="#load-dataset">Load dataset</a></li>
+  <li><a href="#unwrapping-in-blender" id="toc-unwrapping-in-blender" class="nav-link" data-scroll-target="#unwrapping-in-blender">Unwrapping in blender</a></li>
+  <li><a href="#first-iteration-cartographic-projection" id="toc-first-iteration-cartographic-projection" class="nav-link" data-scroll-target="#first-iteration-cartographic-projection">First iteration: Cartographic projection</a></li>
+  <li><a href="#second-iteration" id="toc-second-iteration" class="nav-link" data-scroll-target="#second-iteration">Second iteration</a>
+  <ul class="collapse">
+  <li><a href="#second-iteration-cartographic-projection" id="toc-second-iteration-cartographic-projection" class="nav-link" data-scroll-target="#second-iteration-cartographic-projection">Second iteration: cartographic projection</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Tutorials/01_segmentation_with_ilastik.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../Tutorials/06_improving_UV_maps.html">6. Iteratively improving cartographic projections</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">6. Iteratively improving cartographic projections</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>The tissue cartography process involves multiple steps:</p>
+<ol type="1">
+<li><p>create a segmentation of your 3d data</p></li>
+<li><p>convert the segmentation into a mesh of your surface of interest</p></li>
+<li><p>load the mesh into blender to map to unwrap it into the plane</p></li>
+<li><p>make a cartographic projection of your 3d data using the unwrapped mesh</p></li>
+</ol>
+<p>It is likely that after your first pass, you will not be 100% satisfied with the results, and in general, you will need to iterate steps 1-4 to achieve good results. A key advantage of using blender is that you can visualize your results from the previous pass and use them as a guide. Here we will see how to improve an initial unwrapping/cartographic projection of an example dataset of the zebrafish egg.</p>
+<p>Crucially, almost <em>any</em> unwrapping map will give you good enough results to visualize the data on the blender 3d model. You can then use that as a guide to make a better unwrapping (with less distortion, focused on the region of interest, etc).</p>
+<p><strong>Note:</strong> This tutorial uses the <code>blender_tissue_cartography</code> python library. Interactively designing your cartographic projections is now much easier using the <code>blender_tissue_cartography</code> Blender add-on (which I created after writing this tutorial). Please see tutorial 3.</p>
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<div id="71e371e1" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> io <span class="im">as</span> tcio</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> mesh <span class="im">as</span> tcmesh</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> interpolation <span class="im">as</span> tcinterp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="2a528966" class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> skimage <span class="im">import</span> transform</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> stats, spatial, linalg</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="load-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="load-dataset">Load dataset</h2>
+<p>This dataset is a lightsheet recording of the early zebrafish embryo right before epiboly, showing fluorescent nuclei. Courtesy of S. Wopat, Streichan lab UCSB.</p>
+<div id="4c128f93" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>metadata_dict <span class="op">=</span> {<span class="st">"filename"</span>: <span class="st">"fish_example/zebrafish_egg_nuclei"</span>,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"resolution_in_microns"</span>: [<span class="fl">1.662</span>, <span class="fl">1.662</span>, <span class="fl">1.662</span>]}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="859dc905" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> tcio.adjust_axis_order(tcio.imread(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">.tif"</span>))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"image shape:"</span>, image.shape) <span class="co"># image shape - spatial axes are in z-x-y order</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>image shape: (1, 246, 194, 248)</code></pre>
+</div>
+</div>
+<div id="9c4cdd1d" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># segmentation and meshing are already done for this dataset</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">.obj"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="fb84ef58" class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>slice_image, slice_vertices <span class="op">=</span> tcinterp.get_cross_section_vertices_normals(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>, <span class="dv">80</span>, image, mesh, metadata_dict[<span class="st">"resolution_in_microns"</span>], width<span class="op">=</span><span class="dv">2</span>, get_normals<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="4eed1f5b" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>plt.scatter(<span class="op">*</span>slice_vertices.T, s<span class="op">=</span><span class="dv">5</span>, c<span class="op">=</span><span class="st">"tab:red"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>plt.imshow(slice_image[<span class="dv">0</span>], vmax<span class="op">=</span><span class="dv">10000</span>, origin<span class="op">=</span><span class="st">"lower"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_improving_UV_maps_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="unwrapping-in-blender" class="level2">
+<h2 class="anchored" data-anchor-id="unwrapping-in-blender">Unwrapping in blender</h2>
+<p>Let’s unwrap our mesh in blender. Open a new blender project, and import <code>zebrafish_egg_nuclei.obj</code>. We’ll start by using a standard-issue spherical projection for unwrapping. In the UV Editor, look at the egg “from above”, and choose “UV-&gt;Sphere project” with “View on poles”:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="06_improving_UV_maps_files/figure-html/d317bff0-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Export the result as <code>zebrafish_egg_nuclei_uv_first_iteration.obj</code>.</p>
+</section>
+<section id="first-iteration-cartographic-projection" class="level2">
+<h2 class="anchored" data-anchor-id="first-iteration-cartographic-projection">First iteration: Cartographic projection</h2>
+<p>Let’s use this “automatic” UV projection to get the 3d data as a texture on our mesh. With that as guidance, we can then refine our UV projection.</p>
+<div id="da47f03b" class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>normal_offsets <span class="op">=</span> np.array([<span class="op">-</span><span class="dv">4</span>, <span class="op">-</span><span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">4</span>])</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>metadata_dict[<span class="st">"normal_offsets"</span>] <span class="op">=</span> normal_offsets <span class="co"># add the info to the metadata</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>uv_grid_steps <span class="op">=</span> <span class="dv">512</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="84d18909" class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>projected_data, projected_coordinates, projected_normals <span class="op">=</span> tcinterp.create_cartographic_projections(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span><span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">.tif"</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    mesh<span class="op">=</span><span class="ss">f"fish_example/zebrafish_egg_nuclei_uv_first_iteration.obj"</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    resolution<span class="op">=</span>metadata_dict[<span class="st">"resolution_in_microns"</span>],</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    normal_offsets<span class="op">=</span>normal_offsets,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    uv_grid_steps<span class="op">=</span>uv_grid_steps,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    use_fallback<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># for the initial UV map, we use the fallback option since there are a lot of flipped triangles which</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># can mess up our cartographic interpolation</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/home/nikolas/Documents/UCSB/streichan/numerics/code/python code/jupyter notebooks/blender-tissue-cartography/blender_tissue_cartography/interpolation.py:215: RuntimeWarning: UV map has self-intersections, 20185 flipped triangles. Try use_fallback=True?
+  warnings.warn("UV map has self-intersections, {} flipped triangles. Try use_fallback=True?".format(</code></pre>
+</div>
+</div>
+<div id="f45bcc2e" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>plt.imshow(projected_coordinates[...,<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_improving_UV_maps_files/figure-html/cell-11-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The projected data has a lot of distortion, and shows a large part of the embryo we don’t care about - the dark part on the top, which is just yolk.</p>
+<div id="6df2ba9b" class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>plt.imshow(projected_data[<span class="dv">0</span>, <span class="dv">0</span>], vmax<span class="op">=</span><span class="dv">10000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_improving_UV_maps_files/figure-html/cell-12-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="89e4a863" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save images for visualization in blender</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>texture_path <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>os<span class="sc">.</span>getcwd()<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_textures"</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>tcio.save_stack_for_blender(projected_data, texture_path, normalization<span class="op">=</span>(<span class="fl">0.01</span>, <span class="fl">0.99</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="second-iteration" class="level2">
+<h2 class="anchored" data-anchor-id="second-iteration">Second iteration</h2>
+<p>Let’s go back to blender and, in the Shading workspace, add our projected images as textures on the 3d mesh:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="06_improving_UV_maps_files/figure-html/f730e1e6-2-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Now we can see what part of the embryo we care about! Let’s go back to the UV Editor workspace, and make a seam along the edge of the region where there are cells. To do so, we want to use “Material preview” as Viewport shading:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="06_improving_UV_maps_files/figure-html/f730e1e6-1-image-2.png" class="img-fluid figure-img"></p>
+<figcaption>image-2.png</figcaption>
+</figure>
+</div>
+<p>Now we can choose a nice seam. Let’s use “circle select” (“C”) and select the top part of the mesh:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="06_improving_UV_maps_files/figure-html/53ddb784-2-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>and then get the boundary loop by “Select -&gt; Select loops -&gt; Select boundary loop”. Right-click and “Mark as seam”:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="06_improving_UV_maps_files/figure-html/53ddb784-1-image-3.png" class="img-fluid figure-img"></p>
+<figcaption>image-3.png</figcaption>
+</figure>
+</div>
+<p>Now we have a seam that matches well the region we care about! Let’s use UV unwrapping to generate a new UV map:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="06_improving_UV_maps_files/figure-html/9f2f3ac4-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>The projected data is now much better - the region of interest has much less distortion. You can make the uninteresting “top” part of the mesh very small, and scale the main part of the UV map to better fill the UV square, using the scaling tool.</p>
+<p>Click on the patch (“island”), press “L” to select the whole patch, “S” for scale, and “G” for translate. Click to confirm.</p>
+<section id="second-iteration-cartographic-projection" class="level3">
+<h3 class="anchored" data-anchor-id="second-iteration-cartographic-projection">Second iteration: cartographic projection</h3>
+<p>Let’s export the mesh as <code>zebrafish_egg_nuclei_uv_second_iteration.obj</code> and create a new cartographic projection. The result will look identical when viewed in 3D in blender. But the cartographic projection now focuses on our region of interest, has no seams within that region, and has much lower distortion. This makes it superior for quantitative analysis (for example, counting the number of nuclei).</p>
+<div id="71a1ae95" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>normal_offsets <span class="op">=</span> np.array([<span class="op">-</span><span class="dv">4</span>, <span class="op">-</span><span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">4</span>])</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>metadata_dict[<span class="st">"normal_offsets"</span>] <span class="op">=</span> normal_offsets <span class="co"># add the info to the metadata</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>uv_grid_steps <span class="op">=</span> <span class="dv">512</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="ee0ae4eb" class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>projected_data, projected_coordinates, projected_normals <span class="op">=</span> tcinterp.create_cartographic_projections(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span><span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">.tif"</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    mesh<span class="op">=</span><span class="ss">f"fish_example/zebrafish_egg_nuclei_uv_second_iteration.obj"</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    resolution<span class="op">=</span>metadata_dict[<span class="st">"resolution_in_microns"</span>],</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    normal_offsets<span class="op">=</span>normal_offsets,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    uv_grid_steps<span class="op">=</span>uv_grid_steps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="0e06813d" class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>plt.imshow(projected_data[<span class="dv">0</span>, <span class="dv">0</span>], vmax<span class="op">=</span><span class="dv">10000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="06_improving_UV_maps_files/figure-html/cell-16-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="666ed4d6" class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save images for visualization in blender</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>texture_path <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>os<span class="sc">.</span>getcwd()<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_textures_second_iteration"</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>tcio.save_stack_for_blender(projected_data, texture_path, normalization<span class="op">=</span>(<span class="fl">0.01</span>, <span class="fl">0.99</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Visualized in blender:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="06_improving_UV_maps_files/figure-html/1b8df7bd-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/nikolas-claussen\.github\.io\/blender-tissue-cartography");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

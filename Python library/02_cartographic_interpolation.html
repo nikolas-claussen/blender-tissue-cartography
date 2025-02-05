@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>cartographic_interpolation – blender-tissue-cartography</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-0652833b129a4aecb7d8777fd89a11f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="blender-tissue-cartography">
+<meta property="og:description" content="Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender">
+<meta property="og:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/02_cartographic_interpolation_files/figure-html/cell-8-output-1.png">
+<meta property="og:site_name" content="blender-tissue-cartography">
+<meta property="og:image:height" content="132">
+<meta property="og:image:width" content="543">
+<meta name="twitter:title" content="blender-tissue-cartography">
+<meta name="twitter:description" content="Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender">
+<meta name="twitter:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/02_cartographic_interpolation_files/figure-html/cell-8-output-1.png">
+<meta name="twitter:image-height" content="132">
+<meta name="twitter:image-width" content="543">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">blender-tissue-cartography</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Python library/io.html">Python library</a></li><li class="breadcrumb-item"><a href="../Python library/02_cartographic_interpolation.html">Cartographic interpolation</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">blender-tissue-cartography</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../00_tissue_cartography_overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tissue cartography with <code>blender_tisssue_cartography</code></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_blender_addon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Blender add-on</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Python library</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/io.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Image I/O</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01b_mesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh data structure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01c_interface_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>pymeshlab</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01d_interface_trimesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>trimesh</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01e_morphsnakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Morphsnakes segmentation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/02_cartographic_interpolation.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Cartographic interpolation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/differential_geometry.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Surface differential geometry</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/remeshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/remeshing_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing with MeshLab</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/04c_smoothing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh smoothing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/registration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rigid-body registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/registration_rotation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3D-rotation registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/05c_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Shrink-wrapping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/06_harmonic_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Harmonic mapping</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/01_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/02_blender_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2. Blender tutorial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/03_blender_addon_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3. <code>blender_tissue_cartography</code> blender add-on</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/04_btc_python_library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4. <code>blender_tissue_cartography</code> Python library</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/05_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5. Tissue cartography with “seams”</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/06_improving_UV_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">6. Iteratively improving cartographic projections</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/07_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7. Advanced segmentation and meshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/08_multiple_recordings_and_reference_meshes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8. Consistent cartographic projections across multiple recordings</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/09_movies_and_dynamic_surfaces.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">9. Time-lapse imaging and dynamic surfaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/10_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">10. 3D Image analysis with cartographic projections</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#cartographic-interpolation" id="toc-cartographic-interpolation" class="nav-link active" data-scroll-target="#cartographic-interpolation">Cartographic interpolation</a>
+  <ul class="collapse">
+  <li><a href="#important-conventions" id="toc-important-conventions" class="nav-link" data-scroll-target="#important-conventions">Important conventions</a></li>
+  </ul></li>
+  <li><a href="#example-dataset" id="toc-example-dataset" class="nav-link" data-scroll-target="#example-dataset">Example dataset</a>
+  <ul class="collapse">
+  <li><a href="#load-and-subsample-data-for-segmentation" id="toc-load-and-subsample-data-for-segmentation" class="nav-link" data-scroll-target="#load-and-subsample-data-for-segmentation">Load and subsample data for segmentation</a></li>
+  <li><a href="#create-3d-segmentation" id="toc-create-3d-segmentation" class="nav-link" data-scroll-target="#create-3d-segmentation">Create 3d segmentation</a></li>
+  <li><a href="#meshing" id="toc-meshing" class="nav-link" data-scroll-target="#meshing">Meshing</a></li>
+  <li><a href="#get_cross_section_vertices_normals" id="toc-get_cross_section_vertices_normals" class="nav-link" data-scroll-target="#get_cross_section_vertices_normals">get_cross_section_vertices_normals</a></li>
+  </ul></li>
+  <li><a href="#uv-mapping-in-blender" id="toc-uv-mapping-in-blender" class="nav-link" data-scroll-target="#uv-mapping-in-blender">UV-mapping in blender</a>
+  <ul class="collapse">
+  <li><a href="#blender-export" id="toc-blender-export" class="nav-link" data-scroll-target="#blender-export">Blender export</a></li>
+  </ul></li>
+  <li><a href="#interpolation-onto-uv-grid" id="toc-interpolation-onto-uv-grid" class="nav-link" data-scroll-target="#interpolation-onto-uv-grid">Interpolation onto UV grid</a>
+  <ul class="collapse">
+  <li><a href="#get_uv_layout_mask_mask" id="toc-get_uv_layout_mask_mask" class="nav-link" data-scroll-target="#get_uv_layout_mask_mask">get_uv_layout_mask_mask</a></li>
+  <li><a href="#interpolate_barycentric" id="toc-interpolate_barycentric" class="nav-link" data-scroll-target="#interpolate_barycentric">interpolate_barycentric</a></li>
+  <li><a href="#interpolate_per_vertex_field_to_uv" id="toc-interpolate_per_vertex_field_to_uv" class="nav-link" data-scroll-target="#interpolate_per_vertex_field_to_uv">interpolate_per_vertex_field_to_UV</a></li>
+  <li><a href="#interpolate_uv_to_per_vertex_field" id="toc-interpolate_uv_to_per_vertex_field" class="nav-link" data-scroll-target="#interpolate_uv_to_per_vertex_field">interpolate_UV_to_per_vertex_field</a></li>
+  <li><a href="#interpolate_volumetric_data_to_uv" id="toc-interpolate_volumetric_data_to_uv" class="nav-link" data-scroll-target="#interpolate_volumetric_data_to_uv">interpolate_volumetric_data_to_uv</a></li>
+  <li><a href="#interpolate_volumetric_data_to_uv_multilayer" id="toc-interpolate_volumetric_data_to_uv_multilayer" class="nav-link" data-scroll-target="#interpolate_volumetric_data_to_uv_multilayer">interpolate_volumetric_data_to_uv_multilayer</a></li>
+  <li><a href="#cartographic-projection" id="toc-cartographic-projection" class="nav-link" data-scroll-target="#cartographic-projection">Cartographic projection</a></li>
+  <li><a href="#create_cartographic_projections" id="toc-create_cartographic_projections" class="nav-link" data-scroll-target="#create_cartographic_projections">create_cartographic_projections</a></li>
+  <li><a href="#saving-and-visualizing-the-results" id="toc-saving-and-visualizing-the-results" class="nav-link" data-scroll-target="#saving-and-visualizing-the-results">Saving and visualizing the results</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Python library/io.html">Python library</a></li><li class="breadcrumb-item"><a href="../Python library/02_cartographic_interpolation.html">Cartographic interpolation</a></li></ol></nav></header>
+
+
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="cartographic-interpolation" class="level2">
+<h2 class="anchored" data-anchor-id="cartographic-interpolation">Cartographic interpolation</h2>
+<blockquote class="blockquote">
+<p>Project volumetric image onto a surface and map it to 2d using UV map.</p>
+</blockquote>
+<p>This module is the “heart” of <code>blender_tissue_cartography</code> - the rest is just add ons. We illustrate it with a basic example of tissue cartography workflow.</p>
+<p>In this notebook, we go through a basic example of tissue cartography - extracting the mildly curved surface of an epithelium from a confocal <span class="math inline">\(z\)</span>-stack. This example data is taken from <a href="https://doi.org/10.1371/journal.pbio.3002611">Lye et al.&nbsp;2024</a>, available <a href="https://www.ebi.ac.uk/biostudies/studies/S-BIAD1271">here</a>.</p>
+<p>We introduce the functions of our python module for cartographic interpolation one by one.</p>
+<section id="important-conventions" class="level3">
+<h3 class="anchored" data-anchor-id="important-conventions">Important conventions</h3>
+<ol type="1">
+<li>Image axis 0 is always the channel. All other axes are not permuted</li>
+<li>Mesh coordinates are always saved in microns.</li>
+<li>The UV map (the map of our surface mesh to a cartographic plane) always maps into the unit square, <span class="math inline">\(u\in[0,1], \; v\in[0,1]\)</span>. All of our projections will be square images (with transparent regions for parts of the UV square not covered by the unwrapped mesh)</li>
+</ol>
+</section>
+</section>
+<section id="example-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="example-dataset">Example dataset</h2>
+<section id="load-and-subsample-data-for-segmentation" class="level3">
+<h3 class="anchored" data-anchor-id="load-and-subsample-data-for-segmentation">Load and subsample data for segmentation</h3>
+<p><strong>Data description</strong> myosin + membrane ventral view of Drosophila embryo during germband extension, from Lye et al.&nbsp;2024.</p>
+<p>We begin by creating a directory for our project where we’ll save all related files (and normally, the jupyter notebook used to generate them!).</p>
+<p>Let’s load the dataset. We then enter the relevant metadata - the filename, resolution in microns, and how much we want to subsample for segmentation purposes.</p>
+<div id="2346a597" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>metadata_dict <span class="op">=</span> {<span class="st">'filename'</span>: <span class="st">'datasets/basics_example/basics_example'</span>,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">'resolution_in_microns'</span>: (<span class="dv">1</span>, <span class="fl">0.36</span>, <span class="fl">0.36</span>), <span class="co"># you can typically get this from the .tif metadata</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                 <span class="st">'subsampling_factors'</span>: (<span class="dv">1</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">3</span>)}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="b983a28d" class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>metadata_dict[<span class="st">'subsampling_factors'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(1, 0.3333333333333333, 0.3333333333333333)</code></pre>
+</div>
+</div>
+<div id="b1fa308e" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> tcio.adjust_axis_order(tcio.imread(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">.tif"</span>))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"image shape:"</span>, image.shape) <span class="co"># image shape - spatial axes are in z-x-y order</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>image shape: (2, 26, 454, 511)</code></pre>
+</div>
+</div>
+<div id="1981c01d" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>subsampled_image <span class="op">=</span> tcio.subsample_image(image, metadata_dict[<span class="st">'subsampling_factors'</span>],</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                                        use_block_averaging_if_possible<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"subsampled image shape:"</span>, subsampled_image.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>subsampled image shape: (2, 26, 151, 170)</code></pre>
+</div>
+</div>
+</section>
+<section id="create-3d-segmentation" class="level3">
+<h3 class="anchored" data-anchor-id="create-3d-segmentation">Create 3d segmentation</h3>
+<p>Now create a 3d segmentation, in this case using ilatik. We use <a href="https://www.ilastik.org/documentation/pixelclassification/pixelclassification">ilastik binary pixel classification</a>. We could post-process the ilastik output here, for example using morphsnakes. We then load the segmentation back into the jupyter notebook.</p>
+<p>Attention: when importing the <code>.h5</code> into ilastik, make sure the dimension order is correct! In this case, <code>CZYX</code> (where <code>C</code>=channel), for both export and import. You can include this metadata in the <code>.h5</code>:</p>
+<div id="62c33c8b" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># We now save the subsampled image as a .h5 file for input into ilastik for segmentation</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>tcio.write_h5(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_subsampled.h5"</span>, subsampled_image, axis_order<span class="op">=</span><span class="st">'CZYX'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="16e77650" class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># After creating an ilastik project, training the model, and exporting the probabilities, we load the segmentation</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>segmentation <span class="op">=</span> tcio.read_h5(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_subsampled-image_Probabilities.h5"</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>segmentation <span class="op">=</span> segmentation[<span class="dv">0</span>] <span class="co"># Select the first channel of the segmentation - it's the probability a pixel</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                               <span class="co"># is part of the sample</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"segmentation shape:"</span>, segmentation.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>segmentation shape: (26, 151, 170)</code></pre>
+</div>
+</div>
+<div id="ba35599c" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># look at the segmentation in a cross-section</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>plt.imshow(segmentation[:,:,<span class="dv">50</span>], vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="meshing" class="level3">
+<h3 class="anchored" data-anchor-id="meshing">Meshing</h3>
+<p>We convert the segmentation into a triangular mesh using the marching cubes method and save the mesh. We save all meshes as wavefront <code>.obj</code> files (see <a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file">wikipedia</a>). In Python, we represent missing entries (such as a vertex that doesn’t have a normal by <code>np.nan</code>.</p>
+<p><strong>Important convention</strong> For sanity’s sake, we will always store all mesh coordinates in microns. This means rescaling appropriately after calculating the mesh from the 3d segmentation.</p>
+<div id="5541aa79" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Now we create a 3d mesh using the marching cubes method</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>vertices, faces <span class="op">=</span> tcremesh.marching_cubes(segmentation, isovalue<span class="op">=</span><span class="fl">0.5</span>, sigma_smoothing<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># EXTREMELY IMPORTANT - we now rescale the vertex coordinates so that they are in microns.</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>vertices_in_microns <span class="op">=</span> vertices <span class="op">*</span> (np.array(metadata_dict[<span class="st">'resolution_in_microns'</span>])</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>                                 <span class="op">/</span>np.array(metadata_dict[<span class="st">'subsampling_factors'</span>]))</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh(vertices_in_microns, faces)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>mesh.name <span class="op">=</span> <span class="st">"basics_example_mesh_marching_cubes"</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>mesh.write_obj(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_mesh_marching_cubes.obj"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="optional---mesh-compression-using-igl" class="level4">
+<h4 class="anchored" data-anchor-id="optional---mesh-compression-using-igl">Optional - mesh compression using igl</h4>
+<p>The mesh returned by the marching cubes method is normally much denser than necessary. You can automatically reduce its size here in Python, or later in Blender.</p>
+<div id="a1f5890e" class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>mesh_compressed <span class="op">=</span> tcremesh.qslim(mesh, max_n_faces<span class="op">=</span><span class="bu">int</span>(faces.shape[<span class="dv">0</span>]<span class="op">/</span><span class="dv">2</span>))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>mesh_compressed.name <span class="op">=</span> <span class="st">"basics_example_mesh_marching_cubes_compressed"</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>mesh_compressed.write_obj(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_mesh_marching_cubes_compressed.obj"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="optional---improve-mesh-quality-using-meshlab" class="level4">
+<h4 class="anchored" data-anchor-id="optional---improve-mesh-quality-using-meshlab">Optional - improve mesh quality using MeshLab</h4>
+<p>We can remesh the output of the marching cubes algorithm to obtain an improved mesh, i.e.&nbsp;with more uniform triangle shapes. In this example, we first remesh to make the mesh more uniform. You can also try this out in the MeshLab GUI and export your workflow as a Python script. Be careful not to move the mesh or it will mess up the correspondence with the pixel coordinates!</p>
+<p>See <a href="https://pymeshlab.readthedocs.io/en/latest/filter_list.html">List of MeshLab filers</a></p>
+<div id="f0d99c60" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>mesh_remeshed <span class="op">=</span> tcremesh_pymeshlab.remesh_pymeshlab(mesh)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>mesh_remeshed.write_obj(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_mesh_remeshed.obj"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To check all went well, let’s overlay the mesh coordinates over a cross-section of the image. To do so, we first select the vertices whose positions correspond to the image slice, and then correctly rescale coordinates from microns to pixel coordinates.</p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/interpolation.py#L23" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="get_cross_section_vertices_normals" class="level3">
+<h3 class="anchored" data-anchor-id="get_cross_section_vertices_normals">get_cross_section_vertices_normals</h3>
+<blockquote class="blockquote">
+<pre><code> get_cross_section_vertices_normals (slice_axis, slice_index, image, mesh,
+                                     resolution, get_normals=True,
+                                     width=3)</code></pre>
+</blockquote>
+<p>*Get mesh vertices and normals for diagnostic cross-section overlay plots.</p>
+<p>Usage example:</p>
+<pre><code>`
+slice_image, slice_vertices, slice_normals = get_cross_section_vertices_normals(1, 100,
+                            image, mesh, metadata_dict["resolution_in_microns"])
+plt.scatter(*slice_vertices.T, s=5, c="tab:red")
+plt.quiver(*slice_vertices.T, *slice_normals.T, color="tab:red")
+plt.imshow(slice_image[0], vmax=10000, origin="lower")
+`</code></pre>
+<p>Note: <code>origin="lower"</code> in plt.imshow() is essential for a correctly oriented plot in Python!!*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>slice_axis</td>
+<td>int, 0,1,2</td>
+<td></td>
+<td>Axis along which to slice image array</td>
+</tr>
+<tr class="even">
+<td>slice_index</td>
+<td>int</td>
+<td></td>
+<td>Index along the sliced axis</td>
+</tr>
+<tr class="odd">
+<td>image</td>
+<td>4d np.ndarray of shape (channels, n_x, n_y, n_z)</td>
+<td></td>
+<td>Image. Axis 0 is channel</td>
+</tr>
+<tr class="even">
+<td>mesh</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh</td>
+</tr>
+<tr class="odd">
+<td>resolution</td>
+<td>int, default 256</td>
+<td></td>
+<td>Resolution in pixels/micron.</td>
+</tr>
+<tr class="even">
+<td>get_normals</td>
+<td>bool</td>
+<td>True</td>
+<td>Whether to return normals also</td>
+</tr>
+<tr class="odd">
+<td>width</td>
+<td>int</td>
+<td>3</td>
+<td>Width of slice for vertex selection, in microns</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array, np.array, np.array</strong></td>
+<td></td>
+<td><strong>slice_image : np.array <br> Slice of image. Axis 0 is channel<br>slice_vertices : np.array<br> Projected vertices in the slice. The second axis is the coordinate one.<br>slice_normals : 2d np.array (…, 2)<br> Projected normals in slice. The second axis is the coordinate one.</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="3d960446" class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> tcio.adjust_axis_order(tcio.imread(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">.tif"</span>))</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_mesh_remeshed.obj"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="123d7331" class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>slice_image, slice_vertices <span class="op">=</span> get_cross_section_vertices_normals(<span class="dv">2</span>, <span class="dv">200</span>,</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>                                image, mesh, metadata_dict[<span class="st">"resolution_in_microns"</span>], get_normals<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="14276085" class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">10</span>))</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>plt.scatter(<span class="op">*</span>slice_vertices[:,::<span class="op">-</span><span class="dv">1</span>].T, s<span class="op">=</span><span class="dv">5</span>, c<span class="op">=</span><span class="st">"tab:red"</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>plt.imshow(slice_image[<span class="dv">0</span>].T, origin<span class="op">=</span><span class="st">"lower"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/cell-15-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="uv-mapping-in-blender" class="level2">
+<h2 class="anchored" data-anchor-id="uv-mapping-in-blender">UV-mapping in blender</h2>
+<p>We now switch to blender and create a new empty project, which we will call <code>f"{metadata_dict['filename']}.blend"</code>. We import the mesh just generated (File-&gt;Import).</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/98dce9a4-1-image-3.png" class="img-fluid figure-img"></p>
+<figcaption>image-3.png</figcaption>
+</figure>
+</div>
+<p>I recommend using the “object” tab (orange square on the right toolbar) to lock mesh position and rotation so we don’t accidentally move it.</p>
+<p>Let’s try to move forward and get a UV map of the mesh. To do so, we go to the “UV Editing” tab on the top toolbar, and press “3” then “A” to select all faces (“1” selects vertices, “2” edges, and “3” faces). Click “UV-&gt;unwrap” on the top panel. <img src="02_cartographic_interpolation_files/figure-html/d748e375-1-image-3.png" class="img-fluid" alt="image-3.png"> For more complicated meshes (e.g.&nbsp;a sphere), we will need to use extra steps, e.g.&nbsp;define seams.</p>
+<section id="blender-export" class="level3">
+<h3 class="anchored" data-anchor-id="blender-export">Blender export</h3>
+<p>We then click on “File-&gt;Export” and save as <code>.obj</code> with UV and normals:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/f31ac596-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>A few things are important: - Always include UV and normals. Otherwise, cartographic projection will fail! - Only export selected items! With a more complicated blender project, you might end up exporting multiple meshes. This will trip up the cartographic projection algorithm. - Export as triangulated mesh, since many of this package’s tools for more advanced examples work best/only with triangular meshes. This option will subdivide any quads/polygons your mesh may have.</p>
+<p>The new mesh file <code>f"{metadata_dict['filename']}_mesh_uv.obj"</code> now contains vertex normals and UV coordinates as <code>vn</code> and <code>vt</code> lines. Note - there can be more <code>vt</code>’s than <code>v</code>’s.</p>
+</section>
+</section>
+<section id="interpolation-onto-uv-grid" class="level2">
+<h2 class="anchored" data-anchor-id="interpolation-onto-uv-grid">Interpolation onto UV grid</h2>
+<p>We now read in the new <code>.obj</code> file to interpolate the image data onto the 3d mesh. We first introduce the functions necessary to do so, which are based on the <code>scipy.interpolation</code> module. Interpolation proceeds in two steps: 1. Interpolate the 3d coordinates from the mesh UV vertex positions onto the whole UV grid 2. Evaluate the image signal at the UV gridded 3d coordinates using a second interpolation step. This ensures that the resolution of the cartographic projection is not limited by the resolution of the mesh.</p>
+<p>The UV grid always covers the unit square <span class="math inline">\([0,1]^2\)</span>.</p>
+<p>We first show how the interpolation works in a step-by-step manner, and then give a function that packages the whole process.</p>
+<div id="e103dbe9" class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's read in the mesh and match up the vertices, texture vertices, and normal vectors using the</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co"># mesh connectivity information</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_mesh_uv.obj"</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="co"># let's also load the image</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> tcio.adjust_axis_order(tcio.imread(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">.tif"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o basic_example_mesh_remeshed</code></pre>
+</div>
+</div>
+<div id="eee695a5" class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's make a scatter plot of the mesh texture coordinates, and color it by 3d coordinate values</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> plt.figure(figsize<span class="op">=</span>(<span class="dv">4</span>,<span class="dv">4</span>),)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>plt.scatter(<span class="op">*</span>mesh.texture_vertices.T, s<span class="op">=</span><span class="fl">0.2</span>, c<span class="op">=</span>mesh.vertices[mesh.get_vertex_to_texture_vertex_indices(),<span class="dv">2</span>])</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"equal"</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/cell-17-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>It’s not very noticeable in this example, but the part of the UV square covered by the unwrapped mesh can be extremely non-convex, in particular, if there are multiple patches (see notebook 3). Here is an example: <img src="02_cartographic_interpolation_files/figure-html/cedf364e-1-image.png" class="img-fluid" alt="image.png"></p>
+<p>We set values outside the UV “islands” to <code>np.nan</code>, since they are undefined. For non-triangular meshes, this requires a little hack to generate UV layout mask which delineates the part of the UV square covered by the unwrapped mesh. For triangular meshes, our barycentric interpolation method can take care of this issue by construction.</p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/interpolation.py#L81" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="get_uv_layout_mask_mask" class="level3">
+<h3 class="anchored" data-anchor-id="get_uv_layout_mask_mask">get_uv_layout_mask_mask</h3>
+<blockquote class="blockquote">
+<pre><code> get_uv_layout_mask_mask (mesh:blender_tissue_cartography.mesh.ObjMesh,
+                          uv_grid_steps=256)</code></pre>
+</blockquote>
+<p>*Get a layout mask of the UV square: 1 where the UV square is covered by the unwrapped mesh, 0 outside.</p>
+<p>Based on matplotlib hack - this function works for non-triangular meshes.*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mesh</td>
+<td>ObjMesh</td>
+<td></td>
+<td>Mesh with texture_vertices</td>
+</tr>
+<tr class="even">
+<td>uv_grid_steps</td>
+<td>int</td>
+<td>256</td>
+<td>Size of UV grid. Determines resolution of result.</td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>np.array of shape (uv_grid_steps, uv_grid_steps)</strong></td>
+<td></td>
+<td><strong>Mask of the part of the UV square covered by the unwrapped mesh</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="5c69e0fa" class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>uv_mask <span class="op">=</span> get_uv_layout_mask_mask(mesh, uv_grid_steps<span class="op">=</span><span class="dv">256</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> plt.figure(figsize<span class="op">=</span>(<span class="dv">4</span>,<span class="dv">4</span>),)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>plt.imshow(uv_mask, cmap<span class="op">=</span><span class="st">'binary'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, extent<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>))</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>plt.scatter(<span class="op">*</span>mesh.texture_vertices.T, s<span class="op">=</span><span class="fl">0.2</span>, c<span class="op">=</span>mesh.vertices[mesh.get_vertex_to_texture_vertex_indices(),<span class="dv">2</span>])</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"equal"</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/cell-19-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/interpolation.py#L123" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="interpolate_barycentric" class="level3">
+<h3 class="anchored" data-anchor-id="interpolate_barycentric">interpolate_barycentric</h3>
+<blockquote class="blockquote">
+<pre><code> interpolate_barycentric (points, vertices, faces, values,
+                          distance_threshold=inf)</code></pre>
+</blockquote>
+<p>*Interpolate values defined on triangular mesh vertices onto points using barycentric interpolation.</p>
+<p>Can handle triangular meshes in both 3d and 2d. Points not on the triangular mesh are projected onto the closest point. Points more distant than the distance_threshold will be set to np.nan. The data on the triangular mesh must be defined per vertex and can have any number of axes (scalars, vectors, tensors, …).</p>
+<p>This function can also be used to transfer values defined on one mesh to another mesh’s vertices (if the two meshes are well-aligned in space).*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>points</td>
+<td>np.array of shape (n_points, 2) or (n_points, 3)</td>
+<td></td>
+<td>Points at which to evaluate</td>
+</tr>
+<tr class="even">
+<td>vertices</td>
+<td>np.array of shape (n_vertices, 2) or (n_vertices, 3)</td>
+<td></td>
+<td>Mesh vertices</td>
+</tr>
+<tr class="odd">
+<td>faces</td>
+<td>np.array of shape (n_faces, 3)</td>
+<td></td>
+<td>Mesh triangles, indices into vertices array</td>
+</tr>
+<tr class="even">
+<td>values</td>
+<td>np.array of shape (n_vertices, …)</td>
+<td></td>
+<td>Values at mesh vertices. Can have any number of additional axes.</td>
+</tr>
+<tr class="odd">
+<td>distance_threshold</td>
+<td>float</td>
+<td>inf</td>
+<td>Points with a squared distance to mesh &gt; distance_threshold<br>are set to np.nan</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array of shape (n_points, …)</strong></td>
+<td></td>
+<td><strong>Values at points.</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="18a8023b" class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_mesh_uv.obj"</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>uv_grid_steps <span class="op">=</span> <span class="dv">1024</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>u, v <span class="op">=</span> <span class="dv">2</span><span class="op">*</span>[np.linspace(<span class="dv">0</span>,<span class="dv">1</span>, uv_grid_steps),]</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>UV <span class="op">=</span> np.stack(np.meshgrid(u, v), axis<span class="op">=-</span><span class="dv">1</span>).reshape((<span class="op">-</span><span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>interpolated <span class="op">=</span> interpolate_barycentric(UV, mesh.texture_vertices, mesh.texture_tris,</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>                                       mesh.vertices[mesh.get_vertex_to_texture_vertex_indices()],</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>                                       distance_threshold<span class="op">=</span><span class="fl">1e-5</span>)</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>interpolated <span class="op">=</span> interpolated.reshape((uv_grid_steps, uv_grid_steps, <span class="dv">3</span>))[::<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="co"># add flip check and warn!</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o basic_example_mesh_remeshed</code></pre>
+</div>
+</div>
+<div id="7298bdb2" class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the interpolated positions</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2) <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">4</span>), ncols<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>ax1.imshow(interpolated[...,<span class="dv">1</span>])</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>ax2.imshow(interpolated[...,<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/cell-22-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/interpolation.py#L171" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="interpolate_per_vertex_field_to_uv" class="level3">
+<h3 class="anchored" data-anchor-id="interpolate_per_vertex_field_to_uv">interpolate_per_vertex_field_to_UV</h3>
+<blockquote class="blockquote">
+<pre><code> interpolate_per_vertex_field_to_UV (mesh, field, domain='per-vertex',
+                                     uv_grid_steps=256, map_back=True,
+                                     distance_threshold=0.0001,
+                                     use_fallback=False)</code></pre>
+</blockquote>
+<p>*Interpolate a field defined per-vertex into the UV square.</p>
+<p>The field can be defined per texture-vertex or per 3D-vertex. Make sure you use the right option!</p>
+<p>Assumes the map x,y,z -&gt; u,v to be invertible. This is not guaranteed - you can create overlapping UV coordinates in Blender. Raises RuntimeWarning if any of the triangles in the UV map are flipped, indicating self-intersections.</p>
+<p>The provided UV coordinates will be mapped back to [0, 1]**2 if map_back is True. Else, coordinates outside [0,1] are ignored.*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mesh</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Input mesh with UV coordinates.</td>
+</tr>
+<tr class="even">
+<td>field</td>
+<td>np.array of shape (mesh.texture_vertices.shape[0],…)</td>
+<td></td>
+<td>Input field. Can be an array with any number of axes (e.g.&nbsp;scalar or vector field).</td>
+</tr>
+<tr class="odd">
+<td>domain</td>
+<td>str</td>
+<td>per-vertex</td>
+<td>Whether the field is defined per-vertex or per texture vertex.</td>
+</tr>
+<tr class="even">
+<td>uv_grid_steps</td>
+<td>int</td>
+<td>256</td>
+<td>Size of UV grid. Determines resolution of result.</td>
+</tr>
+<tr class="odd">
+<td>map_back</td>
+<td>bool</td>
+<td>True</td>
+<td>Map back the UV coordinates to [0,1]**2. Else, coordinates outside [0,1] are ignored.</td>
+</tr>
+<tr class="even">
+<td>distance_threshold</td>
+<td>float</td>
+<td>0.0001</td>
+<td>Points at a squared distance &gt; distance_threshold in the UV square are considered<br>“outside” the unwrapped mesh and are set to np.nan.</td>
+</tr>
+<tr class="odd">
+<td>use_fallback</td>
+<td>bool</td>
+<td>False</td>
+<td>Ignore mesh connectivity when interpolating. This is to be used as a fallback<br>if you have a UV map with lots of flipped triangles (i.e.&nbsp;self-intersections).<br>If ‘auto’, the fallback option is chosen automatically if there are any flipped <br>triangles.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array of shape (uv_grid_steps, uv_grid_steps, …)</strong></td>
+<td></td>
+<td><strong>Field across [0,1]</strong>2 UV grid, with a uniform step size. UV positions that don’t<br>correspond to any value are set to np.nan.**</td>
+</tr>
+</tbody>
+</table>
+<div id="6dfe2654" class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># try an example</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_mesh_uv.obj"</span>)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>field <span class="op">=</span> mesh.vertices[:,:] <span class="co"># Let's consider the coordinates of the 3d vertex</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>mesh.texture_vertices[<span class="dv">2355</span>] <span class="op">-=</span> <span class="fl">.2</span> <span class="co"># Let's trip the warning by messing up the UV map</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>interpolated <span class="op">=</span> interpolate_per_vertex_field_to_UV(mesh, field, <span class="st">"per-vertex"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o basic_example_mesh_remeshed
+/tmp/ipykernel_1939637/2667590714.py:49: RuntimeWarning: UV map has self-intersections, 3 flipped triangles. Try use_fallback=True?
+  warnings.warn("UV map has self-intersections, {} flipped triangles. Try use_fallback=True?".format(</code></pre>
+</div>
+</div>
+<div id="09c4d990" class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>plt.imshow(interpolated[:,:,<span class="dv">1</span>])</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/cell-25-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/interpolation.py#L241" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="interpolate_uv_to_per_vertex_field" class="level3">
+<h3 class="anchored" data-anchor-id="interpolate_uv_to_per_vertex_field">interpolate_UV_to_per_vertex_field</h3>
+<blockquote class="blockquote">
+<pre><code> interpolate_UV_to_per_vertex_field (mesh, field, domain='per-vertex')</code></pre>
+</blockquote>
+<p>*Interpolate a field defined by gridded values across UV square onto mesh vertices.</p>
+<p>This is useful for downstream geometric analysis. For example, you compute a vector field on a grid of the UV square and now want to get its values at the mesh vertices for geometric analysis.</p>
+<p>There may be some np.nans at the mesh boundary!</p>
+<p>The result can be defined per texture-vertex or per 3D-vertex. Make sure you use the right option!*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mesh</td>
+<td>tcmesh.ObjMesh</td>
+<td></td>
+<td>Input mesh with UV coordinates.</td>
+</tr>
+<tr class="even">
+<td>field</td>
+<td>np.array of shape (uv_grid_steps, uv_grid_steps,…)</td>
+<td></td>
+<td>Input field. Can be an array with any number of axes (e.g.&nbsp;scalar or vector field).<br>Must be defined on a square grid with uniform step size of the UV square.</td>
+</tr>
+<tr class="odd">
+<td>domain</td>
+<td>str</td>
+<td>per-vertex</td>
+<td>Whether the result will be defined per-vertex or per texture vertex.<br>If per-vertex, the values corresponding to all texture vertices that<br>map to a vertex are averaged.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array of shape (n_vertices, …)</strong></td>
+<td></td>
+<td><strong>Field evaluated at mesh vertices.</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/interpolation.py#L283" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="interpolate_volumetric_data_to_uv" class="level3">
+<h3 class="anchored" data-anchor-id="interpolate_volumetric_data_to_uv">interpolate_volumetric_data_to_uv</h3>
+<blockquote class="blockquote">
+<pre><code> interpolate_volumetric_data_to_uv (image, interpolated_3d_positions,
+                                    resolution)</code></pre>
+</blockquote>
+<p>*Interpolate volumetric image data onto UV coordinate grid.</p>
+<p>Uses 3d positions corresponding to each UV grid point as computed by interpolate_per_vertex_field_to_UV. 3d coordinates (in microns) are converted into image coordinates via the scaling factor.*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>image</td>
+<td>4d np.array</td>
+<td>Image, axis 0 is assumed to be the channel axis</td>
+</tr>
+<tr class="even">
+<td>interpolated_3d_positions</td>
+<td>np.array of shape (uv_grid_steps, uv_grid_steps, 3)</td>
+<td>3d positions across [0,1]^2 UV grid, with uniform step size. UV positions that don’t correspond to <br>any value are set to np.nan.</td>
+</tr>
+<tr class="odd">
+<td>resolution</td>
+<td>np.array of shape (3,)</td>
+<td>Resolution in pixels/microns for each of the three spatial axes.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array of shape (n_channels, uv_grid_steps, uv_grid_steps)</strong></td>
+<td><strong>3d volumetric data interpolated onto UV grid.</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="ccf2182c" class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_mesh_uv.obj"</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co">#mesh.texture_vertices[2355] -= .2 # trigger the fallback interpolation method by messing up UV map</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o basic_example_mesh_remeshed</code></pre>
+</div>
+</div>
+<div id="09cf7d53" class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first interpolation step </span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>uv_grid_steps <span class="op">=</span> <span class="dv">256</span>  <span class="co"># set UV grid size</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>uv_mask <span class="op">=</span> ndimage.binary_erosion(get_uv_layout_mask_mask(mesh, uv_grid_steps<span class="op">=</span>uv_grid_steps), iterations<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a><span class="co"># this is our UV grid</span></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>u, v <span class="op">=</span> <span class="dv">2</span><span class="op">*</span>[np.linspace(<span class="dv">0</span>,<span class="dv">1</span>, uv_grid_steps),]</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>U, V <span class="op">=</span> np.meshgrid(u, v)</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>interpolated_3d_positions <span class="op">=</span> interpolate_per_vertex_field_to_UV(mesh, mesh.vertices, domain<span class="op">=</span><span class="st">"per-vertex"</span>,</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>                                                               uv_grid_steps<span class="op">=</span>uv_grid_steps, map_back<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>interpolated_normals <span class="op">=</span> interpolate_per_vertex_field_to_UV(mesh, mesh.normals, domain<span class="op">=</span><span class="st">"per-vertex"</span>,</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>                                                          uv_grid_steps<span class="op">=</span>uv_grid_steps, map_back<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="1d242863" class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>interpolated_3d_positions <span class="op">=</span> interpolate_per_vertex_field_to_UV(mesh, mesh.vertices, domain<span class="op">=</span><span class="st">"per-vertex"</span>,</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>                                                               uv_grid_steps<span class="op">=</span>uv_grid_steps, map_back<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>interpolated_normals <span class="op">=</span> interpolate_per_vertex_field_to_UV(mesh, mesh.normals, domain<span class="op">=</span><span class="st">"per-vertex"</span>,</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>                                                          uv_grid_steps<span class="op">=</span>uv_grid_steps, map_back<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CPU times: user 228 ms, sys: 4.21 ms, total: 233 ms
+Wall time: 146 ms</code></pre>
+</div>
+</div>
+<div id="1480012b" class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>np.linalg.norm(mesh.normals, axis<span class="op">=-</span><span class="dv">1</span>).<span class="bu">min</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>0.9694902988837123</code></pre>
+</div>
+</div>
+<div id="2751c2ae" class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>np.nanmin(np.linalg.norm(interpolated_normals, axis<span class="op">=-</span><span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>0.953786333836412</code></pre>
+</div>
+</div>
+<div id="a8c717ef" class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the interpolated positions</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2) <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">4</span>), ncols<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>ax1.imshow(interpolated_3d_positions[...,<span class="dv">1</span>])</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>ax2.imshow(interpolated_3d_positions[...,<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/cell-33-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="8cabbd56" class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the interpolated normals</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2) <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">4</span>), ncols<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>ax1.imshow(interpolated_normals[...,<span class="dv">1</span>])</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>ax2.imshow(interpolated_normals[...,<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/cell-34-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/interpolation.py#L312" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="interpolate_volumetric_data_to_uv_multilayer" class="level3">
+<h3 class="anchored" data-anchor-id="interpolate_volumetric_data_to_uv_multilayer">interpolate_volumetric_data_to_uv_multilayer</h3>
+<blockquote class="blockquote">
+<pre><code> interpolate_volumetric_data_to_uv_multilayer (image,
+                                               interpolated_3d_positions,
+                                               interpolated_normals,
+                                               normal_offsets, resolution)</code></pre>
+</blockquote>
+<p>*Multilayer-interpolate volumetric image data onto UV coordinate grid.</p>
+<p>Uses 3d positions corresponding to each UV grid point as computed by interpolate_per_vertex_field_to_UV. 3d coordinates (in microns) are converted into image coordinates via the scaling factor.</p>
+<p>Generates multiple “layers” by shifting surface along its normals.*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>image</td>
+<td>4d np.array</td>
+<td>Image, axis 0 is assumed to be the channel axis</td>
+</tr>
+<tr class="even">
+<td>interpolated_3d_positions</td>
+<td>np.array of shape (uv_grid_steps, uv_grid_steps, 3)</td>
+<td>3d positions across [0,1]^2 UV grid, with uniform step size. UV positions that don’t correspond to <br>any value are set to np.nan.</td>
+</tr>
+<tr class="odd">
+<td>interpolated_normals</td>
+<td>np.array of shape (uv_grid_steps, uv_grid_steps, 3)</td>
+<td>3d normals across [0,1]^2 UV grid, with uniform step size. UV positions that don’t correspond to <br>any value are set to np.nan. Normal vectors will be automatically normalized.</td>
+</tr>
+<tr class="even">
+<td>normal_offsets</td>
+<td>np.array of shape (n_layers,)</td>
+<td>Offsets along normal direction, in same units as interpolated_3d_positions (i.e.&nbsp;microns).<br>0 corresponds to no shift.</td>
+</tr>
+<tr class="odd">
+<td>resolution</td>
+<td>np.array of shape (3,)</td>
+<td>Resolution in pixels/microns for each of the three spatial axes.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array of shape (n_channels, n_layers, uv_grid_steps, uv_grid_steps)</strong></td>
+<td><strong>3d volumetric data multilayer-interpolated onto UV grid.</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="12289473" class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># second interpolation step. here we have to include the conversion factor from microns back to pixels</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>interpolated_data <span class="op">=</span> interpolate_volumetric_data_to_uv(image, interpolated_3d_positions,</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>                                                      metadata_dict[<span class="st">'resolution_in_microns'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="22139e37" class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>plt.imshow(interpolated_data[<span class="dv">1</span>])</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/cell-37-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="a6375339" class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># now we can create a multilayer projection by  shifting the surface according to the vertex normals</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>normal_offsets <span class="op">=</span> np.linspace(<span class="op">-</span><span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">5</span>) <span class="co"># offset in microns</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>interpolated_data_multilayer <span class="op">=</span> interpolate_volumetric_data_to_uv_multilayer(image,</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>                                                                 interpolated_3d_positions,</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>                                                                 interpolated_normals,</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>                                                                 normal_offsets,</span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>                                                                 metadata_dict[<span class="st">'resolution_in_microns'</span>])</span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Shape: axis 0 is channel, axis 1 is normal offset"</span>, interpolated_data_multilayer.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Shape: axis 0 is channel, axis 1 is normal offset (2, 5, 256, 256)</code></pre>
+</div>
+</div>
+<div id="a38ac3a5" class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>plt.imshow(interpolated_data_multilayer[<span class="dv">1</span>, <span class="dv">0</span>])</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/cell-39-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="cartographic-projection" class="level3">
+<h3 class="anchored" data-anchor-id="cartographic-projection">Cartographic projection</h3>
+<p>Let’s package the interpolation workflow up into a single function.</p>
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/interpolation.py#L351" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="create_cartographic_projections" class="level3">
+<h3 class="anchored" data-anchor-id="create_cartographic_projections">create_cartographic_projections</h3>
+<blockquote class="blockquote">
+<pre><code> create_cartographic_projections (image, mesh, resolution,
+                                  normal_offsets=(0,), uv_grid_steps=256,
+                                  map_back=True, use_fallback='auto')</code></pre>
+</blockquote>
+<p>*Create multilayer cartographic projections of an image using mesh.</p>
+<p>Computes multiple layers along the surface normal, with given normal offsets (in microns). 0 offset corresponds to no shift away from the mesh. Also computes 3d positions (in microns) and surface normals interpolated onto the UV grid.</p>
+<p>UV positions that don’t correspond to any 3d position are set to np.nan.*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>image</td>
+<td>str or 4d np.array</td>
+<td></td>
+<td>Image, either as a path to a file or as an array. If array, axis 0 is assumed to be the channel axis</td>
+</tr>
+<tr class="even">
+<td>mesh</td>
+<td>str or tcmesh.ObjMesh</td>
+<td></td>
+<td>Mesh, either as path to file, or as ObjMesh object.</td>
+</tr>
+<tr class="odd">
+<td>resolution</td>
+<td>np.array of shape (3,)</td>
+<td></td>
+<td>Image resolution in pixels/micron for the three spatial axes</td>
+</tr>
+<tr class="even">
+<td>normal_offsets</td>
+<td>tuple</td>
+<td>(0,)</td>
+<td>Offsets along normal direction, in same units as interpolated_3d_positions (i.e.&nbsp;microns).<br>0 corresponds to no shift.</td>
+</tr>
+<tr class="odd">
+<td>uv_grid_steps</td>
+<td>int</td>
+<td>256</td>
+<td>Size of UV grid. Determines resolution of result.</td>
+</tr>
+<tr class="even">
+<td>map_back</td>
+<td>bool</td>
+<td>True</td>
+<td>Map back the UV coordinates to [0,1]^2. Else, coordinates outside [0,1] are ignored.</td>
+</tr>
+<tr class="odd">
+<td>use_fallback</td>
+<td>str</td>
+<td>auto</td>
+<td>Ignore mesh connectivity when interpolating. This is to be used as a fallback<br>if you have a UV map with lots of flipped triangles (i.e.&nbsp;self-intersections).<br>If ‘auto’, the fallback option is chosen automatically if there are any flipped <br>triangles.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.array, np.array, np.array</strong></td>
+<td></td>
+<td><strong>interpolated_data : np.array of shape (n_channels, n_layers, uv_grid_steps, uv_grid_steps)<br> 3d volumetric data multilayer-interpolated across [0,1]^2 UV grid, with uniform step size.<br>interpolated_3d_positions : np.array of shape (uv_grid_steps, uv_grid_steps, 3)<br> 3d positions across [0,1]^2 UV grid, with uniform step size. <br>interpolated_normals : np.array of shape (uv_grid_steps, uv_grid_steps, 3)<br> Normals across [0,1]^2 UV grid, with a uniform step size.</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="3d856217" class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>normal_offsets <span class="op">=</span> np.linspace(<span class="op">-</span><span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">5</span>) <span class="co"># in microns</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="39cd84f5" class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_mesh_uv.obj"</span>)</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>mesh.texture_vertices[<span class="dv">2355</span>] <span class="op">-=</span> <span class="fl">.2</span> <span class="co"># trigger the fallback interpolation method by messing up UV map</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o basic_example_mesh_remeshed</code></pre>
+</div>
+</div>
+<div id="965dc623" class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>projected_data, projected_coordinates, projected_normals <span class="op">=</span> create_cartographic_projections(</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span><span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">.tif"</span>,</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">#mesh=f"{metadata_dict['filename']}_mesh_uv.obj",</span></span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>    mesh<span class="op">=</span>mesh,</span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>    resolution<span class="op">=</span>metadata_dict[<span class="st">"resolution_in_microns"</span>],</span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>    normal_offsets<span class="op">=</span>normal_offsets,</span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>    uv_grid_steps<span class="op">=</span><span class="dv">256</span>,</span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>    use_fallback<span class="op">=</span><span class="st">'auto'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/tmp/ipykernel_1939637/2667590714.py:49: RuntimeWarning: UV map has self-intersections, 3 flipped triangles. Try use_fallback=True?
+  warnings.warn("UV map has self-intersections, {} flipped triangles. Try use_fallback=True?".format(
+/tmp/ipykernel_1939637/2667590714.py:58: DeprecationWarning: Use of non-triangular meshes is discouraged
+  warnings.warn("Use of non-triangular meshes is discouraged", DeprecationWarning)</code></pre>
+</div>
+</div>
+<div id="6e755e96" class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's add the normal offset we want to our metadata - it will be important for analysis!</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>metadata_dict[<span class="st">"normal_offsets"</span>] <span class="op">=</span> normal_offsets</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="921cf5dc" class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>plt.imshow(projected_data[<span class="dv">1</span>, <span class="dv">0</span>])</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/cell-45-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="saving-and-visualizing-the-results" class="level3">
+<h3 class="anchored" data-anchor-id="saving-and-visualizing-the-results">Saving and visualizing the results</h3>
+<p>We can now save the cartographic projections as <code>.tif</code> stack for quantitative analysis and as <code>.png</code>’s for visualization as mesh texture in Blender. We will also save the metadata to a <code>.json</code> file</p>
+<p>Annoyingly, we have to normalize our data and convert it to 8-bit to save it as png.</p>
+<div id="823262d4" class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save metadata</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>tcio.save_dict_to_json(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_metadata.json"</span>, metadata_dict)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="c131da63" class="cell">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>tcio.save_for_imageJ(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_projected.tif"</span>, projected_data, z_axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>tcio.save_for_imageJ(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_3d_coordinates.tif"</span>, projected_coordinates)</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>tcio.save_for_imageJ(<span class="ss">f"</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_normals.tif"</span>, projected_normals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="b4e2ea70" class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>texture_path <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>os<span class="sc">.</span>getcwd()<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>metadata_dict[<span class="st">'filename'</span>]<span class="sc">}</span><span class="ss">_textures"</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>tcio.save_stack_for_blender(projected_data, texture_path, normalization<span class="op">=</span>(<span class="fl">0.01</span>, <span class="fl">0.99</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="c54ca6c6" class="cell">
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's make a max projection of each channel and save them also</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>max_projected_ch_0, max_projected_ch_1 <span class="op">=</span> projected_data.<span class="bu">max</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>tcio.imsave(<span class="ss">f'</span><span class="sc">{</span>texture_path<span class="sc">}</span><span class="ss">/max_channel_0.png'</span>, tcio.normalize_quantiles_for_png(max_projected_ch_0))</span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>tcio.imsave(<span class="ss">f'</span><span class="sc">{</span>texture_path<span class="sc">}</span><span class="ss">/max_channel_1.png'</span>, tcio.normalize_quantiles_for_png(max_projected_ch_1))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="visualization-in-blender" class="level4">
+<h4 class="anchored" data-anchor-id="visualization-in-blender">Visualization in blender</h4>
+<p>You can set up textures in the “shading” tab:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/291350ef-1-image-3.png" class="img-fluid figure-img"></p>
+<figcaption>image-3.png</figcaption>
+</figure>
+</div>
+<p>I find it helpful to remove the distracting “world” background, which you can do by either enabling “scene world” or setting “world opacity” to 0 in the viewport shading settings (arrow above “options” in the top right corner)</p>
+<p>Go to the bottom panel, add a new material (center top of bottom panel), and press “shift+A” to add a new shader element (the search bar is very helpful). Here is an example configuration mixing two channels as red and green:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="02_cartographic_interpolation_files/figure-html/291350ef-2-image-4.png" class="img-fluid figure-img"></p>
+<figcaption>image-4.png</figcaption>
+</figure>
+</div>
+<p>And there we go! Many further options exist to make more sophisticated renderings.</p>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/nikolas-claussen\.github\.io\/blender-tissue-cartography");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
