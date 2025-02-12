@@ -5,51 +5,60 @@
 
 ## What this tool does
 
-Tissue cartography extracts and cartographically projects surfaces from
-volumetric image data. This turns your 3d data into 2d data which is
-much easier to visualize, analyze, and computationally process. Tissue
-cartography is particularly useful in developmental biology, analyzing
-3d microscopy data by taking advantage of the laminar, sheet-like
-organization of many biological tissues. For more on tissue cartography,
-see [Heemskerk & Streichan 2015](https://doi.org/10.1038/nmeth.3648) and
+![image.png](index_files/figure-commonmark/cell-2-1-ee28c1cc-3737-4a46-b1ec-e96e9291126d.png)
+
+Tissue cartography extracts and cartographically projects curved
+surfaces from volumetric image data. This turns your 3d data into 2d
+data which is much easier to visualize, analyze, and computationally
+process. Tissue cartography is particularly useful in developmental
+biology, analyzing 3d microscopy data by taking advantage of the
+laminar, sheet-like organization of many biological tissues. For more on
+tissue cartography, see our [methods
+paper](https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1),
+[Heemskerk & Streichan 2015](https://doi.org/10.1038/nmeth.3648) and
 [Mitchell & Cislo 2023](https://doi.org/10.1038/s41592-023-02081-w).
 
 `blender_tissue_cartography` comprises an add-on to do tissue
 cartography using the popular 3d creation software
-[blender](https://www.blender.org/), as well as a python package for
-creating custom/automatized analysis pipelines, and a set of template
-analysis pipelines/tutorials.
-
-The goal is to make tissue cartography as user-friendly as possible
-using simple, modular Python code and blender’s graphical user
-interface.
+[blender](https://www.blender.org/), a python library for creating
+custom/automatized analysis pipelines, and a set of template analysis
+pipelines/tutorials.
 
 ### Work in progress!
 
-This project is a work in progress and may change rapidly.
+This project is a work in progress and may change rapidly. Please update
+regularly.
 
 ## Installation
 
-`blender_tissue_cartography` comprises both an add-on that allows you to
-do tissue cartography purely graphically within Blender, as well as a
-python library for custom and/or automatized pipelines.
+`blender_tissue_cartography` comprises both a Blender **add-on** as well
+as a **python library**.
+
+- The **add-on** does tissue cartography 100% within the Blender
+  graphical user interface. Use the add-on if you quickly want to
+  process a new dataset, or if you are not a coding expert.
+
+- The **python library** allows expert users to develop custom or
+  automatized pipelines.
 
 **System requirements** Both the Python library and the add-on have no
 minimum system requirements and can run on any modern laptop. For
-loading and processing large volumetric image data, you will need
-sufficient RAM (e.g. if you have a laptop with 8GB RAM, you will likely
-not be able to load an process a 2GB volumetric `.tif` file). Most
-operations in Blender, in particular rendering, will run *much* faster
-if your computer has a GPU. The MeshLab library which is required for
-some (non-essential) operations is not available of new ARM Apple
-computers.
+processing volumetric image data, you will need sufficient RAM (at least
+~4x of the size of the volumetric data, e.g. 8GB RAM dfor a 2GB
+volumetric `.tif` file). Blender will run *much* faster if your computer
+has a GPU. The MeshLab library which is required for some
+(non-essential) operations is not available of new ARM Apple computers.
 
 ### Blender add-on
 
-1.  Install the non-python programs: [Fiji](https://fiji.sc/)
-    (optional), [Ilastik](https://www.ilastik.org/),
-    [Meshlab](https://www.meshlab.net/) (optional), and [Blender
-    4.3](https://www.blender.org/).
+1.  Install the non-python programs: [Blender
+    4.3](https://www.blender.org/) (pre-4.3 version will *not* work) and
+    [Ilastik](https://www.ilastik.org/). You do not need to install
+    python or any python libraries.
+
+    - Optionally, install [Fiji](https://fiji.sc/) (for looking at 3D
+      `.tif`s) and [Meshlab](https://www.meshlab.net/) (for advanced
+      surface extraction and remeshing)
 
 2.  From
     [GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography),
@@ -65,7 +74,8 @@ computers.
 3.  [Install the
     add-on](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html):
     Click “Edit -\> Preferences -\> Add-ons -\> Add-on Settings -\>
-    Install from disk” and select the file you just downloaded.
+    Install from disk” and select the `.zip` file you just downloaded
+    (you don’t need to unpack it).
 
 4.  Restart Blender. The add-on can now be found under “Scene -\> Tissue
     Cartography”.
@@ -81,9 +91,8 @@ computers.
     [anaconda/miniconda](https://docs.anaconda.com/miniconda/miniconda-install/),
     if you haven’t already.
 
-3.  Install `blender_tissue_cartography`:
-
-    - run `pip install blender-tissue-cartography` in a command window.
+3.  Install `blender_tissue_cartography`: run
+    `pip install blender-tissue-cartography` in a command window.
 
 4.  (Optional) Install extra Python library for `pymeshlab`, required
     for some advanced (re)meshing functionality. This package is not
@@ -123,16 +132,17 @@ If you want to extend `blender_tissue_cartography`:
 
 ## Documentation
 
-- Full documentation (including tutorials) is available here:
-  https://nikolas-claussen.github.io/blender-tissue-cartography/
+- [Documentation
+  webpage](https://nikolas-claussen.github.io/blender-tissue-cartography/)
 
 - Datasets and interactive Jupyter notebooks for the tutorials can be
-  downloaded here:
-  https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials/
+  downloaded [from
+  GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials/)
 
-- The methods paper explains the general idea of tissue cartography, the
-  design of `blender_tissue_cartography`, and shows several examples:
-  https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_tissue_cartography_methods_paper.pdf
+- The [methods
+  paper](https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1)
+  explains the general idea of tissue cartography, the design of
+  `blender_tissue_cartography`, and shows several examples.
 
 ## Basic usage
 
@@ -177,6 +187,18 @@ the region occupied by cells during zebrafish epiboly (tutorial 6).
 
 ![image-2.png](index_files/figure-commonmark/cell-7-1-image-2.png)
 
+### Dynamic datasets
+
+`blender_tissue_cartography` also allows creating cartographic
+projections of dynamic datasets (i.e. movies), where the surface of
+interest can move or deform over time. The user creates a cartographic
+projection for a *reference timepoint* which is transfered to all other
+time-points using surface-to-surface registration algorithms. This
+generates consistent projections across all timepoints - see tuorials
+[8](https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/08_multiple_recordings_and_reference_meshes.html)
+and
+[9](https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/09_movies_and_dynamic_surfaces.html).
+
 ### Python library
 
 For advanced users, the `blender_tissue_cartography` library allows
@@ -212,7 +234,7 @@ The tutorial notebooks can be used as *templates* for your own analysis
 pipelines. Here is an example of a jupyter computational notebook
 (left), and the created projection visualized in Blender (right).
 
-![image.png](index_files/figure-commonmark/cell-8-1-image.png)
+![image.png](index_files/figure-commonmark/cell-9-1-image.png)
 
 #### Notes for Python beginners
 
@@ -238,18 +260,6 @@ pipelines. Here is an example of a jupyter computational notebook
 - You do not need to copy functions into your notebooks manually. If you
   follow the installation instructions, the code will be installed as a
   Python package and can be “imported” by Python. See tutorials!
-
-### Dynamic datasets
-
-`blender_tissue_cartography` also allows creating cartographic
-projections of dynamic datasets (i.e. movies), where the surface of
-interest can move or deform over time. The user creates a cartographic
-projection for a *reference timepoint* which is transfered to all other
-time-points using surface-to-surface registration algorithms. This
-generates consistent projections across all timepoints - see tuorials
-[8](https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/08_multiple_recordings_and_reference_meshes.html)
-and
-[9](https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/09_movies_and_dynamic_surfaces.html).
 
 ## Software stack
 
@@ -300,6 +310,15 @@ the installation instructions above.
 
 This software is being developed by Nikolas Claussen in the [Streichan
 lab at UCSB](https://streichanlab.physics.ucsb.edu/). We thank Cecile
-Regis, Susan Wopat, Matthew Lefebvre, Sean Komura, Gary Han, Noah
-Mitchel, Boris Fosso, and Dillon Cislo, for sharing data, advice, and
-software testing.
+Regis, Susan Wopat, Noah Mitchell, An Yan, Pieter Derksen, Matthew
+Lefebvre, Sean Komura, Gary Han, Boris Fosso, and Dillon Cislo, for
+sharing data, advice, and software testing.
+
+## Citation
+
+If you use `blender_tissue_cartography` for your work, please cite:
+
+> Nikolas Claussen, Cécile Regis, Susan Wopat, and Sebastian Streichan:
+> *Blender tissue cartography: an intuitive tool for the analysis of
+> dynamic 3D microscopy data*. bioRxiv 2025.02.04.636523; doi:
+> https://doi.org/10.1101/2025.02.04.636523
