@@ -147,7 +147,7 @@ If you want to extend `blender_tissue_cartography`:
 ## Basic usage
 
 For a complete set of tutorials, see the [documentation
-website](https://nikolas-claussen.github.io/blender-tissue-cartography/).
+website](https://nikolas-claussen.github.io/blender-tissue-cartography/00_tissue_cartography_overview.html#tutorials).
 
 ### Tissue cartography workflow
 
