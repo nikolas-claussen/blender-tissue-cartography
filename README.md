@@ -130,6 +130,14 @@ If you want to extend `blender_tissue_cartography`:
 
 4.  Install [nbdev](https://nbdev.fast.ai/)
 
+### Known issues
+
+- When using the add-on, please save your `.blend` project to disk
+  before using any of the add-on functionality. Otherwise, Blender may
+  crash.
+
+- Please report any issues or bugs you find on GitHub!
+
 ## Documentation
 
 - [Documentation
@@ -173,7 +181,7 @@ The Blender add-on allows you to carry out steps 2-5 entirely within
 Blender. Here is a screenshot using the example [*Drosophila*
 dataset](https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/nbs/Tutorials/addon_example/Drosophila_CAAX-mCherry.tif):
 
-![image.png](index_files/figure-commonmark/cell-6-1-48b7a123-b1e4-4b12-ab3c-e804252bc2b7.png)
+![image.png](index_files/figure-commonmark/cell-7-1-48b7a123-b1e4-4b12-ab3c-e804252bc2b7.png)
 
 Left: Projected 2D image. Center: 3D view of image data (volume bounding
 box, image slices, and extracted surface). Right: Tissue Cartography
@@ -185,7 +193,7 @@ automatically, and use it as guidance when editing your cartographic map
 in blender. Here, we edit the “seam” of our cartographic map based on
 the region occupied by cells during zebrafish epiboly (tutorial 6).
 
-![image-2.png](index_files/figure-commonmark/cell-7-1-image-2.png)
+![image-2.png](index_files/figure-commonmark/cell-8-1-image-2.png)
 
 ### Dynamic datasets
 
@@ -234,7 +242,7 @@ The tutorial notebooks can be used as *templates* for your own analysis
 pipelines. Here is an example of a jupyter computational notebook
 (left), and the created projection visualized in Blender (right).
 
-![image.png](index_files/figure-commonmark/cell-9-1-image.png)
+![image.png](index_files/figure-commonmark/cell-10-1-image.png)
 
 #### Notes for Python beginners
 
