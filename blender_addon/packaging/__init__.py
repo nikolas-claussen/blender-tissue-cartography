@@ -10,18 +10,18 @@ from . import tissue_cartography
 
 def register():
     """Add the add-on to the blender user interface"""
-    bpy.utils.register_class(tissue_cartography.TissueCartographyPanel)
-    bpy.utils.register_class(tissue_cartography.LoadTIFFOperator)
-    bpy.utils.register_class(tissue_cartography.LoadSegmentationTIFFOperator)
-    bpy.utils.register_class(tissue_cartography.CreateProjectionOperator)
-    bpy.utils.register_class(tissue_cartography.SaveProjectionOperator)
-    bpy.utils.register_class(tissue_cartography.BatchProjectionOperator)
-    bpy.utils.register_class(tissue_cartography.SlicePlaneOperator)
-    bpy.utils.register_class(tissue_cartography.VertexShaderInitializeOperator)
-    bpy.utils.register_class(tissue_cartography.VertexShaderRefreshOperator)
-    bpy.utils.register_class(tissue_cartography.AlignOperator)
-    bpy.utils.register_class(tissue_cartography.ShrinkwrapOperator)
-    bpy.utils.register_class(tissue_cartography.HelpPopupOperator)
+    bpy.utils.register_class(TissueCartographyPanel)
+    bpy.utils.register_class(LoadTIFFOperator)
+    bpy.utils.register_class(LoadSegmentationTIFFOperator)
+    bpy.utils.register_class(CreateProjectionOperator)
+    bpy.utils.register_class(SaveProjectionOperator)
+    bpy.utils.register_class(BatchProjectionOperator)
+    bpy.utils.register_class(SlicePlaneOperator)
+    bpy.utils.register_class(VertexShaderInitializeOperator)
+    bpy.utils.register_class(VertexShaderRefreshOperator)
+    bpy.utils.register_class(AlignOperator)
+    bpy.utils.register_class(ShrinkwrapOperator)
+    bpy.utils.register_class(HelpPopupOperator)
     
     bpy.types.Scene.tissue_cartography_file = StringProperty(
         name="File Path",
@@ -107,11 +107,12 @@ def register():
         description="Normal offse for vertex shading.",
         default=0,
     )
-    bpy.types.Scene.tissue_cartography_vertex_shader_channel = IntProperty(
-        name="Vertex Shader Channel",
-        description="Channel for vertex shading.",
-        default=0,
+    bpy.types.Scene.tissue_cartography_vertex_shader_channel_RGB = IntVectorProperty(
+        name="Vertex Shader Channels (RGB)",
+        description="Channels for RGB of vertex shader.",
+        default=(0,0,0),
         min=0,
+        size=3,
     )
     bpy.types.Scene.tissue_cartography_offsets = StringProperty(
         name="Normal Offsets (µm)",
@@ -124,7 +125,6 @@ def register():
         default=1024,
         min=1,
     )
-    
     bpy.types.Scene.tissue_cartography_batch_directory = StringProperty(
         name="Batch Process Input Directory",
         description="Path to TIFF files directory",
@@ -178,20 +178,19 @@ def register():
         default='one-to-all'
     )
 
-
 def unregister():
-    bpy.utils.unregister_class(tissue_cartography.TissueCartographyPanel)
-    bpy.utils.unregister_class(tissue_cartography.LoadTIFFOperator)
-    bpy.utils.unregister_class(tissue_cartography.LoadSegmentationTIFFOperator)
-    bpy.utils.unregister_class(tissue_cartography.CreateProjectionOperator)
-    bpy.utils.unregister_class(tissue_cartography.BatchProjectionOperator)
-    bpy.utils.unregister_class(tissue_cartography.SaveProjectionOperator)
-    bpy.utils.unregister_class(tissue_cartography.SlicePlaneOperator)
-    bpy.utils.unregister_class(tissue_cartography.VertexShaderInitializeOperator)
-    bpy.utils.unregister_class(tissue_cartography.VertexShaderRefreshOperator)
-    bpy.utils.unregister_class(tissue_cartography.AlignOperator)
-    bpy.utils.unregister_class(tissue_cartography.ShrinkwrapOperator)
-    bpy.utils.unregister_class(tissue_cartography.HelpPopupOperator)
+    bpy.utils.unregister_class(TissueCartographyPanel)
+    bpy.utils.unregister_class(LoadTIFFOperator)
+    bpy.utils.unregister_class(LoadSegmentationTIFFOperator)
+    bpy.utils.unregister_class(CreateProjectionOperator)
+    bpy.utils.unregister_class(BatchProjectionOperator)
+    bpy.utils.unregister_class(SaveProjectionOperator)
+    bpy.utils.unregister_class(SlicePlaneOperator)
+    bpy.utils.unregister_class(VertexShaderInitializeOperator)
+    bpy.utils.unregister_class(VertexShaderRefreshOperator)
+    bpy.utils.unregister_class(AlignOperator)
+    bpy.utils.unregister_class(ShrinkwrapOperator)
+    bpy.utils.unregister_class(HelpPopupOperator)
 
     del bpy.types.Scene.tissue_cartography_file 
     del bpy.types.Scene.tissue_cartography_resolution
@@ -210,7 +209,7 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_slice_position 
     del bpy.types.Scene.tissue_cartography_slice_channel 
     del bpy.types.Scene.tissue_cartography_vertex_shader_offset 
-    del bpy.types.Scene.tissue_cartography_vertex_shader_channel
+    del bpy.types.Scene.tissue_cartography_vertex_shader_channel_RGB
     del bpy.types.Scene.tissue_cartography_prealign 
     del bpy.types.Scene.tissue_cartography_prealign_shear
     del bpy.types.Scene.tissue_cartography_align_iter
@@ -221,5 +220,6 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_shrinkwarp_smooth
     del bpy.types.Scene.tissue_cartography_shrinkwarp_iterative
     
-    if hasattr(bpy.types.Scene, "tissue_cartography_interpolators"):
+    if hasattr(bpy.types.Scene.tissue_cartography_interpolators):
         del bpy.types.Scene.tissue_cartography_interpolators
+

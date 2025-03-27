@@ -53,6 +53,7 @@ def normalize_quantiles(image, quantiles=(0.01, 0.99), channel_axis=None, clip=F
     image_normalized : np.array
         Normalized image, the same shape as input
     """
+    image = image.astype(float) # avoid overflow during subtraction
     if channel_axis is None:
         image_normalized = image - np.nanquantile(image, quantiles[0])
         image_normalized /= np.nanquantile(image_normalized, quantiles[1])
@@ -268,11 +269,11 @@ def create_slice_plane(length, width, height, axis='z', position=0.0):
     if axis == 'x':
         plane_size = (height, width) #(width, height)
         location =  (position, width / 2, height / 2)
-        rotation = (0, 1.5708, 0)  # Rotate to align with the YZ-plane
+        rotation = (0, np.pi/2, 0)  # Rotate to align with the YZ-plane
     elif axis == 'y':
         plane_size = (length, height)
         location = (length / 2, position, height / 2)
-        rotation = (1.5708, 0, 0)  # Rotate to align with the XZ-plane
+        rotation = (np.pi/2, 0, 0)  # Rotate to align with the XZ-plane
     else:  # 'z'
         plane_size = (length, width)
         location = (length / 2, width / 2, position)
@@ -910,11 +911,9 @@ def set_numpy_attribute(mesh, name, array):
     """Sets mesh[name] = array.
     
     Since Blender does not support adding arbitrary objects as attributes to meshes,
-    the array is flattened, converted to a binary buffer, and saved as a tuple together with its shape.
-    All arrays are converted to np.float32.
+    the array is flattened, converted to a binary buffer, and saved as a tuple together with its shape and data type.
     """
-    bytes, shape = (array.astype(np.float32).flatten().tobytes(), array.shape)
-    mesh[name] = (bytes, shape)
+    mesh[name] = (array.flatten().tobytes(), array.shape, array.dtype.str)
     return None
 
 
@@ -922,11 +921,10 @@ def get_numpy_attribute(mesh, name):
     """Get array = mesh[name].
     
     Since Blender does not support adding arbitrary objects as attributes to meshes,
-    the array is flattened, converted to a binary buffer, and saved as a tuple together with its shape.
-    All arrays are converted to np.float32.
+    the array is flattened, converted to a binary buffer, and saved as a tuple together with its shape and data type.
     """
     assert name in mesh, "Attribute not found"
-    return np.frombuffer(mesh[name][0], dtype=np.float32).reshape(mesh[name][1])
+    return np.frombuffer(mesh[name][0], dtype=mesh[name][2]).reshape(mesh[name][1])
 
 
 def separate_selected_into_mesh_and_box(self, context):
@@ -1133,9 +1131,9 @@ class CreateProjectionOperator(Operator):
                                                 baked_normals, normal_offsets=offsets_array,
                                                 affine_matrix=box_world_inv)
         # set results as attributes of the mesh
-        set_numpy_attribute(obj, "baked_data", baked_data)
-        set_numpy_attribute(obj, "baked_normals", baked_normals)
-        set_numpy_attribute(obj, "baked_world_positions", baked_world_positions)
+        set_numpy_attribute(obj, "baked_data", baked_data.astype(np.float32))
+        set_numpy_attribute(obj, "baked_normals", baked_normals.astype(np.float32))
+        set_numpy_attribute(obj, "baked_world_positions", baked_world_positions.astype(np.float32))
         # create texture
         create_material_from_multilayer_array(obj, baked_data, material_name=f"ProjectedMaterial_{obj.name}")
 
@@ -1168,7 +1166,7 @@ class SaveProjectionOperator(Operator):
         try:
             tifffile.imwrite(self.filepath + "_BakedNormals.tif", baked_normals)
             tifffile.imwrite(self.filepath + "_BakedPositions.tif", baked_world_positions)
-            tifffile.imwrite(self.filepath + "_BakedData.tif", baked_data.astype(np.float32),
+            tifffile.imwrite(self.filepath + "_BakedData.tif", baked_data.transpose((1,0,2,3)),
                              metadata={'axes': 'ZCYX'}, imagej=True)
             self.report({'INFO'}, f"Cartographic projection saved to {self.filepath}")
         except Exception as e:
@@ -1275,9 +1273,10 @@ class BatchProjectionOperator(Operator):
                                                     affine_matrix=box_world_inv)
             # Save the data to the chosen filepath
             try:
-                tifffile.imwrite(batch_out_path.joinpath(f"{obj.name}_BakedNormals.tif"), baked_normals)
-                tifffile.imwrite(batch_out_path.joinpath(f"{obj.name}_BakedPositions.tif"), baked_world_positions)
-                tifffile.imwrite(batch_out_path.joinpath(f"{obj.name}_BakedData.tif"), baked_data.astype(np.float32),
+                tifffile.imwrite(batch_out_path.joinpath(f"{obj.name}_BakedNormals.tif"), baked_normals.astype(np.float32))
+                tifffile.imwrite(batch_out_path.joinpath(f"{obj.name}_BakedPositions.tif"), baked_world_positions.astype(np.float32))
+                tifffile.imwrite(batch_out_path.joinpath(f"{obj.name}_BakedData.tif"),
+                                 baked_data.astype(np.float32).transpose((1,0,2,3)),
                                  metadata={'axes': 'ZCYX'}, imagej=True)
                 self.report({'INFO'}, f"Cartographic projection saved for {obj.name}")
             except Exception as e:
@@ -1285,9 +1284,9 @@ class BatchProjectionOperator(Operator):
                 return {'CANCELLED'}
             if bpy.context.scene.tissue_cartography_batch_create_materials:
                 # set results as attributes of the mesh
-                set_numpy_attribute(obj, "baked_data", baked_data)
-                set_numpy_attribute(obj, "baked_normals", baked_normals)
-                set_numpy_attribute(obj, "baked_world_positions", baked_world_positions)
+                set_numpy_attribute(obj, "baked_data", baked_data.astype(np.float32))
+                set_numpy_attribute(obj, "baked_normals", baked_normals.astype(np.float32))
+                set_numpy_attribute(obj, "baked_world_positions", baked_world_positions.astype(np.float32))
                 # create texture
                 create_material_from_multilayer_array(obj, baked_data, material_name=f"ProjectedMaterial_{obj.name}")
         return {'FINISHED'}
@@ -1358,7 +1357,7 @@ class VertexShaderInitializeOperator(Operator):
         if context.scene.tissue_cartography_vertex_shader_channel >= data.shape[0]:
             self.report({'ERROR'}, f"Channel {context.scene.tissue_cartography_vertex_shader_channel} is out of bounds for the data array.")
             return {'CANCELLED'}
-        # need to compute coordinates relative to matrix_world of box I think
+        # compute coordinates relative to matrix_world of box
         set_numpy_attribute(obj, "box_world_inv_vertex_shader",
                             np.array(box.matrix_world.inverted()))
         bpy.types.Scene.tissue_cartography_interpolators[obj.name] = get_image_to_vertex_interpolator(obj, data, resolution)
@@ -1366,8 +1365,9 @@ class VertexShaderInitializeOperator(Operator):
                                    "box_world_inv_vertex_shader"))
         positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.tissue_cartography_vertex_shader_offset*v.normal)
                               for v in obj.data.vertices])
-        intensities = bpy.types.Scene.tissue_cartography_interpolators[obj.name][context.scene.tissue_cartography_vertex_shader_channel](positions)
-        colors = np.stack(3*[intensities,], axis=1)
+        intensities = np.stack([bpy.types.Scene.tissue_cartography_interpolators[obj.name][ch](positions)
+                       for ch in context.scene.tissue_cartography_vertex_shader_channel_RGB], axis=1)
+        assign_vertex_colors(obj, intensities)
         
         assign_vertex_colors(obj, colors)
         create_vertex_color_material(obj, material_name=f"VertexColorMaterial_{obj.name}")
@@ -1396,9 +1396,9 @@ class VertexShaderRefreshOperator(Operator):
         box_inv = mathutils.Matrix(get_numpy_attribute(obj, "box_world_inv_vertex_shader"))
         positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.tissue_cartography_vertex_shader_offset*v.normal)
                               for v in obj.data.vertices])
-        intensities = interpolator_dict[obj.name][context.scene.tissue_cartography_vertex_shader_channel](positions)
-        colors = np.stack(3*[intensities,], axis=1)
-        assign_vertex_colors(obj, colors)
+        intensities = np.stack([bpy.types.Scene.tissue_cartography_interpolators[obj.name][ch](positions)
+                       for ch in context.scene.tissue_cartography_vertex_shader_channel_RGB], axis=1)
+        assign_vertex_colors(obj, intensities)
 
         return {'FINISHED'}
 
@@ -1551,7 +1551,7 @@ class TissueCartographyPanel(Panel):
         
         row_vertex = layout.row()
         row_vertex.prop(scene, "tissue_cartography_vertex_shader_offset")
-        row_vertex.prop(scene, "tissue_cartography_vertex_shader_channel")
+        row_vertex.prop(scene, "tissue_cartography_vertex_shader_channel_RGB")
         row_vertex2 = layout.row()
         row_vertex2.operator("scene.initialize_vertex_shader", text="Initialize vertex shading")
         row_vertex2.operator("scene.refresh_vertex_shader", text="Refresh vertex shading")
