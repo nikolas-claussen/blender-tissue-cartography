@@ -1354,8 +1354,8 @@ class VertexShaderInitializeOperator(Operator):
         if not obj or obj.type != 'MESH':
             self.report({'ERROR'}, "No mesh object selected!")
             return {'CANCELLED'}
-        if context.scene.tissue_cartography_vertex_shader_channel >= data.shape[0]:
-            self.report({'ERROR'}, f"Channel {context.scene.tissue_cartography_vertex_shader_channel} is out of bounds for the data array.")
+        if any([x  >= data.shape[0] for x in context.scene.tissue_cartography_vertex_shader_channel_RGB]):
+            self.report({'ERROR'}, f"Channel(s) out of bounds for the data array.")
             return {'CANCELLED'}
         # compute coordinates relative to matrix_world of box
         set_numpy_attribute(obj, "box_world_inv_vertex_shader",
@@ -1368,10 +1368,7 @@ class VertexShaderInitializeOperator(Operator):
         intensities = np.stack([bpy.types.Scene.tissue_cartography_interpolators[obj.name][ch](positions)
                        for ch in context.scene.tissue_cartography_vertex_shader_channel_RGB], axis=1)
         assign_vertex_colors(obj, intensities)
-        
-        assign_vertex_colors(obj, colors)
         create_vertex_color_material(obj, material_name=f"VertexColorMaterial_{obj.name}")
-
         return {'FINISHED'}
 
 
@@ -1391,15 +1388,14 @@ class VertexShaderRefreshOperator(Operator):
         if interpolator_dict is None or obj.name not in interpolator_dict:
             self.report({'ERROR'}, f"Vertex shader not initialized.")
             return {'CANCELLED'}
-        if context.scene.tissue_cartography_vertex_shader_channel >= len(interpolator_dict[obj.name]):
-            self.report({'ERROR'}, f"Channel {context.scene.tissue_cartography_vertex_shader_channel} is out of bounds for the data array.")
+        if any([x >= len(interpolator_dict[obj.name]) for x in context.scene.tissue_cartography_vertex_shader_channel>RGB]):
+            self.report({'ERROR'}, f"Channel(s) out of bounds for the data array.")
         box_inv = mathutils.Matrix(get_numpy_attribute(obj, "box_world_inv_vertex_shader"))
         positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.tissue_cartography_vertex_shader_offset*v.normal)
                               for v in obj.data.vertices])
         intensities = np.stack([bpy.types.Scene.tissue_cartography_interpolators[obj.name][ch](positions)
                        for ch in context.scene.tissue_cartography_vertex_shader_channel_RGB], axis=1)
         assign_vertex_colors(obj, intensities)
-
         return {'FINISHED'}
 
 

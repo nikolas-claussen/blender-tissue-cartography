@@ -1,6 +1,6 @@
 bl_info = {
     "name": "Tissue Cartography",
-    "blender": (4, 3, 0),
+    "blender": (4, 2, 0),
     "category": "Scene",
 }
 import bpy
