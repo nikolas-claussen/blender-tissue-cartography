@@ -280,61 +280,115 @@ def interpolate_UV_to_per_vertex_field(mesh, field, domain="per-vertex"):
     return mesh.map_per_texture_vertex_to_per_vertex(per_texture_vertex)
 
 # %% ../nbs/Python library/02_cartographic_interpolation.ipynb 43
-def chunked_interpn(points, data, positions, chunk_size=100, overlap=2, kwargs=None, anti_aliasing=None):
+def chunked_interpn(points, values, xi, method='linear', bounds_error=True, fill_value=np.nan,
+                    chunk_size=100, overlap=5, local_filter=None):
     """
-    Perform interpolation on large 3D arrays by processing in chunks along the longest dimension.
+    Multidimensional regular grid interpolation for large datasets by splitting input data into chunks.
+
+    Chunking can drastically improve speed and memory footprint for large,
+    high-dimensional (more than 2d) data. Chunking is likely inefficient for small
+    `values` arrays and small numbers of sample posisions `xi`.
     
+    Uses scipy.interpolate.interpn on each chunk, and can be used as drop-in replacement for it.
+    See scipy.interpolate.interpn for full documentation.
+
+    This function works on *rectilinear* grids, that is, a rectangular grid with even or
+    uneven spacing.
+
     Parameters
     ----------
-    points : tuple of ndarray
-        Tuple of 1D arrays defining the regular grid points for each dimension.
-    data : ndarray
-        3D array of values to interpolate (can be very large)
-    positions : ndarray
-        (..., 3) array of positions where to interpolate
+    points : tuple of ndarray of float, with shapes (m1, ), ..., (mn, )
+        The points defining the regular grid in n dimensions. The points in
+        each dimension (i.e. every elements of the points tuple) must be
+        strictly ascending or descending.
+    values : array_like, shape (m1, ..., mn, ...)
+        The data on the regular grid in n dimensions. Complex data is
+        accepted.
+    xi : ndarray of shape (..., ndim)
+        The coordinates to sample the gridded data at
+
+    method : str, optional
+        The method of interpolation to perform. Supported are "linear",
+        "nearest", "slinear", "cubic", "quintic", "pchip", and "splinef2d".
+        "splinef2d" is only supported for 2-dimensional data.
+    bounds_error : bool, optional
+        If True, when interpolated values are requested outside of the
+        domain of the input data, a ValueError is raised.
+        If False, then `fill_value` is used.
+    fill_value : number, optional
+        If provided, the value to use for points outside of the
+        interpolation domain. If None, values outside
+        the domain are extrapolated.  Extrapolation is not supported by method
+        "splinef2d".
+
     chunk_size : int, optional
-        Size of chunks
+        Size of chunks. Chunks are hyper-cubes of size (chunk_size+2*overlap,)**ndim 
     overlap : int, optional
-        Overlap between chuncks for interpolation
-    kwargs : dict
-        Additional arguments passed to scipy.interpolate.interpn
-    anti_aliasing: None, int, or array of shape (3,)
-        Whether to perform Gaussian smoothing before interpolation for anti-aliasing.
-        If not None, interpreted as Gaussian smoothing kernel.
+        Overlap between chuncks for interpolation. Defaults to 5.
+    local_filter: None or callable
+        If not None, filter applied to chunk before interpolation.
+        E.g. a smoothing filter for anti-aliasing.
+    
     Returns
     -------
-    ndarray
-        Interpolated values at positions
-    """
-    kwargs = {} if kwargs is None else kwargs
-    # flatten position array
-    positions_shape = positions.shape
-    positions = positions.reshape((-1,3))
-    results = np.nan*np.zeros(positions.shape[0])
-    # determine the longest axis of data array
-    chunk_axis = np.argmax(data.shape)
-    # split position array
-    chunk_per_position = np.floor(positions[:,chunk_axis] / chunk_size)
-    # iterate over chunks
-    x, y, z = points
-    for i in range(0, np.ceil(data.shape[chunk_axis]/chunk_size).astype(int)):
-        # select chunk and corresponding grid positions
-        if chunk_axis == 0:
-            chunk = data[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap,:,:]
-            x_chunk, y_chunk, z_chunk = (x[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap], y, z)
-        elif chunk_axis == 1:
-            chunk = data[:,max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap,:]
-            x_chunk, y_chunk, z_chunk = (x, y[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap], z)
-        elif chunk_axis == 2:
-            chunk = data[:,:,max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap]
-            x_chunk, y_chunk, z_chunk = (x, y, z[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap])
-        # otpional anti-aliasing
-        if anti_aliasing is not None:
-            chunk = ndimage.gaussian_filter(chunk, anti_aliasing, mode='nearest', truncate=2)
-        # interpolate for positions within the chunk
-        results[chunk_per_position==i] = interpolate.interpn((x_chunk, y_chunk, z_chunk), chunk, positions[chunk_per_position==i], **kwargs)
-    return results.reshape(positions_shape[:-1])
+    ndarray, shape xi.shape[:-1] + values.shape[ndim:]
+        Interpolated values at `xi`.  Note: ``xi.ndim == 1``,
+        behavior differs from scipy.interpolate.interpn
 
+    Examples
+    --------
+    Evaluate a simple example function on the points of a regular 3-D grid:
+    
+    >>> import numpy as np
+    >>> from scipy import interpolate
+    >>> def value_func_3d(x, y, z):
+    ...     return 2 * x + 3 * y - z
+    >>> x = np.linspace(0, 4, 10)
+    >>> y = np.linspace(0, 5, 60)
+    >>> z = np.linspace(0, 6, 10)
+    >>> points = (x, y, z)
+    >>> values = value_func_3d(*np.meshgrid(*points, indexing='ij'))
+    
+    Evaluate the interpolating function at some points
+    and compare to non-chunked interpolation
+    
+    >>> xi = np.stack(3*[np.linspace(1, 2, 10),], axis=1) 
+    >>> results = chunked_interpn(points, values, xi, chunk_size=15,)
+    >>> results[5], interpolate.interpn(points, values, xi,)[5]
+    (6.22, 6.22)
+        
+    """
+    # flatten position array
+    xi_shape = xi.shape
+    xi = xi.reshape((-1, xi_shape[-1]))
+    results = fill_value*np.zeros(xi.shape[0])
+    # determine the longest axis of data array
+    chunk_axis = np.argmax(values.shape)
+    if values.shape[chunk_axis] <= (chunk_size+2*overlap):
+        if local_filter is not None:
+            values = local_filter(values)
+        results = interpolate.interpn(points, values, xi,
+                                      method=method, bounds_error=bounds_error, fill_value=fill_value)
+        return results.reshape(xi_shape[:-1])
+    # identify the split locations 
+    splits = np.array([points[chunk_axis][min((i+1)*chunk_size, points[chunk_axis].shape[0]-1)] 
+                       for i in range(0, np.ceil(values.shape[chunk_axis]/chunk_size).astype(int))])
+    chunk_per_position = np.searchsorted(splits, xi[:,chunk_axis], side="right")
+    # iterate over chunks along longest axis
+    for i in range(0, np.ceil(values.shape[chunk_axis]/chunk_size).astype(int)):
+        mask = (chunk_per_position==i)
+        if not mask.any():
+            continue
+        # select chunk and corresponding grid xi_shape
+        start, stop = (max(i*chunk_size-overlap,0), (i+1)*chunk_size+overlap)
+        slices = tuple(slice(start, stop) if j == chunk_axis else slice(None) for j in range(values.ndim))
+        chunk = values[slices]
+        chunk_points = [(p if j != chunk_axis else p[start:stop]) for j, p in enumerate(points)]
+        # recurse to split along the remaining axes if necessary
+        results[mask] = chunked_interpn(chunk_points, chunk, xi[mask],
+                                        chunk_size=chunk_size, overlap=overlap, local_filter=local_filter,
+                                        method=method, bounds_error=bounds_error, fill_value=fill_value)
+    return results.reshape(xi_shape[:-1])
 
 # %% ../nbs/Python library/02_cartographic_interpolation.ipynb 44
 def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resolution):
@@ -361,7 +415,7 @@ def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resoluti
     """
     x, y, z = [np.arange(ni) for ni in image.shape[1:]]
     interpolated_data = np.stack([chunked_interpn((x, y, z), channel, interpolated_3d_positions/resolution,
-                                                  kwargs={"method": "linear", "bounds_error": False}, chunk_size=50)
+                                                  method="linear", bounds_error=False, chunk_size=50, local_filter=None)
                                   for channel in image])
     
     return interpolated_data

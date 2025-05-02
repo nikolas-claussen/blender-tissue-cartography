@@ -72,7 +72,6 @@ def normalize_quantiles(image, quantiles=(0.01, 0.99), channel_axis=None, clip=F
     return image_normalized
 
 
-
 def axis_order_to_transpose(axis_order_string):
     """Convert string describing axis order into tuple for use in np.transpose."""
     assert ''.join(sorted(axis_order_string)) in ['xyz', 'cxyz'], "Must be xyz, cxyz, or permutation thereof"
@@ -166,68 +165,115 @@ def bake_per_loop_values_to_uv(loop_uvs, loop_values, image_resolution):
     return interpolated
 
 
-def chunked_interpn(points, data, positions, chunk_size=100, overlap=2, kwargs=None, anti_aliasing=None):
+def chunked_interpn(points, values, xi, method='linear', bounds_error=True, fill_value=np.nan,
+                    chunk_size=100, overlap=5, local_filter=None):
     """
-    Perform interpolation on large 3D arrays by processing in chunks recursively.
+    Multidimensional regular grid interpolation for large datasets by splitting input data into chunks.
+
+    Chunking can drastically improve speed and memory footprint for large,
+    high-dimensional (more than 2d) data. Chunking is likely inefficient for small
+    `values` arrays and small numbers of sample posisions `xi`.
     
+    Uses scipy.interpolate.interpn on each chunk, and can be used as drop-in replacement for it.
+    See scipy.interpolate.interpn for full documentation.
+
+    This function works on *rectilinear* grids, that is, a rectangular grid with even or
+    uneven spacing.
+
     Parameters
     ----------
-    points : tuple of ndarray
-        Tuple of 1D arrays defining the regular grid points for each dimension.
-    data : ndarray
-        3D array of values to interpolate (can be very large)
-    positions : ndarray
-        (..., 3) array of positions where to interpolate
+    points : tuple of ndarray of float, with shapes (m1, ), ..., (mn, )
+        The points defining the regular grid in n dimensions. The points in
+        each dimension (i.e. every elements of the points tuple) must be
+        strictly ascending or descending.
+    values : array_like, shape (m1, ..., mn, ...)
+        The data on the regular grid in n dimensions. Complex data is
+        accepted.
+    xi : ndarray of shape (..., ndim)
+        The coordinates to sample the gridded data at
+
+    method : str, optional
+        The method of interpolation to perform. Supported are "linear",
+        "nearest", "slinear", "cubic", "quintic", "pchip", and "splinef2d".
+        "splinef2d" is only supported for 2-dimensional data.
+    bounds_error : bool, optional
+        If True, when interpolated values are requested outside of the
+        domain of the input data, a ValueError is raised.
+        If False, then `fill_value` is used.
+    fill_value : number, optional
+        If provided, the value to use for points outside of the
+        interpolation domain. If None, values outside
+        the domain are extrapolated.  Extrapolation is not supported by method
+        "splinef2d".
+
     chunk_size : int, optional
-        Size of chunks.
+        Size of chunks. Chunks are hyper-cubes of size (chunk_size+2*overlap,)**ndim 
     overlap : int, optional
-        Overlap between chuncks for interpolation
-    kwargs : dict
-        Additional arguments passed to scipy.interpolate.interpn
-    anti_aliasing: None, int, or array of shape (3,)
-        Whether to perform Gaussian smoothing before interpolation for anti-aliasing.
-        If not None, interpreted as size of uniform smoothing filter.
+        Overlap between chuncks for interpolation. Defaults to 5.
+    local_filter: None or callable
+        If not None, filter applied to chunk before interpolation.
+        E.g. a smoothing filter for anti-aliasing.
+    
     Returns
     -------
-    ndarray
-        Interpolated values at positions
+    ndarray, shape xi.shape[:-1] + values.shape[ndim:]
+        Interpolated values at `xi`.  Note: ``xi.ndim == 1``,
+        behavior differs from scipy.interpolate.interpn
+
+    Examples
+    --------
+    Evaluate a simple example function on the points of a regular 3-D grid:
+    
+    >>> import numpy as np
+    >>> from scipy import interpolate
+    >>> def value_func_3d(x, y, z):
+    ...     return 2 * x + 3 * y - z
+    >>> x = np.linspace(0, 4, 10)
+    >>> y = np.linspace(0, 5, 60)
+    >>> z = np.linspace(0, 6, 10)
+    >>> points = (x, y, z)
+    >>> values = value_func_3d(*np.meshgrid(*points, indexing='ij'))
+    
+    Evaluate the interpolating function at some points
+    and compare to non-chunked interpolation
+    
+    >>> xi = np.stack(3*[np.linspace(1, 2, 10),], axis=1) 
+    >>> results = chunked_interpn(points, values, xi, chunk_size=15,)
+    >>> results[5], interpolate.interpn(points, values, xi,)[5]
+    (6.22, 6.22)
+        
     """
-    kwargs = {} if kwargs is None else kwargs
     # flatten position array
-    positions_shape = positions.shape
-    positions = positions.reshape((-1,3))
-    x, y, z = points
-    results = np.nan*np.zeros(positions.shape[0])
+    xi_shape = xi.shape
+    xi = xi.reshape((-1, xi_shape[-1]))
+    results = fill_value*np.zeros(xi.shape[0])
     # determine the longest axis of data array
-    chunk_axis = np.argmax(data.shape)
-    if data.shape[chunk_axis] <= (chunk_size+2*overlap):
-        if anti_aliasing is not None:
-            #data = ndimage.gaussian_filter(data, anti_aliasing, mode='nearest', truncate=2)
-            data = ndimage.uniform_filter(data, anti_aliasing, mode='nearest')
-        results = interpolate.interpn((x, y, z), data, positions, **kwargs)
-        return results.reshape(positions_shape[:-1])
-    # split position array
-    chunk_per_position = np.floor(positions[:,chunk_axis] / chunk_size)
-    # iterate over chunks
-    for i in range(0, np.ceil(data.shape[chunk_axis]/chunk_size).astype(int)):
+    chunk_axis = np.argmax(values.shape)
+    if values.shape[chunk_axis] <= (chunk_size+2*overlap):
+        if local_filter is not None:
+            values = local_filter(values)
+        results = interpolate.interpn(points, values, xi,
+                                      method=method, bounds_error=bounds_error, fill_value=fill_value)
+        return results.reshape(xi_shape[:-1])
+    # identify the split locations 
+    splits = np.array([points[chunk_axis][min((i+1)*chunk_size, points[chunk_axis].shape[0]-1)] 
+                       for i in range(0, np.ceil(values.shape[chunk_axis]/chunk_size).astype(int))])
+    chunk_per_position = np.searchsorted(splits, xi[:,chunk_axis], side="right")
+    # iterate over chunks along longest axis
+    for i in range(0, np.ceil(values.shape[chunk_axis]/chunk_size).astype(int)):
         mask = (chunk_per_position==i)
         if not mask.any():
             continue
-        # select chunk and corresponding grid positions
-        if chunk_axis == 0:
-            chunk = data[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap,:,:]
-            x_chunk, y_chunk, z_chunk = (x[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap], y, z)
-        elif chunk_axis == 1:
-            chunk = data[:,max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap,:]
-            x_chunk, y_chunk, z_chunk = (x, y[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap], z)
-        elif chunk_axis == 2:
-            chunk = data[:,:,max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap]
-            x_chunk, y_chunk, z_chunk = (x, y, z[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap])
-        # recurse
-        results[mask] = chunked_interpn((x_chunk, y_chunk, z_chunk), chunk, positions[mask],
-                                        chunk_size=chunk_size, overlap=overlap, kwargs=kwargs, anti_aliasing=anti_aliasing)
-    return results.reshape(positions_shape[:-1])
-
+        # select chunk and corresponding grid xi_shape
+        start, stop = (max(i*chunk_size-overlap,0), (i+1)*chunk_size+overlap)
+        slices = tuple(slice(start, stop) if j == chunk_axis else slice(None) for j in range(values.ndim))
+        chunk = values[slices]
+        chunk_points = [(p if j != chunk_axis else p[start:stop]) for j, p in enumerate(points)]
+        # recurse to split along the remaining axes if necessary
+        results[mask] = chunked_interpn(chunk_points, chunk, xi[mask],
+                                        chunk_size=chunk_size, overlap=overlap, local_filter=local_filter,
+                                        method=method, bounds_error=bounds_error, fill_value=fill_value)
+    return results.reshape(xi_shape[:-1])
 
 def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_normals, normal_offsets=(0,), affine_matrix=None):
     """ 
@@ -271,7 +317,7 @@ def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_n
     positions = positions/resolution
     for ic, channel in enumerate(image):
         baked_data[ic,] = chunked_interpn((x, y, z), channel, positions, chunk_size=50,
-                                          kwargs={'method': "linear", 'bounds_error': False}, anti_aliasing=None)
+                                          method="linear", bounds_error=False, local_filter=None)
     return baked_data
 
 
@@ -519,27 +565,6 @@ def compute_edge_lengths(obj):
         v2 = obj.data.vertices[edge.vertices[1]].co
         edge_lengths.append((v1 - v2).length)
     return np.array(edge_lengths)
-
-
-def get_image_to_vertex_interpolator(obj, image_3d, resolution_array, quantiles=(0.01, 0.99)):
-    """
-    Get interpolator that maps vertex position -> image intensity.
-    
-    Returns a list of interpolators, one for each channel.
-    To avoid aliasing, the 3d image is smoothed with
-    sigma=median edge length /2. The image data is also normalized to
-    range from 0-1 using the provided quantiles.
-    """
-    anti_aliasing_scale = np.median(compute_edge_lengths(obj))/2
-    image_3d_smoothed = np.stack([ndimage.gaussian_filter(ch, anti_aliasing_scale/resolution_array)
-                                  for ch in image_3d])
-    image_3d_smoothed = normalize_quantiles(image_3d_smoothed,
-                                            quantiles=quantiles, clip=True, data_type=None)
-    x, y, z = [np.arange(ni)*resolution_array[i]
-               for i, ni in enumerate(image_3d.shape[1:])]
-    
-    return [interpolate.RegularGridInterpolator((x,y,z), ch, method='linear', bounds_error=False)
-            for ch in image_3d_smoothed]
 
 
 def assign_vertex_colors(obj, colors):
@@ -1403,9 +1428,6 @@ class VertexShaderOperator(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        # create global dict to hold interpolator objects
-        if not hasattr(bpy.types.Scene, "tissue_cartography_interpolators"):
-            bpy.types.Scene.tissue_cartography_interpolators = dict()
         # get the selected mesh and bounding box
         box, obj = separate_selected_into_mesh_and_box(self, context)
         if box is None or obj is None:
@@ -1429,12 +1451,13 @@ class VertexShaderOperator(Operator):
                               for v in obj.data.vertices])
         # compute smoothing scale
         anti_aliasing_scale = 1.5*np.median(compute_edge_lengths(obj)) / resolution # /2
+        anti_aliasing_filter = lambda x: ndimage.uniform_filter(x, size=anti_aliasing_scale)
         # interpolate
         x, y, z = [np.arange(ni) for i, ni in enumerate(data.shape[1:])]
         intensities = np.zeros(shape=(positions.shape[0], 3))
         for i, ic in enumerate(context.scene.tissue_cartography_vertex_shader_channel_RGB):
             intensities[:,i] = chunked_interpn((x, y, z), data[ic], positions/resolution, chunk_size=50, overlap=10,
-                                                kwargs={'method': "linear", 'bounds_error': False}, anti_aliasing=anti_aliasing_scale)
+                                                method="linear", bounds_error=False, local_filter=anti_aliasing_filter)
         # normalize data for display - 0.01 - 0.99 quantiles
         qmins = np.stack([np.quantile(data[ic,::4,::4,::4], 0.01) for ic in context.scene.tissue_cartography_vertex_shader_channel_RGB])
         qmaxs = np.stack([np.quantile(data[ic,::4,::4,::4], 0.99) for ic in context.scene.tissue_cartography_vertex_shader_channel_RGB])
