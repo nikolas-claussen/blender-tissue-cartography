@@ -168,7 +168,7 @@ def bake_per_loop_values_to_uv(loop_uvs, loop_values, image_resolution):
 
 def chunked_interpn(points, data, positions, chunk_size=100, overlap=2, kwargs=None, anti_aliasing=None):
     """
-    Perform interpolation on large 3D arrays by processing in chunks along the longest dimension.
+    Perform interpolation on large 3D arrays by processing in chunks recursively.
     
     Parameters
     ----------
@@ -179,14 +179,14 @@ def chunked_interpn(points, data, positions, chunk_size=100, overlap=2, kwargs=N
     positions : ndarray
         (..., 3) array of positions where to interpolate
     chunk_size : int, optional
-        Size of chunks
+        Size of chunks.
     overlap : int, optional
-        Overlap between chunks for interpolation
+        Overlap between chuncks for interpolation
     kwargs : dict
         Additional arguments passed to scipy.interpolate.interpn
     anti_aliasing: None, int, or array of shape (3,)
         Whether to perform Gaussian smoothing before interpolation for anti-aliasing.
-        If not None, interpreted as size of uniform smoothing kernel.
+        If not None, interpreted as size of uniform smoothing filter.
     Returns
     -------
     ndarray
@@ -196,14 +196,23 @@ def chunked_interpn(points, data, positions, chunk_size=100, overlap=2, kwargs=N
     # flatten position array
     positions_shape = positions.shape
     positions = positions.reshape((-1,3))
+    x, y, z = points
     results = np.nan*np.zeros(positions.shape[0])
     # determine the longest axis of data array
     chunk_axis = np.argmax(data.shape)
+    if data.shape[chunk_axis] <= (chunk_size+2*overlap):
+        if anti_aliasing is not None:
+            #data = ndimage.gaussian_filter(data, anti_aliasing, mode='nearest', truncate=2)
+            data = ndimage.uniform_filter(data, anti_aliasing, mode='nearest')
+        results = interpolate.interpn((x, y, z), data, positions, **kwargs)
+        return results.reshape(positions_shape[:-1])
     # split position array
     chunk_per_position = np.floor(positions[:,chunk_axis] / chunk_size)
     # iterate over chunks
-    x, y, z = points
     for i in range(0, np.ceil(data.shape[chunk_axis]/chunk_size).astype(int)):
+        mask = (chunk_per_position==i)
+        if not mask.any():
+            continue
         # select chunk and corresponding grid positions
         if chunk_axis == 0:
             chunk = data[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap,:,:]
@@ -214,14 +223,10 @@ def chunked_interpn(points, data, positions, chunk_size=100, overlap=2, kwargs=N
         elif chunk_axis == 2:
             chunk = data[:,:,max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap]
             x_chunk, y_chunk, z_chunk = (x, y, z[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap])
-        # otpional anti-aliasing
-        if anti_aliasing is not None:
-            #chunk = ndimage.gaussian_filter(chunk, anti_aliasing, mode='nearest', truncate=2)
-            chunk = ndimage.uniform_filter(chunk, anti_aliasing, mode='nearest')
-        # interpolate for positions within the chunk
-        results[chunk_per_position==i] = interpolate.interpn((x_chunk, y_chunk, z_chunk), chunk, positions[chunk_per_position==i], **kwargs)
+        # recurse
+        results[mask] = chunked_interpn((x_chunk, y_chunk, z_chunk), chunk, positions[mask],
+                                        chunk_size=chunk_size, overlap=overlap, kwargs=kwargs, anti_aliasing=anti_aliasing)
     return results.reshape(positions_shape[:-1])
-
 
 
 def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_normals, normal_offsets=(0,), affine_matrix=None):
@@ -1054,7 +1059,7 @@ class LoadTIFFOperator(Operator):
                              hide=False)
             box.display_type = 'WIRE'
             # attach the data to the box
-            bpy.types.Scene.tissue_cartography_3D_data[box.name_full] = data
+            bpy.types.Scene.tissue_cartography_3D_data[box] = data
             set_numpy_attribute(box, "resolution", resolution)
 #            set_numpy_attribute(box, "3D_data", data)
             box["3D_data"] = True
@@ -1185,7 +1190,7 @@ class CreateProjectionOperator(Operator):
         
         # create a pullback
         box_world_inv = np.linalg.inv(np.array(box.matrix_world))
-        baked_data = bake_volumetric_data_to_uv(bpy.types.Scene.tissue_cartography_3D_data[box.name_full],
+        baked_data = bake_volumetric_data_to_uv(bpy.types.Scene.tissue_cartography_3D_data[box],
 #                                               get_numpy_attribute(box, "3D_data"),
                                                 baked_world_positions, 
                                                 get_numpy_attribute(box, "resolution"),
@@ -1366,7 +1371,7 @@ class SlicePlaneOperator(Operator):
             self.report({'ERROR'}, "Select exactly a 3D image (BoundingBox)!")
             return {'CANCELLED'}
 #        data = get_numpy_attribute(box, "3D_data")
-        data = bpy.types.Scene.tissue_cartography_3D_data[box.name_full]     
+        data = bpy.types.Scene.tissue_cartography_3D_data[box]     
         resolution = get_numpy_attribute(box, "resolution")
         if not isinstance(data, np.ndarray) or data.ndim != 4:
             self.report({'ERROR'}, "Invalid 3D data array.")
@@ -1407,7 +1412,7 @@ class VertexShaderOperator(Operator):
             return {'CANCELLED'}
         # Get the 3D data array from the box object
 #        data = get_numpy_attribute(box, "3D_data")
-        data = bpy.types.Scene.tissue_cartography_3D_data[box.name_full]
+        data = bpy.types.Scene.tissue_cartography_3D_data[box]
         resolution = get_numpy_attribute(box, "resolution")
      
         if not isinstance(data, np.ndarray) or data.ndim != 4:
@@ -1552,7 +1557,7 @@ class HelpPopupOperator(Operator):
         
 class TissueCartographyPanel(Panel):
     """Class defining layout of user interface (buttons, inputs, etc.)"""
-    bl_label = "Tissue Cartography (Memory Test)"
+    bl_label = "Tissue Cartography"
     bl_idname = "SCENE_PT_tissue_cartography"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'

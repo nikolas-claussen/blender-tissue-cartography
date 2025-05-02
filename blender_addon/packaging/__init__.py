@@ -183,17 +183,17 @@ def register():
     )
 
 def unregister():
-    bpy.utils.unregister_class(TissueCartographyPanel)
-    bpy.utils.unregister_class(LoadTIFFOperator)
-    bpy.utils.unregister_class(LoadSegmentationTIFFOperator)
-    bpy.utils.unregister_class(CreateProjectionOperator)
-    bpy.utils.unregister_class(BatchProjectionOperator)
-    bpy.utils.unregister_class(SaveProjectionOperator)
-    bpy.utils.unregister_class(SlicePlaneOperator)
-    bpy.utils.unregister_class(VertexShaderOperator)
-    bpy.utils.unregister_class(AlignOperator)
-    bpy.utils.unregister_class(ShrinkwrapOperator)
-    bpy.utils.unregister_class(HelpPopupOperator)
+    bpy.utils.unregister_class(tissue_cartography.TissueCartographyPanel)
+    bpy.utils.unregister_class(tissue_cartography.LoadTIFFOperator)
+    bpy.utils.unregister_class(tissue_cartography.LoadSegmentationTIFFOperator)
+    bpy.utils.unregister_class(tissue_cartography.CreateProjectionOperator)
+    bpy.utils.unregister_class(tissue_cartography.BatchProjectionOperator)
+    bpy.utils.unregister_class(tissue_cartography.SaveProjectionOperator)
+    bpy.utils.unregister_class(tissue_cartography.SlicePlaneOperator)
+    bpy.utils.unregister_class(tissue_cartography.VertexShaderOperator)
+    bpy.utils.unregister_class(tissue_cartography.AlignOperator)
+    bpy.utils.unregister_class(tissue_cartography.ShrinkwrapOperator)
+    bpy.utils.unregister_class(tissue_cartography.HelpPopupOperator)
 
     del bpy.types.Scene.tissue_cartography_file 
     del bpy.types.Scene.tissue_cartography_resolution
@@ -213,7 +213,7 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_slice_channel 
     del bpy.types.Scene.tissue_cartography_vertex_shader_offset 
     del bpy.types.Scene.tissue_cartography_vertex_shader_channel_RGB
-    del tissue_cartography_vertex_shader_create_material
+    del bpy.types.Scene.tissue_cartography_vertex_shader_create_material
     del bpy.types.Scene.tissue_cartography_prealign 
     del bpy.types.Scene.tissue_cartography_prealign_shear
     del bpy.types.Scene.tissue_cartography_align_iter
