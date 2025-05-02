@@ -136,6 +136,10 @@ If you want to extend `blender_tissue_cartography`:
   before using any of the add-on functionality. Otherwise, Blender may
   crash.
 
+- 3D `.tif` files loaded into Blender are not saved to the `.blend`
+  (which would explode in size). If you close blender, you need to
+  reimport your 3D image data.
+
 - Please report any issues or bugs you find on GitHub!
 
 ## Documentation

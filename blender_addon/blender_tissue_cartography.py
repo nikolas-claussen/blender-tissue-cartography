@@ -19,7 +19,7 @@ import subprocess
 import sys
 
 import tifffile
-from scipy import interpolate, ndimage, spatial, stats, linalg
+from scipy import interpolate, ndimage, spatial, linalg
 from skimage import measure
 
 
@@ -172,6 +172,64 @@ def bake_per_loop_values_to_uv(loop_uvs, loop_values, image_resolution):
     return interpolated
 
 
+def chunked_interpn(points, data, positions, chunk_size=100, overlap=2, kwargs=None, anti_aliasing=None):
+    """
+    Perform interpolation on large 3D arrays by processing in chunks along the longest dimension.
+    
+    Parameters
+    ----------
+    points : tuple of ndarray
+        Tuple of 1D arrays defining the regular grid points for each dimension.
+    data : ndarray
+        3D array of values to interpolate (can be very large)
+    positions : ndarray
+        (..., 3) array of positions where to interpolate
+    chunk_size : int, optional
+        Size of chunks
+    overlap : int, optional
+        Overlap between chunks for interpolation
+    kwargs : dict
+        Additional arguments passed to scipy.interpolate.interpn
+    anti_aliasing: None, int, or array of shape (3,)
+        Whether to perform Gaussian smoothing before interpolation for anti-aliasing.
+        If not None, interpreted as size of uniform smoothing kernel.
+    Returns
+    -------
+    ndarray
+        Interpolated values at positions
+    """
+    kwargs = {} if kwargs is None else kwargs
+    # flatten position array
+    positions_shape = positions.shape
+    positions = positions.reshape((-1,3))
+    results = np.nan*np.zeros(positions.shape[0])
+    # determine the longest axis of data array
+    chunk_axis = np.argmax(data.shape)
+    # split position array
+    chunk_per_position = np.floor(positions[:,chunk_axis] / chunk_size)
+    # iterate over chunks
+    x, y, z = points
+    for i in range(0, np.ceil(data.shape[chunk_axis]/chunk_size).astype(int)):
+        # select chunk and corresponding grid positions
+        if chunk_axis == 0:
+            chunk = data[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap,:,:]
+            x_chunk, y_chunk, z_chunk = (x[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap], y, z)
+        elif chunk_axis == 1:
+            chunk = data[:,max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap,:]
+            x_chunk, y_chunk, z_chunk = (x, y[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap], z)
+        elif chunk_axis == 2:
+            chunk = data[:,:,max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap]
+            x_chunk, y_chunk, z_chunk = (x, y, z[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap])
+        # otpional anti-aliasing
+        if anti_aliasing is not None:
+            #chunk = ndimage.gaussian_filter(chunk, anti_aliasing, mode='nearest', truncate=2)
+            chunk = ndimage.uniform_filter(chunk, anti_aliasing, mode='nearest')
+        # interpolate for positions within the chunk
+        results[chunk_per_position==i] = interpolate.interpn((x_chunk, y_chunk, z_chunk), chunk, positions[chunk_per_position==i], **kwargs)
+    return results.reshape(positions_shape[:-1])
+
+
+
 def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_normals, normal_offsets=(0,), affine_matrix=None):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
@@ -187,12 +245,12 @@ def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_n
     ----------
     image : 4d np.array
         Image, axis 0  is assumed to be the channel axis
-    baked_world_positions : np.array of shape (image_resolution, image_resolution, uv_grid_steps, 3)
+    baked_world_positions : np.array of shape (image_resolution, image_resolution, 3)
         3d world positions baked to UV grid, with uniform step size. UV positions that don't correspond to 
-        any value are set to np.nan.
+        any value are set to np.nan. 
     resolution : np.array of shape (3,)
         Resolution in pixels/microns for each of the three spatial axes.
-    baked_normals : np.array of shape (image_resolution, image_resolution, uv_grid_steps, 3)
+    baked_normals : np.array of shape (image_resolution, image_resolution, 3)
         3d world normals baked to UV grid, with uniform step size. UV positions that don't correspond to 
         any value are set to np.nan.
     normal_offsets : np.array of shape (n_layers,), default (0,)
@@ -207,16 +265,14 @@ def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_n
         Multi-layer 3d volumetric data baked onto UV.
     """
     x, y, z = [np.arange(ni) for ni in image.shape[1:]]
-    baked_data = []
-    for o in normal_offsets:
-        position = (baked_world_positions+o*baked_normals)
-        if affine_matrix is not None:
-            position = position @ affine_matrix[:3, :3].T + affine_matrix[:3,3]
-        position =  position/resolution
-        baked_layer_data = np.stack([interpolate.interpn((x, y, z), channel, position,
-                                     method="linear", bounds_error=False) for channel in image])
-        baked_data.append(baked_layer_data)
-    baked_data = np.stack(baked_data, axis=1)
+    baked_data = np.zeros(shape=(image.shape[0], len(normal_offsets), baked_world_positions.shape[0], baked_world_positions.shape[1]))
+    positions = np.stack([(baked_world_positions+o*baked_normals) for o in normal_offsets], axis=0)
+    if affine_matrix is not None:
+        positions = positions @ affine_matrix[:3, :3].T + affine_matrix[:3,3]
+    positions = positions/resolution
+    for ic, channel in enumerate(image):
+        baked_data[ic,] = chunked_interpn((x, y, z), channel, positions, chunk_size=50,
+                                          kwargs={'method': "linear", 'bounds_error': False}, anti_aliasing=None)
     return baked_data
 
 
@@ -962,6 +1018,8 @@ class LoadTIFFOperator(Operator):
     bl_label = "Load TIFF File"
 
     def execute(self, context):
+        if not hasattr(bpy.types.Scene, "tissue_cartography_3D_data"):
+            bpy.types.Scene.tissue_cartography_3D_data = dict()
         file_path = bpy.path.abspath(context.scene.tissue_cartography_file)
         resolution = np.array(context.scene.tissue_cartography_resolution)
         self.report({'INFO'}, f"Resolution loaded: {resolution}")
@@ -1002,8 +1060,10 @@ class LoadTIFFOperator(Operator):
                              hide=False)
             box.display_type = 'WIRE'
             # attach the data to the box
+            bpy.types.Scene.tissue_cartography_3D_data[box.name_full] = data
             set_numpy_attribute(box, "resolution", resolution)
-            set_numpy_attribute(box, "3D_data", data)
+#            set_numpy_attribute(box, "3D_data", data)
+            box["3D_data"] = True
             
         except Exception as e:
             self.report({'ERROR'}, f"Failed to load TIFF file: {e}")
@@ -1131,7 +1191,8 @@ class CreateProjectionOperator(Operator):
         
         # create a pullback
         box_world_inv = np.linalg.inv(np.array(box.matrix_world))
-        baked_data = bake_volumetric_data_to_uv(get_numpy_attribute(box, "3D_data"),
+        baked_data = bake_volumetric_data_to_uv(bpy.types.Scene.tissue_cartography_3D_data[box.name_full],
+#                                               get_numpy_attribute(box, "3D_data"),
                                                 baked_world_positions, 
                                                 get_numpy_attribute(box, "resolution"),
                                                 baked_normals, normal_offsets=offsets_array,
@@ -1310,8 +1371,8 @@ class SlicePlaneOperator(Operator):
         if not box or not "3D_data" in box:
             self.report({'ERROR'}, "Select exactly a 3D image (BoundingBox)!")
             return {'CANCELLED'}
-        data = get_numpy_attribute(box, "3D_data")
-        
+#        data = get_numpy_attribute(box, "3D_data")
+        data = bpy.types.Scene.tissue_cartography_3D_data[box.name_full]     
         resolution = get_numpy_attribute(box, "resolution")
         if not isinstance(data, np.ndarray) or data.ndim != 4:
             self.report({'ERROR'}, "Invalid 3D data array.")
@@ -1335,10 +1396,10 @@ class SlicePlaneOperator(Operator):
         return {'FINISHED'}
 
 
-class VertexShaderInitializeOperator(Operator):
-    """Initialize vertex shader for a selected mesh. Colors mesh vertices according to 
+class VertexShaderOperator(Operator):
+    """Initialize/refresh vertex shader for a selected mesh. Colors mesh vertices according to 
     3D image intensity from selected BoundingBox."""
-    bl_idname = "scene.initialize_vertex_shader"
+    bl_idname = "scene.vertex_shader"
     bl_label = "Initialize Vertex Shader"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -1351,7 +1412,8 @@ class VertexShaderInitializeOperator(Operator):
         if box is None or obj is None:
             return {'CANCELLED'}
         # Get the 3D data array from the box object
-        data = get_numpy_attribute(box, "3D_data")
+#        data = get_numpy_attribute(box, "3D_data")
+        data = bpy.types.Scene.tissue_cartography_3D_data[box.name_full]
         resolution = get_numpy_attribute(box, "resolution")
      
         if not isinstance(data, np.ndarray) or data.ndim != 4:
@@ -1364,44 +1426,23 @@ class VertexShaderInitializeOperator(Operator):
             self.report({'ERROR'}, f"Channel(s) out of bounds for the data array.")
             return {'CANCELLED'}
         # compute coordinates relative to matrix_world of box
-        set_numpy_attribute(obj, "box_world_inv_vertex_shader",
-                            np.array(box.matrix_world.inverted()))
-        bpy.types.Scene.tissue_cartography_interpolators[obj.name] = get_image_to_vertex_interpolator(obj, data, resolution)
-        box_inv = mathutils.Matrix(get_numpy_attribute(obj, 
-                                   "box_world_inv_vertex_shader"))
-        positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.tissue_cartography_vertex_shader_offset*v.normal)
+        positions = np.array([box.matrix_world.inverted()@ obj.matrix_world@(v.co + context.scene.tissue_cartography_vertex_shader_offset*v.normal)
                               for v in obj.data.vertices])
-        intensities = np.stack([bpy.types.Scene.tissue_cartography_interpolators[obj.name][ch](positions)
-                       for ch in context.scene.tissue_cartography_vertex_shader_channel_RGB], axis=1)
+        # compute smoothing scale
+        anti_aliasing_scale = 1.5*np.median(compute_edge_lengths(obj)) / resolution # /2
+        # interpolate
+        x, y, z = [np.arange(ni) for i, ni in enumerate(data.shape[1:])]
+        intensities = np.zeros(shape=(positions.shape[0], 3))
+        for i, ic in enumerate(context.scene.tissue_cartography_vertex_shader_channel_RGB):
+            intensities[:,i] = chunked_interpn((x, y, z), data[ic], positions/resolution, chunk_size=50, overlap=10,
+                                                kwargs={'method': "linear", 'bounds_error': False}, anti_aliasing=anti_aliasing_scale)
+        # normalize data for display - 0.01 - 0.99 quantiles
+        qmins = np.stack([np.quantile(data[ic,::4,::4,::4], 0.01) for ic in context.scene.tissue_cartography_vertex_shader_channel_RGB])
+        qmaxs = np.stack([np.quantile(data[ic,::4,::4,::4], 0.99) for ic in context.scene.tissue_cartography_vertex_shader_channel_RGB])
+        intensities = np.clip((intensities-qmins)/(qmaxs-qmins), 0,1)  
         assign_vertex_colors(obj, intensities)
-        create_vertex_color_material(obj, material_name=f"VertexColorMaterial_{obj.name}")
-        return {'FINISHED'}
-
-
-class VertexShaderRefreshOperator(Operator):
-    """Refresh vertex colors for a selected mesh. Colors mesh vertices according to 
-    3D image intensity."""
-    bl_idname = "scene.refresh_vertex_shader"
-    bl_label = "Refresh Vertex Shader"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        obj = context.active_object
-        interpolator_dict = getattr(context.scene, "tissue_cartography_interpolators")
-        if not obj or obj.type != 'MESH':
-            self.report({'ERROR'}, "No mesh object selected!")
-            return {'CANCELLED'}
-        if interpolator_dict is None or obj.name not in interpolator_dict:
-            self.report({'ERROR'}, f"Vertex shader not initialized.")
-            return {'CANCELLED'}
-        if any([x >= len(interpolator_dict[obj.name]) for x in context.scene.tissue_cartography_vertex_shader_channel>RGB]):
-            self.report({'ERROR'}, f"Channel(s) out of bounds for the data array.")
-        box_inv = mathutils.Matrix(get_numpy_attribute(obj, "box_world_inv_vertex_shader"))
-        positions = np.array([box_inv@obj.matrix_world@(v.co + context.scene.tissue_cartography_vertex_shader_offset*v.normal)
-                              for v in obj.data.vertices])
-        intensities = np.stack([bpy.types.Scene.tissue_cartography_interpolators[obj.name][ch](positions)
-                       for ch in context.scene.tissue_cartography_vertex_shader_channel_RGB], axis=1)
-        assign_vertex_colors(obj, intensities)
+        if context.scene.tissue_cartography_vertex_shader_create_material:
+            create_vertex_color_material(obj, material_name=f"VertexColorMaterial_{obj.name}")
         return {'FINISHED'}
 
 
@@ -1517,7 +1558,7 @@ class HelpPopupOperator(Operator):
         
 class TissueCartographyPanel(Panel):
     """Class defining layout of user interface (buttons, inputs, etc.)"""
-    bl_label = "Tissue Cartography"
+    bl_label = "Tissue Cartography (Memory Test)"
     bl_idname = "SCENE_PT_tissue_cartography"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
@@ -1555,8 +1596,8 @@ class TissueCartographyPanel(Panel):
         row_vertex.prop(scene, "tissue_cartography_vertex_shader_offset")
         row_vertex.prop(scene, "tissue_cartography_vertex_shader_channel_RGB")
         row_vertex2 = layout.row()
-        row_vertex2.operator("scene.initialize_vertex_shader", text="Initialize vertex shading")
-        row_vertex2.operator("scene.refresh_vertex_shader", text="Refresh vertex shading")
+        row_vertex2.prop(scene, "tissue_cartography_vertex_shader_create_material")
+        row_vertex2.operator("scene.vertex_shader", text="Initialize/refresh vertex shading")
         layout.separator()
         
         row_projection = layout.row()
@@ -1601,8 +1642,7 @@ def register():
     bpy.utils.register_class(SaveProjectionOperator)
     bpy.utils.register_class(BatchProjectionOperator)
     bpy.utils.register_class(SlicePlaneOperator)
-    bpy.utils.register_class(VertexShaderInitializeOperator)
-    bpy.utils.register_class(VertexShaderRefreshOperator)
+    bpy.utils.register_class(VertexShaderOperator)
     bpy.utils.register_class(AlignOperator)
     bpy.utils.register_class(ShrinkwrapOperator)
     bpy.utils.register_class(HelpPopupOperator)
@@ -1698,6 +1738,11 @@ def register():
         min=0,
         size=3,
     )
+    bpy.types.Scene.tissue_cartography_vertex_shader_create_material = BoolProperty(
+        name="Create new material?",
+        description="Create new material using vertex colors for shading. Uncheck if you want to refresh an existing material.",
+        default=True
+    )
     bpy.types.Scene.tissue_cartography_offsets = StringProperty(
         name="Normal Offsets (µm)",
         description="Comma-separated list of floats for multilayer projection offsets",
@@ -1770,8 +1815,7 @@ def unregister():
     bpy.utils.unregister_class(BatchProjectionOperator)
     bpy.utils.unregister_class(SaveProjectionOperator)
     bpy.utils.unregister_class(SlicePlaneOperator)
-    bpy.utils.unregister_class(VertexShaderInitializeOperator)
-    bpy.utils.unregister_class(VertexShaderRefreshOperator)
+    bpy.utils.unregister_class(VertexShaderOperator)
     bpy.utils.unregister_class(AlignOperator)
     bpy.utils.unregister_class(ShrinkwrapOperator)
     bpy.utils.unregister_class(HelpPopupOperator)
@@ -1794,6 +1838,7 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_slice_channel 
     del bpy.types.Scene.tissue_cartography_vertex_shader_offset 
     del bpy.types.Scene.tissue_cartography_vertex_shader_channel_RGB
+    del tissue_cartography_vertex_shader_create_material
     del bpy.types.Scene.tissue_cartography_prealign 
     del bpy.types.Scene.tissue_cartography_prealign_shear
     del bpy.types.Scene.tissue_cartography_align_iter
@@ -1804,9 +1849,9 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_shrinkwarp_smooth
     del bpy.types.Scene.tissue_cartography_shrinkwarp_iterative
     
-    if hasattr(bpy.types.Scene.tissue_cartography_interpolators):
-        del bpy.types.Scene.tissue_cartography_interpolators
-
+    if hasattr(bpy.types.Scene.tissue_cartography_3D_data):
+        del bpy.types.Scene.tissue_cartography_3D_data
+        
 ### Run the add-on
 
 

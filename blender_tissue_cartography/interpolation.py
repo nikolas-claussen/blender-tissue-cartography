@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['get_cross_section_vertices_normals', 'get_uv_layout_mask_mask', 'interpolate_barycentric',
-           'interpolate_per_vertex_field_to_UV', 'interpolate_UV_to_per_vertex_field',
+           'interpolate_per_vertex_field_to_UV', 'interpolate_UV_to_per_vertex_field', 'chunked_interpn',
            'interpolate_volumetric_data_to_uv', 'interpolate_volumetric_data_to_uv_multilayer',
            'create_cartographic_projections']
 
@@ -280,6 +280,63 @@ def interpolate_UV_to_per_vertex_field(mesh, field, domain="per-vertex"):
     return mesh.map_per_texture_vertex_to_per_vertex(per_texture_vertex)
 
 # %% ../nbs/Python library/02_cartographic_interpolation.ipynb 43
+def chunked_interpn(points, data, positions, chunk_size=100, overlap=2, kwargs=None, anti_aliasing=None):
+    """
+    Perform interpolation on large 3D arrays by processing in chunks along the longest dimension.
+    
+    Parameters
+    ----------
+    points : tuple of ndarray
+        Tuple of 1D arrays defining the regular grid points for each dimension.
+    data : ndarray
+        3D array of values to interpolate (can be very large)
+    positions : ndarray
+        (..., 3) array of positions where to interpolate
+    chunk_size : int, optional
+        Size of chunks
+    overlap : int, optional
+        Overlap between chuncks for interpolation
+    kwargs : dict
+        Additional arguments passed to scipy.interpolate.interpn
+    anti_aliasing: None, int, or array of shape (3,)
+        Whether to perform Gaussian smoothing before interpolation for anti-aliasing.
+        If not None, interpreted as Gaussian smoothing kernel.
+    Returns
+    -------
+    ndarray
+        Interpolated values at positions
+    """
+    kwargs = {} if kwargs is None else kwargs
+    # flatten position array
+    positions_shape = positions.shape
+    positions = positions.reshape((-1,3))
+    results = np.nan*np.zeros(positions.shape[0])
+    # determine the longest axis of data array
+    chunk_axis = np.argmax(data.shape)
+    # split position array
+    chunk_per_position = np.floor(positions[:,chunk_axis] / chunk_size)
+    # iterate over chunks
+    x, y, z = points
+    for i in range(0, np.ceil(data.shape[chunk_axis]/chunk_size).astype(int)):
+        # select chunk and corresponding grid positions
+        if chunk_axis == 0:
+            chunk = data[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap,:,:]
+            x_chunk, y_chunk, z_chunk = (x[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap], y, z)
+        elif chunk_axis == 1:
+            chunk = data[:,max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap,:]
+            x_chunk, y_chunk, z_chunk = (x, y[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap], z)
+        elif chunk_axis == 2:
+            chunk = data[:,:,max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap]
+            x_chunk, y_chunk, z_chunk = (x, y, z[max(i*chunk_size-overlap,0):(i+1)*chunk_size+overlap])
+        # otpional anti-aliasing
+        if anti_aliasing is not None:
+            chunk = ndimage.gaussian_filter(chunk, anti_aliasing, mode='nearest', truncate=2)
+        # interpolate for positions within the chunk
+        results[chunk_per_position==i] = interpolate.interpn((x_chunk, y_chunk, z_chunk), chunk, positions[chunk_per_position==i], **kwargs)
+    return results.reshape(positions_shape[:-1])
+
+
+# %% ../nbs/Python library/02_cartographic_interpolation.ipynb 44
 def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resolution):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
@@ -303,12 +360,13 @@ def interpolate_volumetric_data_to_uv(image, interpolated_3d_positions, resoluti
         3d volumetric data interpolated onto UV grid.
     """
     x, y, z = [np.arange(ni) for ni in image.shape[1:]]
-    interpolated_data = np.stack([interpolate.interpn((x, y, z), channel, interpolated_3d_positions/resolution,
-                                  method="linear", bounds_error=False) for channel in image])
+    interpolated_data = np.stack([chunked_interpn((x, y, z), channel, interpolated_3d_positions/resolution,
+                                                  kwargs={"method": "linear", "bounds_error": False}, chunk_size=50)
+                                  for channel in image])
     
     return interpolated_data
 
-# %% ../nbs/Python library/02_cartographic_interpolation.ipynb 51
+# %% ../nbs/Python library/02_cartographic_interpolation.ipynb 52
 def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_positions, interpolated_normals,
                                                  normal_offsets, resolution,):
     """ 
@@ -347,7 +405,7 @@ def interpolate_volumetric_data_to_uv_multilayer(image, interpolated_3d_position
                                   for o in normal_offsets], axis=1)
     return interpolated_data
 
-# %% ../nbs/Python library/02_cartographic_interpolation.ipynb 57
+# %% ../nbs/Python library/02_cartographic_interpolation.ipynb 58
 def create_cartographic_projections(image, mesh, resolution, normal_offsets=(0,), uv_grid_steps=256,
                                     map_back=True, use_fallback='auto'):
     """

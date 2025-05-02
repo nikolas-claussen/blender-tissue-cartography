@@ -116,7 +116,10 @@ d = { 'settings': { 'branch': 'main',
                                                               'blender_tissue_cartography.interface_trimesh.convert_to_trimesh': ( 'Python '
                                                                                                                                    'library/interface_trimesh.html#convert_to_trimesh',
                                                                                                                                    'blender_tissue_cartography/interface_trimesh.py')},
-            'blender_tissue_cartography.interpolation': { 'blender_tissue_cartography.interpolation.create_cartographic_projections': ( 'Python '
+            'blender_tissue_cartography.interpolation': { 'blender_tissue_cartography.interpolation.chunked_interpn': ( 'Python '
+                                                                                                                        'library/cartographic_interpolation.html#chunked_interpn',
+                                                                                                                        'blender_tissue_cartography/interpolation.py'),
+                                                          'blender_tissue_cartography.interpolation.create_cartographic_projections': ( 'Python '
                                                                                                                                         'library/cartographic_interpolation.html#create_cartographic_projections',
                                                                                                                                         'blender_tissue_cartography/interpolation.py'),
                                                           'blender_tissue_cartography.interpolation.get_cross_section_vertices_normals': ( 'Python '
