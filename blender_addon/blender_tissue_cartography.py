@@ -423,7 +423,7 @@ def get_slice_image(image_3d, resolution, axis='z', position=0.0):
         ind = int(np.round(position / resolution[1]))
         slice_img = image_3d[:,:,ind,:].transpose((0,2,1))
     elif axis == 'z': 
-        ind = int(np.round(position / resolution[0]))
+        ind = int(np.round(position / resolution[2]))
         slice_img = image_3d[:,:,:,ind].transpose((0,2,1))
     return slice_img
 
