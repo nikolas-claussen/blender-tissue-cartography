@@ -170,7 +170,7 @@ def register():
     bpy.types.Scene.tissue_cartography_shrinkwarp_smooth = IntProperty(
         name="Shrinkwrap Corrective Smooth",
         description="Corrective smooth iterations during shrink-wrapping.",
-        default=10,
+        default=2,
         min=0,
     )
     bpy.types.Scene.tissue_cartography_shrinkwarp_iterative = EnumProperty(
@@ -224,6 +224,6 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_shrinkwarp_smooth
     del bpy.types.Scene.tissue_cartography_shrinkwarp_iterative
     
-    if hasattr(bpy.types.Scene.tissue_cartography_3D_data):
+    if hasattr(bpy.types.Scene, "tissue_cartography_3D_data"):
         del bpy.types.Scene.tissue_cartography_3D_data
         

@@ -72,6 +72,7 @@ def normalize_quantiles(image, quantiles=(0.01, 0.99), channel_axis=None, clip=F
     return image_normalized
 
 
+
 def axis_order_to_transpose(axis_order_string):
     """Convert string describing axis order into tuple for use in np.transpose."""
     assert ''.join(sorted(axis_order_string)) in ['xyz', 'cxyz'], "Must be xyz, cxyz, or permutation thereof"
@@ -275,6 +276,7 @@ def chunked_interpn(points, values, xi, method='linear', bounds_error=True, fill
                                         method=method, bounds_error=bounds_error, fill_value=fill_value)
     return results.reshape(xi_shape[:-1])
 
+
 def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_normals, normal_offsets=(0,), affine_matrix=None):
     """ 
     Interpolate volumetric image data onto UV coordinate grid.
@@ -316,7 +318,7 @@ def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_n
         positions = positions @ affine_matrix[:3, :3].T + affine_matrix[:3,3]
     positions = positions/resolution
     for ic, channel in enumerate(image):
-        baked_data[ic,] = chunked_interpn((x, y, z), channel, positions, chunk_size=50,
+        baked_data[ic,] = chunked_interpn((x, y, z), channel, positions, chunk_size=100, overlap=2,
                                           method="linear", bounds_error=False, local_filter=None)
     return baked_data
 
@@ -1136,7 +1138,7 @@ class LoadSegmentationTIFFOperator(Operator):
                     self.report({'ERROR'}, "Number of axes in axis order does not match tiff data.")
                     return {'CANCELLED'}
                 if axis_order_string == '' and len(data.shape) == 4:
-                    # ensure channel axis (assumed shortest axis) is 1st if no axis order provided.
+                    # ensure channel axis (assumed shortest axis) is 1st (i.e. channel axis) if no axis order provided.
                     channel_axis = np.argmin(data.shape)
                     data = np.moveaxis(data, channel_axis, 0)
                 if axis_order_string != '':
@@ -1295,9 +1297,9 @@ class BatchProjectionOperator(Operator):
         matched = {obj.name: difflib.get_close_matches(obj.name, batch_files.keys(), n=1, cutoff=0.1)
                    for obj in context.selected_objects if obj != box}
         # parse axis order
-        axis_order = list(context.scene.tissue_cartography_axis_order)
-        if not sorted(axis_order) == [0,1,2,3]:
-            self.report({'ERROR'}, "Axis order must be a permutation of [0,1,2,3] (e.g. [3,0,1,2])")
+        axis_order_string = context.scene.tissue_cartography_axis_order
+        if not ''.join(sorted(axis_order_string)) in ['', 'xyz', 'cxyz']:
+            self.report({'ERROR'}, "Must be empty, xyz, cxyz, or permutation thereof")
             return {'CANCELLED'}
         # parse offsets into a NumPy array
         offsets_str = context.scene.tissue_cartography_offsets
@@ -1330,15 +1332,20 @@ class BatchProjectionOperator(Operator):
             # load the 3D data
             try:
                 data = tifffile.imread(file_path)
-                if not len(data.shape) in [3,4]:
+                if not len(data.shape) in [3, 4]:
                     self.report({'INFO'}, f"Selected TIFF for {obj.name} must have 3 or 4 axes.")
                     return {'CANCELLED'}
+                if not len(axis_order_string) in [0, len(data.shape)]:
+                    self.report({'ERROR'}, "Number of axes in axis order does not match tiff data.")
+                    return {'CANCELLED'}
+                if axis_order_string == '' and len(data.shape) == 4:
+                    # ensure channel axis (assumed shortest axis) is 1st (i.e. channel axis) if no axis order provided.
+                    channel_axis = np.argmin(data.shape)
+                    data = np.moveaxis(data, channel_axis, 0)
+                if axis_order_string != '':
+                    data = data.transpose(axis_order_to_transpose(axis_order_string))
                 if len(data.shape) == 3: # add singleton channel axis to single channel-data 
                     data = data[np.newaxis]
-                # ensure channel axis (assumed shortest axis) is 1st
-                channel_axis = np.argmin(data.shape)
-                data = np.moveaxis(data, channel_axis, 0)
-                data = data.transpose(axis_order)
             except:
                 self.report({'ERROR'}, f"Failed loading TIFF for {obj.name}")
                 return {'CANCELLED'}
@@ -1456,7 +1463,7 @@ class VertexShaderOperator(Operator):
         x, y, z = [np.arange(ni) for i, ni in enumerate(data.shape[1:])]
         intensities = np.zeros(shape=(positions.shape[0], 3))
         for i, ic in enumerate(context.scene.tissue_cartography_vertex_shader_channel_RGB):
-            intensities[:,i] = chunked_interpn((x, y, z), data[ic], positions/resolution, chunk_size=50, overlap=10,
+            intensities[:,i] = chunked_interpn((x, y, z), data[ic], positions/resolution, chunk_size=100, overlap=10,
                                                 method="linear", bounds_error=False, local_filter=anti_aliasing_filter)
         # normalize data for display - 0.01 - 0.99 quantiles
         qmins = np.stack([np.quantile(data[ic,::4,::4,::4], 0.01) for ic in context.scene.tissue_cartography_vertex_shader_channel_RGB])
