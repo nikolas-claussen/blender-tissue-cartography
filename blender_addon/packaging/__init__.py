@@ -157,6 +157,11 @@ def register():
         description="Allow shear transformation during alignment.",
         default=True
     )
+    bpy.types.Scene.tissue_cartography_prealign_scale = BoolProperty(
+        name="Allow scale",
+        description="Allow scale transformation during alignment.",
+        default=True
+    )
     bpy.types.Scene.tissue_cartography_align_type = EnumProperty(
         name="Align Mode",
         description="Choose an axis",
@@ -168,7 +173,7 @@ def register():
         name="Iterations",
         description="ICP iterations during alignment.",
         default=100,
-        min=1,
+        min=0,
     )
     bpy.types.Scene.tissue_cartography_shrinkwarp_smooth = IntProperty(
         name="Shrinkwrap Corrective Smooth",
@@ -219,6 +224,7 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_vertex_shader_create_material
     del bpy.types.Scene.tissue_cartography_prealign 
     del bpy.types.Scene.tissue_cartography_prealign_shear
+    del bpy.types.Scene.tissue_cartography_prealign_scale
     del bpy.types.Scene.tissue_cartography_align_iter
     del bpy.types.Scene.tissue_cartography_align_type
     del bpy.types.Scene.tissue_cartography_batch_directory

@@ -19,7 +19,7 @@ import subprocess
 import sys
 
 import tifffile
-from scipy import interpolate, ndimage, spatial, linalg
+from scipy import interpolate, ndimage, spatial, linalg, stats
 from skimage import measure
 
 
@@ -936,16 +936,18 @@ def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, scale=T
     return total_matrix, aligned, cost
 
 
-def combined_alignment(source, target, pre_align=True, shear=False, iterations=100):
+def combined_alignment(source, target, pre_align=True, scale=True, shear=False, iterations=100):
     """Align source to target by combination of moment-of-intertia based aligment + ICP"""
     if pre_align:
         trafo_initial, _ = align_by_centroid_and_intertia(source, target,
-                                                          scale=True, shear=shear, improper=False)
+                                                          scale=scale, shear=shear, improper=False)
     else:
-        trafo_initial = None
+        trafo_initial = np.eye(4)
+    if iterations == 0:
+        return trafo_initial
     trafo_icp, _, _ = icp(source, target, initial=trafo_initial,
                           threshold=1e-4, max_iterations=iterations,
-                          scale=True, n_samples=5000)
+                          scale=scale, n_samples=5000)
     return trafo_icp
 
 
@@ -1513,6 +1515,7 @@ class AlignOperator(Operator):
                 trafo_matrix = combined_alignment(source, target,
                                                   pre_align=context.scene.tissue_cartography_prealign,
                                                   shear=context.scene.tissue_cartography_prealign_shear,
+                                                  scale=context.scene.tissue_cartography_prealign_scale,
                                                   iterations=context.scene.tissue_cartography_align_iter)
                 source_mesh.matrix_world = mathutils.Matrix(trafo_matrix)@ source_mesh.matrix_world
         elif context.scene.tissue_cartography_align_type == "active":
@@ -1528,6 +1531,7 @@ class AlignOperator(Operator):
                 trafo_matrix = combined_alignment(source, target,
                                                   pre_align=context.scene.tissue_cartography_prealign,
                                                   shear=context.scene.tissue_cartography_prealign_shear,
+                                                  scale=context.scene.tissue_cartography_prealign_scale,
                                                   iterations=context.scene.tissue_cartography_align_iter)
                 # copy source mesh
                 source_mesh_copied = source_mesh.copy()
@@ -1539,7 +1543,7 @@ class AlignOperator(Operator):
 
 
 class ShrinkwrapOperator(Operator):
-    """Copy and shrink-wrap active mesh to selected meshes."""
+    """Copy and shrink-wrap active mesh to selected meshes. To disable rigid registration, set ICP iterations to 0."""
     bl_idname = "scene.shrinkwrap"
     bl_label = "Shrink-Wrap Active to Selected"
     bl_options = {'REGISTER', 'UNDO'}
@@ -1557,12 +1561,16 @@ class ShrinkwrapOperator(Operator):
                 self.report({'ERROR'}, "Selected object(s) is not a mesh.")
                 return {'CANCELLED'}
             # rigid alignment
-            target = np.array([target_mesh.matrix_world@v.co for v in target_mesh.data.vertices])
-            source = np.array([source_mesh.matrix_world@v.co for v in source_mesh.data.vertices])
-            trafo_matrix = combined_alignment(source, target,
-                                              pre_align=context.scene.tissue_cartography_prealign,
-                                              shear=context.scene.tissue_cartography_prealign_shear,
-                                              iterations=context.scene.tissue_cartography_align_iter)
+            if context.scene.tissue_cartography_align_iter > 0:
+                target = np.array([target_mesh.matrix_world@v.co for v in target_mesh.data.vertices])
+                source = np.array([source_mesh.matrix_world@v.co for v in source_mesh.data.vertices])
+                trafo_matrix = combined_alignment(source, target,
+                                                  pre_align=context.scene.tissue_cartography_prealign,
+                                                  shear=context.scene.tissue_cartography_prealign_shear,
+                                                  scale=context.scene.tissue_cartography_prealign_scale,
+                                                  iterations=context.scene.tissue_cartography_align_iter)
+            else:
+                trafo_matrix = np.eye(4)
             # copy source mesh
             source_mesh_copied = source_mesh.copy()
             source_mesh_copied.data = source_mesh.data.copy()
@@ -1663,6 +1671,7 @@ class TissueCartographyPanel(Panel):
         row_align = layout.row()
         row_align.prop(scene, "tissue_cartography_prealign")
         row_align.prop(scene, "tissue_cartography_prealign_shear")
+        row_align.prop(scene, "tissue_cartography_prealign_scale")
         row_align.prop(scene, "tissue_cartography_align_type")
         row_align.prop(scene, "tissue_cartography_align_iter")
         layout.operator("scene.align", text="Align Meshes")
@@ -1827,6 +1836,11 @@ def register():
         description="Allow shear transformation during alignment.",
         default=True
     )
+    bpy.types.Scene.tissue_cartography_prealign_scale = BoolProperty(
+        name="Allow scale",
+        description="Allow scale transformation during alignment.",
+        default=True
+    )
     bpy.types.Scene.tissue_cartography_align_type = EnumProperty(
         name="Align Mode",
         description="Choose an axis",
@@ -1835,10 +1849,10 @@ def register():
         default='selected'
     )
     bpy.types.Scene.tissue_cartography_align_iter = IntProperty(
-        name="Iterations",
+        name="ICP Iterations",
         description="ICP iterations during alignment.",
         default=100,
-        min=1,
+        min=0,
     )
     bpy.types.Scene.tissue_cartography_shrinkwarp_smooth = IntProperty(
         name="Shrinkwrap Corrective Smooth",
@@ -1886,9 +1900,10 @@ def unregister():
     del bpy.types.Scene.tissue_cartography_slice_channel 
     del bpy.types.Scene.tissue_cartography_vertex_shader_offset 
     del bpy.types.Scene.tissue_cartography_vertex_shader_channel_RGB
-    del tissue_cartography_vertex_shader_create_material
+    del bpy.types.Scene.tissue_cartography_vertex_shader_create_material
     del bpy.types.Scene.tissue_cartography_prealign 
     del bpy.types.Scene.tissue_cartography_prealign_shear
+    del bpy.types.Scene.tissue_cartography_prealign_scale
     del bpy.types.Scene.tissue_cartography_align_iter
     del bpy.types.Scene.tissue_cartography_align_type
     del bpy.types.Scene.tissue_cartography_batch_directory
