@@ -22,6 +22,9 @@ def register():
     bpy.utils.register_class(tissue_cartography.ShrinkwrapOperator)
     bpy.utils.register_class(tissue_cartography.HelpPopupOperator)
     
+    # intialize dict for holding 3D data
+    bpy.types.Scene.tissue_cartography_3D_data = {}
+    
     bpy.types.Scene.tissue_cartography_file = StringProperty(
         name="File Path",
         description="Path to the TIFF file",

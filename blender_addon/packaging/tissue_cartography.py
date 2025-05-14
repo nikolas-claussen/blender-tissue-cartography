@@ -72,7 +72,6 @@ def normalize_quantiles(image, quantiles=(0.01, 0.99), channel_axis=None, clip=F
     return image_normalized
 
 
-
 def axis_order_to_transpose(axis_order_string):
     """Convert string describing axis order into tuple for use in np.transpose."""
     assert ''.join(sorted(axis_order_string)) in ['xyz', 'cxyz'], "Must be xyz, cxyz, or permutation thereof"
@@ -1088,7 +1087,6 @@ class LoadTIFFOperator(Operator):
             # attach the data to the box
             bpy.types.Scene.tissue_cartography_3D_data[box] = data
             set_numpy_attribute(box, "resolution", resolution)
-#            set_numpy_attribute(box, "3D_data", data)
             box["3D_data"] = True
             
         except Exception as e:
@@ -1217,8 +1215,15 @@ class CreateProjectionOperator(Operator):
         
         # create a pullback
         box_world_inv = np.linalg.inv(np.array(box.matrix_world))
-        baked_data = bake_volumetric_data_to_uv(bpy.types.Scene.tissue_cartography_3D_data[box],
-#                                               get_numpy_attribute(box, "3D_data"),
+        try:
+            data = bpy.types.Scene.tissue_cartography_3D_data[box]
+        except KeyError:
+            self.report({'ERROR'}, f"Selected bounding box has no 3D data. Reload .tiff file or select different mesh.")
+            return {'CANCELLED'}
+        if not isinstance(data, np.ndarray) or data.ndim != 4:
+            self.report({'ERROR'}, "Invalid 3D data array.")
+            return {'CANCELLED'}
+        baked_data = bake_volumetric_data_to_uv(data,
                                                 baked_world_positions, 
                                                 get_numpy_attribute(box, "resolution"),
                                                 baked_normals, normal_offsets=offsets_array,
@@ -1402,8 +1407,11 @@ class SlicePlaneOperator(Operator):
         if not box or not "3D_data" in box:
             self.report({'ERROR'}, "Select exactly a 3D image (BoundingBox)!")
             return {'CANCELLED'}
-#        data = get_numpy_attribute(box, "3D_data")
-        data = bpy.types.Scene.tissue_cartography_3D_data[box]     
+        try:
+            data = bpy.types.Scene.tissue_cartography_3D_data[box]
+        except KeyError:
+            self.report({'ERROR'}, f"Selected bounding box has no 3D data. Reload .tiff file or select different mesh.")
+            return {'CANCELLED'}
         resolution = get_numpy_attribute(box, "resolution")
         if not isinstance(data, np.ndarray) or data.ndim != 4:
             self.report({'ERROR'}, "Invalid 3D data array.")
@@ -1440,10 +1448,12 @@ class VertexShaderOperator(Operator):
         if box is None or obj is None:
             return {'CANCELLED'}
         # Get the 3D data array from the box object
-#        data = get_numpy_attribute(box, "3D_data")
-        data = bpy.types.Scene.tissue_cartography_3D_data[box]
+        try:
+            data = bpy.types.Scene.tissue_cartography_3D_data[box]
+        except KeyError:
+            self.report({'ERROR'}, f"Selected bounding box has no 3D data. Reload .tiff file or select different mesh.")
+            return {'CANCELLED'}
         resolution = get_numpy_attribute(box, "resolution")
-     
         if not isinstance(data, np.ndarray) or data.ndim != 4:
             self.report({'ERROR'}, "Invalid 3D data array.")
             return {'CANCELLED'}
@@ -1454,7 +1464,7 @@ class VertexShaderOperator(Operator):
             self.report({'ERROR'}, f"Channel(s) out of bounds for the data array.")
             return {'CANCELLED'}
         # compute coordinates relative to matrix_world of box
-        positions = np.array([box.matrix_world.inverted()@ obj.matrix_world@(v.co + context.scene.tissue_cartography_vertex_shader_offset*v.normal)
+        positions = np.array([box.matrix_world.inverted()@ obj.matrix_world@(v.co+context.scene.tissue_cartography_vertex_shader_offset*v.normal)
                               for v in obj.data.vertices])
         # compute smoothing scale
         anti_aliasing_scale = 1.5*np.median(compute_edge_lengths(obj)) / resolution # /2
