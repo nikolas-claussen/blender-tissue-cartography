@@ -31,8 +31,8 @@ regularly.
 
 ## Installation
 
-`blender_tissue_cartography` comprises both a Blender **add-on** as well
-as a **python library**.
+`blender_tissue_cartography` comprises both a Blender **add-on** and a
+**python library**.
 
 - The **add-on** does tissue cartography 100% within the Blender
   graphical user interface. Use the add-on if you quickly want to
@@ -64,7 +64,8 @@ has a GPU. The MeshLab library which is required for some
     [GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography),
     download the file
     `blender_addon/blender_tissue_cartography-1.0.0-[XXX].zip` where
-    `[XXX]` is your operating system (e.g. `linux_x64`).
+    `[XXX]` is your operating system (e.g. `linux_x64`). You do *not*
+    need to unpacl the `.zip`.
 
     - If your operating system is not available, you can also download
       `blender_addon/blender_tissue_cartography.py`. In this case you
@@ -137,7 +138,7 @@ If you want to extend `blender_tissue_cartography`:
   crash.
 
 - 3D `.tif` files loaded into Blender are not saved to the `.blend`
-  (which would explode in size). If you close blender, you need to
+  (which would explode in size). If you close Blender, you need to
   reimport your 3D image data.
 
 - Please report any issues or bugs you find on GitHub!
