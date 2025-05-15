@@ -247,6 +247,9 @@ d = { 'settings': { 'branch': 'main',
                                                  'blender_tissue_cartography.mesh.read_other_formats_without_uv': ( 'Python '
                                                                                                                     'library/mesh.html#read_other_formats_without_uv',
                                                                                                                     'blender_tissue_cartography/mesh.py'),
+                                                 'blender_tissue_cartography.mesh.split_connected_components': ( 'Python '
+                                                                                                                 'library/mesh.html#split_connected_components',
+                                                                                                                 'blender_tissue_cartography/mesh.py'),
                                                  'blender_tissue_cartography.mesh.unique': ( 'Python library/mesh.html#unique',
                                                                                              'blender_tissue_cartography/mesh.py')},
             'blender_tissue_cartography.morphsnakes': { 'blender_tissue_cartography.morphsnakes._check_input': ( 'Python '

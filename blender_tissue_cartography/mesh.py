@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['flatten', 'pad_list', 'unique', 'index_else_nan', 'invert_dictionary', 'ObjMesh', 'read_other_formats_without_uv',
-           'project_from_axis', 'compute_project_from_axis_scale', 'glue_seams']
+           'split_connected_components', 'project_from_axis', 'compute_project_from_axis_scale', 'glue_seams']
 
 # %% ../nbs/Python library/01b_mesh.ipynb 4
 import numpy as np
@@ -447,6 +447,7 @@ def read_other_formats_without_uv(filename):
     ----------
     filename : str
         filename
+    
     Returns
     -------
     mesh: ObjMesh
@@ -457,7 +458,40 @@ def read_other_formats_without_uv(filename):
     return ObjMesh(vs, fs, texture_vertices=None, normals=ns, name=None)
 
 
-# %% ../nbs/Python library/01b_mesh.ipynb 19
+# %% ../nbs/Python library/01b_mesh.ipynb 18
+def split_connected_components(mesh):
+    """
+    Split mesh into connected components.
+
+    Will erase UV or other information.
+
+    Parameters
+    ----------
+    mesh : ObjMesh
+        Mesh
+    
+    Returns
+    -------
+    meshes : list of tcmesh.ObjMesh
+        Connected components in decreasing order of number of vertices
+    """
+    connected_component = igl.vertex_components(mesh.faces)
+    values, counts = np.unique(connected_component, return_counts=True)
+    meshes = []
+    for val in values:
+        mask = connected_component==val
+        connected_vertices = mesh.vertices[connected_component==val]
+        connected_faces = mesh.faces[(connected_component[mesh.faces]==val).all(axis=1)]
+        # relabel faces
+        arr_to_selected = -1*np.ones(mesh.vertices.shape[0]).astype(int)
+        arr_to_selected[mask] = np.arange(np.count_nonzero(mask))
+        connected_faces = arr_to_selected[connected_faces]
+        meshes.append(ObjMesh(connected_vertices, connected_faces))
+    meshes = [x for _, x in sorted(zip(counts, meshes), key=lambda pair: pair[0])][::-1]
+    return meshes
+
+
+# %% ../nbs/Python library/01b_mesh.ipynb 20
 def project_from_axis(mesh, axis1, axis2, translate=None, scale=None):
     """
     Create UV map by projecting 3D coordinates along an axis.
@@ -538,7 +572,7 @@ def compute_project_from_axis_scale(image_shape, resolution, axis1, axis2):
     scale = np.stack([box_coordinates.dot(axis1),  box_coordinates.dot(axis2)], axis=1).max()
     return scale
 
-# %% ../nbs/Python library/01b_mesh.ipynb 36
+# %% ../nbs/Python library/01b_mesh.ipynb 37
 def glue_seams(mesh, decimals=None):
     """
     Merge close vertices.
