@@ -8,21 +8,23 @@
 ![image.png](index_files/figure-commonmark/cell-2-1-ee28c1cc-3737-4a46-b1ec-e96e9291126d.png)
 
 Tissue cartography extracts and cartographically projects curved
-surfaces from volumetric image data. This turns your 3d data into 2d
-data which is much easier to visualize, analyze, and computationally
+surfaces from volumetric image data. This turns your 3D data into 2D
+data, which is much easier to visualize, analyze, and computationally
 process. Tissue cartography is particularly useful in developmental
-biology, analyzing 3d microscopy data by taking advantage of the
-laminar, sheet-like organization of many biological tissues. For more on
-tissue cartography, see our [methods
+biology, analyzing 3d microscopy data by taking advantage of many
+biological tissues’ laminar, sheet-like organization. For more on tissue
+cartography, see our [methods
 paper](https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1),
 [Heemskerk & Streichan 2015](https://doi.org/10.1038/nmeth.3648) and
 [Mitchell & Cislo 2023](https://doi.org/10.1038/s41592-023-02081-w).
 
-`blender_tissue_cartography` comprises an add-on to do tissue
-cartography using the popular 3d creation software
-[blender](https://www.blender.org/), a python library for creating
+`blender_tissue_cartography` comprises an add-on for tissue cartography
+using the popular 3d creation software
+[blender](https://www.blender.org/), a Python library for creating
 custom/automatized analysis pipelines, and a set of template analysis
 pipelines/tutorials.
+
+### Click here for a [2-minute video demo](https://youtu.be/Y3Vb6IDv0g0)
 
 ### Work in progress!
 
@@ -44,17 +46,17 @@ regularly.
 **System requirements** Both the Python library and the add-on have no
 minimum system requirements and can run on any modern laptop. For
 processing volumetric image data, you will need sufficient RAM (at least
-~4x of the size of the volumetric data, e.g. 8GB RAM dfor a 2GB
+~4x of the size of the volumetric data, e.g. 8GB RAM for a 2GB
 volumetric `.tif` file). Blender will run *much* faster if your computer
 has a GPU. The MeshLab library which is required for some
-(non-essential) operations is not available of new ARM Apple computers.
+(non-essential) operations is not available for new ARM Apple computers.
 
 ### Blender add-on
 
 1.  Install the non-python programs: [Blender
     4.3](https://www.blender.org/) (pre-4.3 version will *not* work) and
     [Ilastik](https://www.ilastik.org/). You do not need to install
-    python or any python libraries.
+    Python or any Python libraries.
 
     - Optionally, install [Fiji](https://fiji.sc/) (for looking at 3D
       `.tif`s) and [Meshlab](https://www.meshlab.net/) (for advanced
@@ -65,7 +67,7 @@ has a GPU. The MeshLab library which is required for some
     download the file
     `blender_addon/blender_tissue_cartography-1.0.0-[XXX].zip` where
     `[XXX]` is your operating system (e.g. `linux_x64`). You do *not*
-    need to unpacl the `.zip`.
+    need to unpack the `.zip`.
 
     - If your operating system is not available, you can also download
       `blender_addon/blender_tissue_cartography.py`. In this case you
@@ -123,7 +125,7 @@ If you want to extend `blender_tissue_cartography`:
     - `pip install -e .`
 
 3.  (Optional) Install extra Python library for `pymeshlab`, required
-    for some advanced functionality (remeshing and surface
+    for certain advanced functionality (remeshing and surface
     reconstruction from within Python).
 
     - `pip install pymeshlab` - Note that this package is not available
@@ -175,7 +177,7 @@ Tissue cartography starts with a 3D, volumetric image.
 
 4.  Project your 3D data onto the unwrapped mesh
 
-5.  Visualize the results in 3D using blender or use the 2D projected
+5.  Visualize the results in 3D using Blender or use the 2D projected
     data for quantitative analysis.
 
 6.  Batch process multiple 3D images (e.g. frames of a movie)
@@ -202,20 +204,20 @@ the region occupied by cells during zebrafish epiboly (tutorial 6).
 
 ### Dynamic datasets
 
-`blender_tissue_cartography` also allows creating cartographic
+`blender_tissue_cartography` also allows the creation of cartographic
 projections of dynamic datasets (i.e. movies), where the surface of
 interest can move or deform over time. The user creates a cartographic
-projection for a *reference timepoint* which is transfered to all other
-time-points using surface-to-surface registration algorithms. This
-generates consistent projections across all timepoints - see tuorials
+projection for a *reference time point* which is transferred to all
+other time points using surface-to-surface registration algorithms. This
+generates consistent projections across all time points - see tutorials
 [8](https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/08_multiple_recordings_and_reference_meshes.html)
 and
 [9](https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/09_movies_and_dynamic_surfaces.html).
 
 ### Python library
 
-For advanced users, the `blender_tissue_cartography` library allows
-creating custom and automated tissue cartography pipelines, typically
+For advanced users, the `blender_tissue_cartography` library allows the
+creation of custom and automated tissue cartography pipelines, typically
 run from a jupyter computational notebook (which can also serve as lab
 notebook - notes, comments on the data). `blender_tissue_cartography`
 also provides tools for correct quantitative analysis of image data on
@@ -229,7 +231,7 @@ module (left), and blender project with extracted mesh and texture
 
 ### Tutorials
 
-Fully worked-out tutoruals are provided on the [documentation
+Fully worked-out tutorials are provided on the [documentation
 webpage](https://nikolas-claussen.github.io/blender-tissue-cartography/).
 Test data for the tutorials can be downloaded from the [`nbs/Tutorials/`
 directory](https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials).
@@ -243,7 +245,7 @@ through the notebooks in the `Tutorials` directory in order. I
 recommended being comfortable with running simple Python code (you don’t
 have to do any coding yourself).
 
-The tutorial notebooks can be used as *templates* for your own analysis
+The tutorial notebooks can be used as *templates* for your analysis
 pipelines. Here is an example of a jupyter computational notebook
 (left), and the created projection visualized in Blender (right).
 
@@ -263,12 +265,12 @@ pipelines. Here is an example of a jupyter computational notebook
   `blender_tissue_cartography` - otherwise, your files will be
   overwritten if you want to update the software
 
-- The repository contains two sets of notebooks: in the `nbs` folder and
-  in the `nbs/Tutorials` folder. The `nbs`-notebooks are for developing
-  the code. If you don’t want to develop/adapt the code to your needs,
-  you don’t need to look at them. Copy a notebook from the
-  `nbs/Tutorials` folder - e.g. `03_basics_example.ipynb` - into your
-  project folder to use it as a template.
+- The repository contains two sets of notebooks: the `nbs` folder and
+  the `nbs/Tutorials` folder. The `nbs`-notebooks are for developing the
+  code. If you don’t want to develop/adapt the code to your needs, you
+  don’t need to look at them. Copy a notebook from the `nbs/Tutorials`
+  folder - e.g. `03_basics_example.ipynb` - into your project folder to
+  use it as a template.
 
 - You do not need to copy functions into your notebooks manually. If you
   follow the installation instructions, the code will be installed as a
@@ -305,7 +307,7 @@ the installation instructions above.
   - [PyMeshLab](https://pymeshlab.readthedocs.io/en/latest/index.html)
     Python interface to MeshLab.
   - [nbdev](https://nbdev.fast.ai/tutorials/tutorial.html) for
-    notebook-based development, if you want to add your own code
+    notebook-based development, if you want to add your code
 
 ### Other useful software
 
