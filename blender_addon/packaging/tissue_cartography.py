@@ -314,7 +314,9 @@ def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_n
     baked_data = np.zeros(shape=(image.shape[0], len(normal_offsets), baked_world_positions.shape[0], baked_world_positions.shape[1]))
     positions = np.stack([(baked_world_positions+o*baked_normals) for o in normal_offsets], axis=0)
     if affine_matrix is not None:
-        positions = positions @ affine_matrix[:3, :3].T + affine_matrix[:3,3]
+        #positions = positions @ affine_matrix[:3, :3].T + affine_matrix[:3,3]
+        positions = np.einsum('ij,nxyj->nxyi', affine_matrix[:3,:3], positions)	
+        positions = positions + affine_matrix[:3,3]
     positions = positions/resolution
     for ic, channel in enumerate(image):
         baked_data[ic,] = chunked_interpn((x, y, z), channel, positions, chunk_size=100, overlap=2,
