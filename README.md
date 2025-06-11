@@ -53,9 +53,9 @@ has a GPU. The MeshLab library which is required for some
 
 ### Blender add-on
 
-1.  Install the non-python programs: [Blender
-    4.3](https://www.blender.org/) (pre-4.3 version will *not* work) and
-    [Ilastik](https://www.ilastik.org/). You do not need to install
+1.  Install the non-python programs: [Blender 4.2 or
+    later](https://www.blender.org/) (pre-4.2 version will *not* work)
+    and [Ilastik](https://www.ilastik.org/). You do not need to install
     Python or any Python libraries.
 
     - Optionally, install [Fiji](https://fiji.sc/) (for looking at 3D

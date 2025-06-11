@@ -5,7 +5,7 @@ name = "Blender Tissue Cartography"
 tagline = "A tools for analysis of 4D imaging data in Blender"
 maintainer = "Nikolas Claussen <nclaussen@ucsb.edu>"
 type = "add-on"
-blender_version_min = "4.3.0"
+blender_version_min = "4.2.0"
 license = ["SPDX:GPL-3.0-or-later",]
 
 # You can specify what platforms this can be used with.
