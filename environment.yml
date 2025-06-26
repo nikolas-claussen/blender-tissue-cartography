@@ -9,7 +9,7 @@ dependencies:
   - scipy
   - scikit-image
   - tifffile
-  - h5pys
+  - h5py
   - jupyter
   - tqdm
   - pip
