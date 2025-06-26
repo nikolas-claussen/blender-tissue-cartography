@@ -40,7 +40,8 @@ def marching_cubes(volume, isovalue=0.5, sigma_smoothing=0):
         vals = ndimage.gaussian_filter(volume, sigma=sigma_smoothing).flatten(order="F")
     else:
         vals = volume.flatten(order="F")
-    vertices, faces = igl.marching_cubes(vals, pts_grid, *volume.shape, isovalue)
+    marching_cube_results = igl.marching_cubes(vals, pts_grid, *volume.shape, isovalue)
+    vertices, faces = (marching_cube_results[0], marching_cube_results[1])
     return vertices, faces
 
 # %% ../nbs/Python library/04a_remeshing.ipynb 12
@@ -102,12 +103,12 @@ def make_delaunay(mesh):
     """
     if mesh.only_vertices:
         l = igl.edge_lengths(mesh.vertices, mesh.tris)
-        l_new, f_new = igl.intrinsic_delaunay_triangulation(l, mesh.tris)
+        f_new = igl.intrinsic_delaunay_triangulation(l, mesh.tris)[1]
         mesh_new = tcmesh.ObjMesh(vertices=mesh.vertices, faces=f_new)
         return mesh_new
     mesh_cut = mesh.cut_along_seams()
     l = igl.edge_lengths(mesh_cut.vertices, mesh_cut.tris)
-    l_new, f_new = igl.intrinsic_delaunay_triangulation(l, mesh_cut.tris)
+    f_new = igl.intrinsic_delaunay_triangulation(l, mesh_cut.tris)[1]
     mesh_new = tcmesh.ObjMesh(vertices=mesh_cut.vertices, normals=mesh_cut.normals,
                               texture_vertices=mesh_cut.texture_vertices,
                               faces=[[[v,v] for v in fc] for fc in f_new])
@@ -134,5 +135,5 @@ def qslim(mesh, max_n_faces):
         Decimated mesh.
 
     """
-    _, vertices_new, faces_new, _, _ = igl.qslim(mesh.vertices, mesh.tris, max_m=max_n_faces)
+    vertices_new, faces_new, _, _ = igl.qslim(mesh.vertices, mesh.tris, max_m=max_n_faces)
     return tcmesh.ObjMesh(vertices=vertices_new, faces=faces_new)

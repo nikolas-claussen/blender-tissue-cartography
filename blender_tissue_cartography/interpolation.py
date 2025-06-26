@@ -161,8 +161,8 @@ def interpolate_barycentric(points, vertices, faces, values, distance_threshold=
     squared_distances, indices, points = igl.point_mesh_squared_distance(points, vertices, faces)
     hit_tris = faces[indices]
     # barycentric coordinates of the hit points. need small hack for data type issue 
-    barycentric = igl.barycentric_coordinates_tri(np.array(points, order="C"),
-                                                 *np.array(vertices[hit_tris].transpose((1,0,2)), order='C'))
+    barycentric = igl.barycentric_coordinates(np.array(points, order="C"),
+                                              *np.array(vertices[hit_tris].transpose((1,0,2)), order='C'))
     interpolated = np.einsum('vt,vt...->v...', barycentric, values[hit_tris])
     interpolated[squared_distances>distance_threshold] = np.nan
     return interpolated
@@ -212,7 +212,7 @@ def interpolate_per_vertex_field_to_UV(mesh, field, domain="per-vertex", uv_grid
     """
     if domain == "per-vertex":
         field = field[mesh.get_vertex_to_texture_vertex_indices()]
-    flipped_triangles = len(igl.flipped_triangles(mesh.texture_vertices, mesh.texture_tris))
+    flipped_triangles = tcmesh.get_flipped_uv_triangles(mesh.texture_vertices, mesh.texture_tris).size
     if flipped_triangles > 0:
         warnings.warn("UV map has self-intersections, {} flipped triangles. Try use_fallback=True?".format(
             flipped_triangles), RuntimeWarning)

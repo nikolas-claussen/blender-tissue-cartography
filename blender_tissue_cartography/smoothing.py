@@ -59,7 +59,7 @@ def smooth_laplacian(mesh: tcmesh.ObjMesh, lamb=0.5, n_iter=10, method="explicit
         warnings.warn(f"Warning: mesh not triangular - result may be incorrect", RuntimeWarning)
     v_smoothed = np.copy(mesh.vertices)
     f = mesh.tris
-    boundary_vertices = igl.boundary_facets(f)[:, 0]
+    boundary_vertices = igl.boundary_facets(f)[0][:, 0]
 
     if method == "implicit":
         laplacian = igl.cotmatrix(v_smoothed, f)
@@ -146,7 +146,7 @@ def smooth_laplacian_texture(mesh: tcmesh.ObjMesh, lamb=0.5, n_iter=10, boundary
     v_smoothed = np.copy(mesh.texture_vertices)
     f = mesh.texture_tris
     laplacian_uniform = get_uniform_laplacian(f)
-    boundary_vertices = igl.boundary_facets(f)[:, 0]
+    boundary_vertices = igl.boundary_facets(f)[0][:, 0]
 
     for _ in range(n_iter):
         v_smoothed += lamb*laplacian_uniform.dot(v_smoothed)
@@ -189,7 +189,7 @@ def smooth_laplacian_on_surface(mesh: tcmesh.ObjMesh, n_iter=10, lamb=0.5, n_ite
     v_reference = np.copy(mesh.vertices)
     v_smoothed = np.copy(mesh.vertices)
     f = mesh.tris
-    boundary_vertices = igl.boundary_facets(f)[:, 0]
+    boundary_vertices = igl.boundary_facets(f)[0][:, 0]
     laplacian_uniform = get_uniform_laplacian(f)
 
     for _ in range(n_iter):

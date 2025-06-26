@@ -14,4 +14,4 @@ dependencies:
   - tqdm
   - pip
   - pip:
-      - libigl
+      - libigl=2.6.1

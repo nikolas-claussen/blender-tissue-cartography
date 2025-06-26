@@ -256,7 +256,7 @@ def moebius_disk(pts, b):
     z_transformed = (z+b)/(1+np.conjugate(b)*z)
     return complex_to_xy(z_transformed)
 
-# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 42
+# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 43
 def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
                          second_boundary=None, set_uvs=False, return_filled=False):
     """
@@ -304,20 +304,22 @@ def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
     if not mesh.is_triangular:
         warnings.warn("Warning: ignoring non-triangular faces", RuntimeWarning)
     # determine the boundary
+    boundaries = sorted(igl.boundary_loop_all(mesh.tris), key=lambda x: len(x))[::-1]
+    
     if first_boundary is None:
-        first_boundary = igl.boundary_loop(mesh.tris)
+        first_boundary = np.array(boundaries[0])
     if second_boundary is None:
-        all_boundary_edges = igl.boundary_facets(mesh.tris)
-        second_boundary = igl.edges_to_path(np.stack([e for e in all_boundary_edges
-                                                      if not e[0] in first_boundary]))[0][:-1]    
+        second_boundary = np.array(boundaries[1])
     assert len(first_boundary) > 0 and len(second_boundary) > 0, "No boundary found! Your mesh must be a cylinder" 
     # decide which one is the outer boundary
     if outer_boundary == "shortest" or outer_boundary in second_boundary:
         first_boundary, second_boundary = (second_boundary, first_boundary)
     # add an extra vertex and triangles
-    filled_tris = igl.topological_hole_fill(mesh.tris, [second_boundary])
     center_second_boundary = mesh.vertices[second_boundary].mean(axis=0)
     filled_vertices = np.vstack([mesh.vertices, [center_second_boundary]])    # map to disk via harmonic map
+    filled_tris = np.stack([[a, b, filled_vertices.shape[0]-1]
+                            for a, b in zip(second_boundary, np.roll(second_boundary, -1))])
+    filled_tris = np.vstack([mesh.tris, filled_tris])
     bnd_uv = igl.map_vertices_to_circle(filled_vertices, first_boundary)
     uv = igl.harmonic(filled_vertices, filled_tris, first_boundary, bnd_uv, 1)
     # map the center of the second boundary to disk center
@@ -332,7 +334,7 @@ def map_cylinder_to_disk(mesh, outer_boundary="longest", first_boundary=None,
         return uv, filled_vertices, filled_tris
     return uv[:-1]
 
-# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 51
+# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 52
 def wrap_coords_via_disk_cylinder(mesh_source, mesh_target, q=0.01, n_grid=1024):
     """
     Map 3d coordinates of source mesh to target mesh via an annulus parametrization.
@@ -395,7 +397,7 @@ def wrap_coords_via_disk_cylinder(mesh_source, mesh_target, q=0.01, n_grid=1024)
                                                   distance_threshold=np.inf)
     return new_coords, overlap
 
-# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 74
+# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 70
 def stereographic_plane_to_sphere(uv):
     """
     Stereographic projection from plane to the unit sphere from the north pole (0,0,1).
@@ -417,7 +419,7 @@ def stereographic_sphere_to_plane(pts):
     assert np.allclose(np.linalg.norm(pts, axis=1), 1, rtol=1e-03, atol=1e-04), "Points not on unit sphere!"
     return (np.stack([pts[:,0], pts[:,1]], axis=0)/(1-pts[:,2])).T
 
-# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 77
+# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 73
 def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alpha=0.5):
     """
     Apply Moeboius inversions to minimize area distortion of a map from mesh to sphere.
@@ -463,7 +465,7 @@ def center_moebius(vertices_3d, vertices_sphere, tris, n_iter_centering=10, alph
         Vs = ((1-np.linalg.norm(c)**2)*(Vs+c).T /np.linalg.norm(Vs+c, axis=1)**2).T + c
     return Vs, np.linalg.norm(mu)
 
-# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 83
+# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 79
 def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha=0.5, set_uvs=False):
     """
     Compute a map of mesh to the unit sphere.
@@ -543,7 +545,7 @@ def map_to_sphere(mesh, method="harmonic", R_max=100, n_iter_centering=20, alpha
         
     return vertices_sphere
 
-# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 95
+# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 91
 def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coords_sphere_target,
                             allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):
     """
@@ -625,11 +627,9 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
     _, theta_source, phi_source = tcrot.cartesian_to_spherical(coords_sphere_source)
     _, theta_target, phi_target = tcrot.cartesian_to_spherical(coords_sphere_target)
     weights_source = igl.doublearea(coords_sphere_source, tris_sphere_source)/2
-    weights_source = igl.average_onto_vertices(coords_sphere_source, tris_sphere_source,
-                                               np.stack(3*[weights_source], axis=-1))[:,0]
+    weights_source = igl.average_onto_vertices(coords_sphere_source, tris_sphere_source, weights_source)
     weights_target = igl.doublearea(coords_sphere_target, tris_sphere_target)/2
-    weights_target = igl.average_onto_vertices(coords_sphere_target, tris_sphere_target,
-                                               np.stack(3*[weights_target], axis=-1))[:,0]
+    weights_target = igl.average_onto_vertices(coords_sphere_target, tris_sphere_target, weights_target)
     # subtract mean
     signal_source -= np.average(signal_source, weights=weights_source)
     signal_target -= np.average(signal_target, weights=weights_target)
@@ -645,7 +645,7 @@ def rotational_align_sphere(mesh_source, mesh_target, coords_sphere_source, coor
 
     return coords_sphere_source @ R_refined.T, R_refined, overlap
 
-# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 101
+# %% ../nbs/Python library/06_harmonic_wrapping.ipynb 97
 def wrap_coords_via_sphere(mesh_source, mesh_target, coords_sphere_source=None, coords_sphere_target=None,
                            method="harmonic", n_iter_centering=10, alpha=0.5,
                            align=True, allow_flip=False, max_l=10, n_angle=100, n_subdiv_axes=1, maxfev=100):

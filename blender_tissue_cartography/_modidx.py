@@ -17,9 +17,9 @@ d = { 'settings': { 'branch': 'main',
                                                     'blender_tissue_cartography.diffgeo.compute_per_vertex_jacobian': ( 'Python '
                                                                                                                         'library/differential_geometry.html#compute_per_vertex_jacobian',
                                                                                                                         'blender_tissue_cartography/diffgeo.py'),
-                                                    'blender_tissue_cartography.diffgeo.get_all_boundary_vertices': ( 'Python '
-                                                                                                                      'library/differential_geometry.html#get_all_boundary_vertices',
-                                                                                                                      'blender_tissue_cartography/diffgeo.py'),
+                                                    'blender_tissue_cartography.diffgeo.flatten': ( 'Python '
+                                                                                                    'library/differential_geometry.html#flatten',
+                                                                                                    'blender_tissue_cartography/diffgeo.py'),
                                                     'blender_tissue_cartography.diffgeo.get_area_distortion_in_UV': ( 'Python '
                                                                                                                       'library/differential_geometry.html#get_area_distortion_in_uv',
                                                                                                                       'blender_tissue_cartography/diffgeo.py'),
@@ -231,6 +231,9 @@ d = { 'settings': { 'branch': 'main',
                                                                                                                       'blender_tissue_cartography/mesh.py'),
                                                  'blender_tissue_cartography.mesh.flatten': ( 'Python library/mesh.html#flatten',
                                                                                               'blender_tissue_cartography/mesh.py'),
+                                                 'blender_tissue_cartography.mesh.get_flipped_uv_triangles': ( 'Python '
+                                                                                                               'library/mesh.html#get_flipped_uv_triangles',
+                                                                                                               'blender_tissue_cartography/mesh.py'),
                                                  'blender_tissue_cartography.mesh.glue_seams': ( 'Python library/mesh.html#glue_seams',
                                                                                                  'blender_tissue_cartography/mesh.py'),
                                                  'blender_tissue_cartography.mesh.index_else_nan': ( 'Python '
