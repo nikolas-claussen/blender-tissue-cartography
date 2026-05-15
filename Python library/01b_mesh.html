@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>b_mesh – blender-tissue-cartography</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-62a0fb827630e33fd95d729094ca943e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="blender-tissue-cartography">
+<meta property="og:description" content="Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender">
+<meta property="og:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/01b_mesh_files/figure-html/cell-23-output-2.png">
+<meta property="og:site_name" content="blender-tissue-cartography">
+<meta property="og:image:height" content="413">
+<meta property="og:image:width" content="547">
+<meta name="twitter:title" content="blender-tissue-cartography">
+<meta name="twitter:description" content="Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender">
+<meta name="twitter:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Python library/01b_mesh_files/figure-html/cell-23-output-2.png">
+<meta name="twitter:image-height" content="413">
+<meta name="twitter:image-width" content="547">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">blender-tissue-cartography</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Python library/io.html">Python library</a></li><li class="breadcrumb-item"><a href="../Python library/01b_mesh.html">Mesh data structure</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">blender-tissue-cartography</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../00_tissue_cartography_overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tissue cartography with <code>blender_tisssue_cartography</code></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_blender_addon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Blender add-on</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Python library</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/io.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Image I/O</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01b_mesh.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Mesh data structure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01c_interface_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>pymeshlab</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01d_interface_trimesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>trimesh</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/01e_morphsnakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Morphsnakes segmentation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/02_cartographic_interpolation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cartographic interpolation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/differential_geometry.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Surface differential geometry</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/remeshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/remeshing_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing with MeshLab</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/04c_smoothing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh smoothing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/registration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rigid-body registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/registration_rotation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3D-rotation registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/05c_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Shrink-wrapping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library/06_harmonic_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Harmonic mapping</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/01_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/02_blender_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2. Blender tutorial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/03_btc_addon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3. <code>blender_tissue_cartography</code> add-on</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/04_btc_python_library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4. <code>blender_tissue_cartography</code> Python library</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/05_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5. Tissue cartography with “seams”</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/06_improving_UV_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">6. Iteratively improving cartographic projections</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/07_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7. Advanced segmentation and meshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/08_multiple_recordings_and_reference_meshes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8. Consistent cartographic projections across multiple recordings</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/09_movies_and_dynamic_surfaces.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">9. Time-lapse imaging and dynamic surfaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Tutorials/10_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">10. 3D Image analysis with cartographic projections</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#mesh-data-structure" id="toc-mesh-data-structure" class="nav-link active" data-scroll-target="#mesh-data-structure">Mesh data structure</a>
+  <ul class="collapse">
+  <li><a href="#invert_dictionary" id="toc-invert_dictionary" class="nav-link" data-scroll-target="#invert_dictionary">invert_dictionary</a></li>
+  <li><a href="#index_else_nan" id="toc-index_else_nan" class="nav-link" data-scroll-target="#index_else_nan">index_else_nan</a></li>
+  <li><a href="#unique" id="toc-unique" class="nav-link" data-scroll-target="#unique">unique</a></li>
+  <li><a href="#pad_list" id="toc-pad_list" class="nav-link" data-scroll-target="#pad_list">pad_list</a></li>
+  <li><a href="#flatten" id="toc-flatten" class="nav-link" data-scroll-target="#flatten">flatten</a></li>
+  <li><a href="#the-objmesh-class" id="toc-the-objmesh-class" class="nav-link" data-scroll-target="#the-objmesh-class">The <code>ObjMesh</code> class</a></li>
+  <li><a href="#objmesh" id="toc-objmesh" class="nav-link" data-scroll-target="#objmesh">ObjMesh</a></li>
+  <li><a href="#get_flipped_uv_triangles" id="toc-get_flipped_uv_triangles" class="nav-link" data-scroll-target="#get_flipped_uv_triangles">get_flipped_uv_triangles</a></li>
+  <li><a href="#read_other_formats_without_uv" id="toc-read_other_formats_without_uv" class="nav-link" data-scroll-target="#read_other_formats_without_uv">read_other_formats_without_uv</a></li>
+  <li><a href="#split_connected_components" id="toc-split_connected_components" class="nav-link" data-scroll-target="#split_connected_components">split_connected_components</a></li>
+  <li><a href="#uv-mapping-by-projecting-from-view" id="toc-uv-mapping-by-projecting-from-view" class="nav-link" data-scroll-target="#uv-mapping-by-projecting-from-view">UV mapping by projecting from view</a></li>
+  <li><a href="#compute_project_from_axis_scale" id="toc-compute_project_from_axis_scale" class="nav-link" data-scroll-target="#compute_project_from_axis_scale">compute_project_from_axis_scale</a></li>
+  <li><a href="#project_from_axis" id="toc-project_from_axis" class="nav-link" data-scroll-target="#project_from_axis">project_from_axis</a></li>
+  <li><a href="#test-readwrite" id="toc-test-readwrite" class="nav-link" data-scroll-target="#test-readwrite">Test read/write</a></li>
+  </ul></li>
+  <li><a href="#mesh-cutting-and-gluing" id="toc-mesh-cutting-and-gluing" class="nav-link" data-scroll-target="#mesh-cutting-and-gluing">Mesh cutting and gluing</a>
+  <ul class="collapse">
+  <li><a href="#glue_seams" id="toc-glue_seams" class="nav-link" data-scroll-target="#glue_seams">glue_seams</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Python library/io.html">Python library</a></li><li class="breadcrumb-item"><a href="../Python library/01b_mesh.html">Mesh data structure</a></li></ol></nav></header>
+
+
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="mesh-data-structure" class="level2">
+<h2 class="anchored" data-anchor-id="mesh-data-structure">Mesh data structure</h2>
+<blockquote class="blockquote">
+<p>Data structure for triangular meshes and UV maps</p>
+</blockquote>
+<p>In this notebook, we define a class for triangular meshes with UV maps, and show how to use it with the data from the <code>basics_example</code> folder.</p>
+<p>Let’s <strong>define the metadata for the example dataset</strong>: the filename, resolution in microns, and how much we subsampled for segmentation purposes. This is important for correctly scaling mesh vertex positions when computing the mesh from image data.</p>
+<p><strong>Important convention</strong> For sanity’s sake, we will always store all mesh coordinates in microns. This means rescaling appropriately after calculating the mesh from the 3d segmentation.</p>
+<div id="2346a597" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>metadata_dict <span class="op">=</span> {<span class="st">'filename'</span>: <span class="st">'datasets/basics_example/basics_example'</span>,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">'resolution_in_microns'</span>: (<span class="dv">1</span>, <span class="fl">0.36</span>, <span class="fl">0.36</span>), <span class="co"># you can typically get this from the .tif metadata</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                 <span class="st">'subsampling_factors'</span>: (<span class="dv">1</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">3</span>), <span class="co"># how much you subsampled your image for segmentation</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                }</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+<section id="invert_dictionary" class="level3">
+<h3 class="anchored" data-anchor-id="invert_dictionary">invert_dictionary</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> invert_dictionary(</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    my_map, assume_unique:<span class="bu">bool</span><span class="op">=</span><span class="va">False</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Invert key -&gt; value map defined by a dictionary</em></p>
+<p>If assume_unique is True, key/value pairs are assumed to be unique. Else, a dictionary of lists is returned. Each entry is a list of keys that map to the given value.</p>
+<hr>
+</section>
+<section id="index_else_nan" class="level3">
+<h3 class="anchored" data-anchor-id="index_else_nan">index_else_nan</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> index_else_nan(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    arr, inds</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Return arr[inds], masked so that the result is np.nan wherever ind is nan</em></p>
+<hr>
+</section>
+<section id="unique" class="level3">
+<h3 class="anchored" data-anchor-id="unique">unique</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> unique(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    sequence</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Create list of unique entries in sequence while preserving order</em></p>
+<hr>
+</section>
+<section id="pad_list" class="level3">
+<h3 class="anchored" data-anchor-id="pad_list">pad_list</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pad_list(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    lst, length:<span class="bu">int</span><span class="op">=</span><span class="dv">3</span>, fill_value:<span class="bu">float</span><span class="op">=</span>nan</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Pad end of list with fill_value if shorter than the desired length.</em></p>
+<hr>
+</section>
+<section id="flatten" class="level3">
+<h3 class="anchored" data-anchor-id="flatten">flatten</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> flatten(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    lst, <span class="co"># list-of-lists.</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    max_depth:<span class="bu">int</span><span class="op">=</span><span class="dv">1000</span>, <span class="co"># To what depth to flatten the list.</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    iter_count:<span class="bu">int</span><span class="op">=</span><span class="dv">0</span>, <span class="co"># Helper argument for recursion depth determination.</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>): <span class="co"># flattened list.</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Flatten a list of lists into a list.</em></p>
+<p>Also works with inhomogeneous lists, e.g., [[0,1],2]. The argument depth determines how “deep” to flatten the list, e.g.&nbsp;with max_depth=1: [[(1,0), (1,0)]] -&gt; [(1,0), (1,0)].</p>
+</section>
+<section id="the-objmesh-class" class="level3">
+<h3 class="anchored" data-anchor-id="the-objmesh-class">The <code>ObjMesh</code> class</h3>
+<p>We now define our main class for mesh io and mesh handling. We save all meshes as wavefront <code>.obj</code> files (see <a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file">wikipedia</a>). In Python, we represent missing entries (such as a vertex that doesn’t have a normal by <code>np.nan</code>.</p>
+<p>For reading, writing, holding, and handling <code>.obj</code> meshes, we will create the <code>ObjMesh</code> class. You can think of an <code>.obj</code> mesh as a <em>map</em> between two meshes (the mesh in 3d, and its texture coordinates in 2d), defined on a per-face basis.</p>
+<p><strong>Handling of non-triangular meshes</strong></p>
+<p>We prefer to work with triangulated meshes. For triangulated meshes: 1. there is a well-defined way to <em>interpolate</em> data across mesh faces (barycentric interpolation) 2. the deformation of a face under a mapping (e.g.&nbsp;cartographic map to the plane) is uniquely defined 3. many more algorithms are available (notably in <code>igl</code>)</p>
+<p>Non-triangular meshes and meshes with mixes of triangles and higher-order faces, like quads, are supported by this data structure, but not recommended.</p>
+<hr>
+</section>
+<section id="objmesh" class="level3">
+<h3 class="anchored" data-anchor-id="objmesh">ObjMesh</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ObjMesh(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    vertices, faces, texture_vertices:NoneType<span class="op">=</span><span class="va">None</span>, normals:NoneType<span class="op">=</span><span class="va">None</span>, name:NoneType<span class="op">=</span><span class="va">None</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Simple class for reading, holding, transforming, and saving 3d polygonal meshes in the .obj format.</em> See https://en.wikipedia.org/wiki/Wavefront_.obj_file.</p>
+<p>An ObjMesh comprises vertices and faces, describing a surface in 3d, (optionally) per-vertex normals, and (optionally), texture vertices and texture faces that describe how the surface is mapped to 2d.</p>
+<p>Vertices, texture_vertices, normals are np.arrays, faces is a list. Each face is either a list of vertex indices, or, if the mesh has texture information, a list of vertex/texture vertex index pairs, describing which face maps to which texture face. Note: the number of texture vertices and vertices is not necessarily equal!</p>
+<p>Normals are always defined per-vertex, i.e.&nbsp;self.normals[i] is the normal vector at self.vertices[i]. Missing data is represented by np.nan. Faces can be any length (triangles, quads, …). Indices start at 0!</p>
+<p><strong>Attributes</strong></p>
+<p>vertices : np.array of shape (#vertices, dimension).</p>
+<p>texture_vertices : np.array of shape (#texture vertices, 2) or None</p>
+<p>normals : np.array of shape (#vertices, dimension) or None</p>
+<p>faces : List[List[int]] or List[List[(int, int]]]</p>
+<p><strong>Property methods (use like attributes)</strong></p>
+<p>only_vertices : bool, whether mesh has texture information</p>
+<p>is_triangular : bool</p>
+<p>tris : np.array of shape (#triangular faces, 3). Triangular 3d faces</p>
+<p>texture_tris : np.array of shape (#triangular faces, 3). Triangular texture faces. Note: undefined texture faces are represented by [0, 0, 0]</p>
+<div id="d67cea8d-9392-4134-866f-5d06b9606e36" class="cell" data-execution_count="44">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>nbdev.show_doc(ObjMesh.set_normals)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="44">
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/mesh.py#L331" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="objmesh.set_normals" class="level3">
+<h3 class="anchored" data-anchor-id="objmesh.set_normals">ObjMesh.set_normals</h3>
+<blockquote class="blockquote">
+<pre><code> ObjMesh.set_normals ()</code></pre>
+</blockquote>
+<p><em>Recompute normals based on 3d positions. Only works for triangular meshes.</em></p>
+</section>
+</div>
+</div>
+<div id="3b27df04-95fb-487f-88e7-eabdf689a04a" class="cell" data-scrolled="true" data-execution_count="45">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>nbdev.show_doc(ObjMesh.get_uv_index_to_vertex_index_map)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="45">
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/mesh.py#L339" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="objmesh.get_uv_index_to_vertex_index_map" class="level3">
+<h3 class="anchored" data-anchor-id="objmesh.get_uv_index_to_vertex_index_map">ObjMesh.get_uv_index_to_vertex_index_map</h3>
+<blockquote class="blockquote">
+<pre><code> ObjMesh.get_uv_index_to_vertex_index_map ()</code></pre>
+</blockquote>
+<p><em>Get map from texture vertex index to the corresponding 3d vertex index as a dictionary.</em></p>
+</section>
+</div>
+</div>
+<div id="8dc750be-bc72-4ea1-bcec-7b75dfbee61d" class="cell" data-execution_count="46">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>nbdev.show_doc(ObjMesh.get_vertex_index_to_uv_index_map)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="46">
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/mesh.py#L343" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="objmesh.get_vertex_index_to_uv_index_map" class="level3">
+<h3 class="anchored" data-anchor-id="objmesh.get_vertex_index_to_uv_index_map">ObjMesh.get_vertex_index_to_uv_index_map</h3>
+<blockquote class="blockquote">
+<pre><code> ObjMesh.get_vertex_index_to_uv_index_map ()</code></pre>
+</blockquote>
+<p>*Get map from 3d vertex index to the corresponding UV vertex index as a dictionary.</p>
+<p>Note: each dict value is a list, since a 3d vertex can map to multiple UV vertices. For vertices that do not have any corresponding UV vertex, the list is empty.*</p>
+</section>
+</div>
+</div>
+<div id="dd215959-f00f-482d-8a87-a871fd5a32c0" class="cell" data-execution_count="47">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>nbdev.show_doc(ObjMesh.get_vertex_to_texture_vertex_indices)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="47">
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/mesh.py#L357" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="objmesh.get_vertex_to_texture_vertex_indices" class="level3">
+<h3 class="anchored" data-anchor-id="objmesh.get_vertex_to_texture_vertex_indices">ObjMesh.get_vertex_to_texture_vertex_indices</h3>
+<blockquote class="blockquote">
+<pre><code> ObjMesh.get_vertex_to_texture_vertex_indices ()</code></pre>
+</blockquote>
+<p>*Get an array of indices into 3d vertices that map them to the corresponding texture vertices.</p>
+<p>Useful for translating per-vertex data into per-texture-vertex data: array -&gt; array[self.get_vertex_to_texture_vertex_indices()]*</p>
+</section>
+</div>
+</div>
+<div id="3fea02a5-2041-463b-8ebf-dcaa135d83e6" class="cell" data-execution_count="48">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>nbdev.show_doc(ObjMesh.map_per_vertex_to_per_texture_vertex)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="48">
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/mesh.py#L367" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="objmesh.map_per_vertex_to_per_texture_vertex" class="level3">
+<h3 class="anchored" data-anchor-id="objmesh.map_per_vertex_to_per_texture_vertex">ObjMesh.map_per_vertex_to_per_texture_vertex</h3>
+<blockquote class="blockquote">
+<pre><code> ObjMesh.map_per_vertex_to_per_texture_vertex (field)</code></pre>
+</blockquote>
+<p><em>Map per-vertex field (array of shape (n_vertices, …)) to texture vertices. vertices.</em></p>
+</section>
+</div>
+</div>
+<div id="c325918c-c4aa-432b-b5b3-4f5ace6c1f08" class="cell" data-execution_count="49">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>nbdev.show_doc(ObjMesh.map_per_texture_vertex_to_per_vertex)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="49">
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/mesh.py#L374" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="objmesh.map_per_texture_vertex_to_per_vertex" class="level3">
+<h3 class="anchored" data-anchor-id="objmesh.map_per_texture_vertex_to_per_vertex">ObjMesh.map_per_texture_vertex_to_per_vertex</h3>
+<blockquote class="blockquote">
+<pre><code> ObjMesh.map_per_texture_vertex_to_per_vertex (field)</code></pre>
+</blockquote>
+<p><em>Map per-texture vertex field (array of shape (n_texture_vertices, …)) to 3d vertices. vertices.</em></p>
+</section>
+</div>
+</div>
+<div id="e001a50f-a1a0-43be-bd7d-d96e5ee8dfe3" class="cell" data-execution_count="50">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>nbdev.show_doc(ObjMesh.cut_along_seams)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="50">
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/mesh.py#L382" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="objmesh.cut_along_seams" class="level3">
+<h3 class="anchored" data-anchor-id="objmesh.cut_along_seams">ObjMesh.cut_along_seams</h3>
+<blockquote class="blockquote">
+<pre><code> ObjMesh.cut_along_seams ()</code></pre>
+</blockquote>
+<p>*Cut mesh along texture seams.</p>
+<p>Returns a new ObjMesh in which the topology of the vertices matches the topology of the texture vertices, by duplicating vertices along “seams” (i.e.&nbsp;which have multiple corresponding texture vertices), and discarding any vertices without texture coordinates.*</p>
+</section>
+</div>
+</div>
+<div id="f7002edc-d176-47a2-b3af-64135371b325" class="cell" data-execution_count="51">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>nbdev.show_doc(ObjMesh.apply_affine_to_mesh)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="51">
+<hr>
+<p><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_tissue_cartography/mesh.py#L405" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="objmesh.apply_affine_to_mesh" class="level3">
+<h3 class="anchored" data-anchor-id="objmesh.apply_affine_to_mesh">ObjMesh.apply_affine_to_mesh</h3>
+<blockquote class="blockquote">
+<pre><code> ObjMesh.apply_affine_to_mesh (trafo)</code></pre>
+</blockquote>
+<p>*Apply affine transformation to mesh.</p>
+<p>Rotate/shear and translate vertices, rotate/shear and renormalize normals, flip faces if the transformation determinant is -1.*</p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>trafo</td>
+<td>np.array of shape (4,4) or (3,3)</td>
+<td>Transformation matrix. If (4,4), it is interpreted as an affine transformation.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>ObjMesh</strong></td>
+<td><strong>Transformed mesh.</strong></td>
+</tr>
+</tbody>
+</table>
+</section>
+</div>
+</div>
+<hr>
+</section>
+<section id="get_flipped_uv_triangles" class="level3">
+<h3 class="anchored" data-anchor-id="get_flipped_uv_triangles">get_flipped_uv_triangles</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_flipped_uv_triangles(</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    texture_vertices, texture_tris</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Flipped faces.</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Find UV mesh triangles which are flipped (have negative area), indicating that the UV map is not injective.</em></p>
+<hr>
+</section>
+<section id="read_other_formats_without_uv" class="level3">
+<h3 class="anchored" data-anchor-id="read_other_formats_without_uv">read_other_formats_without_uv</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> read_other_formats_without_uv(</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    filename, <span class="co"># filename</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Only contains face and vertex info.</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Return vertices and faces from a non-.obj mesh file format. file.</em></p>
+<p>Supported formats are .obj, .off, .stl, .wrl, .ply, .mesh. Will NOT read in normals or texture coordinates. If you have texture coordinates, save your mesh as .obj. Will only return triangular faces.</p>
+<p>See https://libigl.github.io/libigl-python-bindings/igl_docs/#read_triangle_mesh.</p>
+<hr>
+</section>
+<section id="split_connected_components" class="level3">
+<h3 class="anchored" data-anchor-id="split_connected_components">split_connected_components</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> split_connected_components(</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    mesh, <span class="co"># Mesh</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Connected components in decreasing order of number of vertices</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Split mesh into connected components.</em></p>
+<p>Will erase UV or other information.</p>
+</section>
+<section id="uv-mapping-by-projecting-from-view" class="level3">
+<h3 class="anchored" data-anchor-id="uv-mapping-by-projecting-from-view">UV mapping by projecting from view</h3>
+<p>By design, <code>blender_tissue_cartography</code> does not feature functionality to create UV maps computationally - that’s what you’re supposed to do in Blender! With one exception: projection from an axis. This takes the 3d coordinates of a mesh, and projects it along a user-selected axis to 2d. This is useful when creating a projection of a mildly curved, disk-topology surface, and can directly be applied to time-lapse images.</p>
+<hr>
+</section>
+<section id="compute_project_from_axis_scale" class="level3">
+<h3 class="anchored" data-anchor-id="compute_project_from_axis_scale">compute_project_from_axis_scale</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_project_from_axis_scale(</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    image_shape, <span class="co"># Shape of image in pixels</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    resolution, <span class="co"># Resolution of image in microns/pixel along each axis</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    axis1, axis2, <span class="co"># vector defining the axis projected to V coordinate</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>): <span class="co"># scaling factor to ensure UV coordinates lie in [0, 1]</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Compute scaling factor for UV coordinates obtained projecting 3D coordinates along an axis.</em></p>
+<p>UV coordinates must be scaled to lie between 0 and 1. To get a consistent scaling across e.g.&nbsp; different frames of a movie, this function computes the scale factor based on the projection axes and the shape of the volumetric image.</p>
+<hr>
+</section>
+<section id="project_from_axis" class="level3">
+<h3 class="anchored" data-anchor-id="project_from_axis">project_from_axis</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> project_from_axis(</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    mesh, axis1, <span class="co"># vector defining the axis projected to U coordinate</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    axis2, <span class="co"># vector defining the axis projected to V coordinate</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    translate:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># translation to ensure UV coordinates are positive. If None, the minimum of U &amp; V is used.</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    scale:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># scaling factor to ensure UV coordinates lie in [0, 1]. If None, the maximum of U &amp; V is used.</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>): <span class="co"># New mesh, with UV map. UV and </span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Create UV map by projecting 3D coordinates along an axis.</em></p>
+<p>The UV topology will be <em>identical</em> to the 3D topology (no seams), and there may be self-intersections.</p>
+<p>The projected coordinates should be scaled to lie in [0,1]^2. The scale factor can be found automatically or be computed from the shape and resolution of a 3D image using</p>
+<div id="6e799ccf-40c3-428c-8dcb-f2d0a86aac5c" class="cell" data-execution_count="56">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>mesh_test <span class="op">=</span> ObjMesh.read_obj(<span class="st">"datasets/basics_example/basics_example_mesh_remeshed.obj"</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="co"># get the scale from the datasets/basics_example/basics_example.tif volumetric dataset</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>scale <span class="op">=</span> compute_project_from_axis_scale(image_shape<span class="op">=</span>(<span class="dv">26</span>, <span class="dv">454</span>, <span class="dv">511</span>), resolution<span class="op">=</span>(<span class="dv">1</span>, <span class="fl">0.36</span>, <span class="fl">0.36</span>),</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>                                       axis1<span class="op">=</span>np.array([<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">0</span>]), axis2<span class="op">=</span>np.array([<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>]))</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>mesh_projected <span class="op">=</span> project_from_axis(mesh_test, axis1<span class="op">=</span>np.array([<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">0</span>]), axis2<span class="op">=</span>np.array([<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>]), scale<span class="op">=</span>scale, translate<span class="op">=</span><span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="9e762033-eebe-4997-970a-95c31d39ff4e" class="cell" data-execution_count="57">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>plt.scatter(<span class="op">*</span>mesh_projected.texture_vertices.T, s<span class="op">=</span><span class="fl">0.1</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"equal"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="57">
+<pre><code>(-0.04403131115459883,
+ 0.9246575342465754,
+ -0.049608610567514685,
+ 1.0417808219178084)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="01b_mesh_files/figure-html/cell-23-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="test-readwrite" class="level3">
+<h3 class="anchored" data-anchor-id="test-readwrite">Test read/write</h3>
+<div id="eeec156d" class="cell" data-execution_count="58">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's consider some examples</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>mesh_cube <span class="op">=</span> <span class="st">"datasets/basics_example/cube.obj"</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>mesh_mixed <span class="op">=</span> <span class="st">"datasets/basics_example/cube_mixed.obj"</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>mesh_large <span class="op">=</span> <span class="st">"datasets/registration_example/Drosophila_reference.obj"</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>mesh_no_uv <span class="op">=</span> <span class="st">"datasets/basics_example/cube_no_uv.obj"</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>mesh_only_normals <span class="op">=</span> <span class="st">"datasets/basics_example/cube_only_normals.obj"</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>mesh_partial_uv <span class="op">=</span> <span class="st">"datasets/basics_example/cube_partial_uv.obj"</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>mesh_partial_uv_large <span class="op">=</span> <span class="st">"datasets/basics_example/torus.obj"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="b38245f8" class="cell" data-execution_count="59">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> ObjMesh.read_obj(mesh_cube)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/tmp/ipykernel_93331/2051176228.py:140: DeprecationWarning: Warning: non-triangular meshes are deprecated
+  warnings.warn(f"Warning: non-triangular meshes are deprecated", DeprecationWarning)
+Warning: readOBJ() ignored non-comment line 3:
+  o Cube</code></pre>
+</div>
+</div>
+<div id="f875a478" class="cell" data-execution_count="60">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>ObjMesh.read_obj(mesh_mixed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 3:
+  o Cube
+/tmp/ipykernel_93331/2051176228.py:102: DeprecationWarning: Warning: non-triangular meshes are deprecated
+  warnings.warn(f"Warning: non-triangular meshes are deprecated", DeprecationWarning)</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="60">
+<pre><code>&lt;__main__.ObjMesh at 0x7f71c46b1590&gt;</code></pre>
+</div>
+</div>
+<div id="5c97963d" class="cell" data-execution_count="61">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>read_other_formats_without_uv(<span class="st">"datasets/wrapping_example/mixed_faces_example.obj"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o Cube</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="61">
+<pre><code>&lt;__main__.ObjMesh at 0x7f71c45d48d0&gt;</code></pre>
+</div>
+</div>
+<div id="22082112" class="cell" data-execution_count="62">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># test the read_obj function on an example</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>mesh_fname_data <span class="op">=</span> <span class="st">"datasets/registration_example/Drosophila_CAAX-mCherry_mesh_remeshed.obj"</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> ObjMesh.read_obj(mesh_fname_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="92a3114c" class="cell" data-execution_count="63">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>ObjMesh.read_obj(mesh_mixed).faces</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/tmp/ipykernel_93331/2051176228.py:102: DeprecationWarning: Warning: non-triangular meshes are deprecated
+  warnings.warn(f"Warning: non-triangular meshes are deprecated", DeprecationWarning)
+Warning: readOBJ() ignored non-comment line 3:
+  o Cube</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="63">
+<pre><code>[[0, 1, 3, 2],
+ [2, 3, 7, 6],
+ [6, 7, 5, 4],
+ [4, 5, 1, 0],
+ [2, 6, 4, 0],
+ [3, 5, 7],
+ [3, 1, 5]]</code></pre>
+</div>
+</div>
+<div id="c188fe00" class="cell" data-execution_count="69">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># for meshes with partial UV information, missing data is represented by np.nan</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>ObjMesh.read_obj(mesh_partial_uv).faces</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 3:
+  o Cube
+Error: readOBJ() face on line 32 has invalid format</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="69">
+<pre><code>[[[1, nan], [2, nan], [0, nan]],
+ [[3, nan], [6, nan], [2, nan]],
+ [[7, nan], [4, nan], [6, nan]],
+ [[5, 1], [0, 2], [4, 3]],
+ [[6, nan], [0, nan], [2, nan]],
+ [[3, 4], [5, 1], [7, 5]],
+ [[1, nan], [3, 0], [2, nan]],
+ [[3, nan], [7, nan], [6, nan]],
+ [[7, 12], [5, nan], [4, nan]],
+ [[5, 1], [1, 6], [0, 2]],
+ [[6, nan], [4, nan], [0, nan]],
+ [[3, 4], [1, 6], [5, 1]]]</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="mesh-cutting-and-gluing" class="level2">
+<h2 class="anchored" data-anchor-id="mesh-cutting-and-gluing">Mesh cutting and gluing</h2>
+<p>The <code>cut_along_seams</code> method can be used to “cut” a mesh along its UV seams. This duplicates 3d vertices so that the 3d topology and the unwrapped UV topology match. For example, if your UV map cuts your sphere mesh into a north and a south hemisphere for unwrapping, <code>cut_along_seams</code> will cut the mesh into two halves.</p>
+<p>Conversely, <code>glue_seams</code> undoes the cutting by merging close vertices.</p>
+<hr>
+<section id="glue_seams" class="level3">
+<h3 class="anchored" data-anchor-id="glue_seams">glue_seams</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> glue_seams(</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>    mesh,</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>    decimals:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># Vertices whose positions agree up to 'decimals' decimals are merged. Note: you can use negative values.</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>If <span class="va">None</span>, estimate a value based on the shortest edge length <span class="kw">in</span> the mesh (<span class="op">-</span><span class="dv">2</span><span class="op">*</span>log_10(minimum length))</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Mesh with merged vertices.</span></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Merge close vertices.</em></p>
+<p>Useful to undo cutting of meshes along UV seams. Note: the exact order of vertices will not in general be recovered by gluing after cutting.</p>
+<div id="cd2f0a4b" class="cell" data-execution_count="73">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> ObjMesh.read_obj(<span class="st">"datasets/movie_example/initial_uv.obj"</span>)</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>mesh_cut <span class="op">=</span> mesh.cut_along_seams()</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>glued_mesh <span class="op">=</span> glue_seams(mesh_cut)</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>glued_mesh.write_obj(<span class="st">"datasets/movie_example/initial_uv_glued.obj"</span>)</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>mesh.vertices.shape, mesh_cut.vertices.shape, glued_mesh.vertices.shape</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o mesh_01_cylinder_seams_uv</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="73">
+<pre><code>((20212, 3), (20623, 3), (12036, 3))</code></pre>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/nikolas-claussen\.github\.io\/blender-tissue-cartography");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
