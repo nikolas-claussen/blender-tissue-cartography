@@ -5,7 +5,7 @@
 
 ## What this tool does
 
-![image.png](index_files/figure-commonmark/cell-2-1-ee28c1cc-3737-4a46-b1ec-e96e9291126d.png)
+![image.png](index_files/figure-commonmark/376a1260-1-ee28c1cc-3737-4a46-b1ec-e96e9291126d.png)
 
 Tissue cartography extracts and cartographically projects curved
 surfaces from volumetric image data. This turns your 3D data into 2D
@@ -188,7 +188,7 @@ The Blender add-on allows you to carry out steps 2-5 entirely within
 Blender. Here is a screenshot using the example [*Drosophila*
 dataset](https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/nbs/Tutorials/addon_example/Drosophila_CAAX-mCherry.tif):
 
-![image.png](index_files/figure-commonmark/cell-7-1-48b7a123-b1e4-4b12-ab3c-e804252bc2b7.png)
+![image.png](index_files/figure-commonmark/824d53b8-1-48b7a123-b1e4-4b12-ab3c-e804252bc2b7.png)
 
 Left: Projected 2D image. Center: 3D view of image data (volume bounding
 box, image slices, and extracted surface). Right: Tissue Cartography
@@ -200,7 +200,7 @@ automatically, and use it as guidance when editing your cartographic map
 in blender. Here, we edit the “seam” of our cartographic map based on
 the region occupied by cells during zebrafish epiboly (tutorial 6).
 
-![image-2.png](index_files/figure-commonmark/cell-8-1-image-2.png)
+![image-2.png](index_files/figure-commonmark/2aa746f8-1-image-2.png)
 
 ### Dynamic datasets
 
@@ -249,7 +249,7 @@ The tutorial notebooks can be used as *templates* for your analysis
 pipelines. Here is an example of a jupyter computational notebook
 (left), and the created projection visualized in Blender (right).
 
-![image.png](index_files/figure-commonmark/cell-10-1-image.png)
+![image.png](index_files/figure-commonmark/7bc8f85e-1-image.png)
 
 #### Notes for Python beginners
 
@@ -291,8 +291,8 @@ the installation instructions above.
   - [h5py](https://www.h5py.org/) for reading/writing of `.h5` files.
   - [tifffile](https://github.com/cgohlke/tifffile/) for reading/writing
     of `.tif` files, including metadata.
-  - [libigl](https://libigl.github.io/libigl-python-bindings) Geometry
-    processing.
+  - [libigl](https://libigl.github.io/libigl-python-bindings) version
+    2.6.1, Geometry processing.
 - [Ilastik](https://www.ilastik.org/) Image classification and
   segmentation,
 - [Blender](https://www.blender.org/) Mesh editing and UV mapping.

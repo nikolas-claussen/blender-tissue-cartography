@@ -14,7 +14,7 @@ This project comprises an 3d-image processing software library for "tissue carto
 
 ## Virtual environment, packaging & docs (python library)
 
-- This repo contains large files (image test data, meshes). These are tracked using git LFS.
+- This repo contains large files (image test data, meshes). These are tracked using git LFS (see `.gitattributes`).
 - The python library is developped in **Jupyter Notebooks** using **nbdev**. These notebooks live in the `nbdev` folder and are also used to generate the documentation webpage.
 - Use nbdev to export code via the `ndbdev_export` command. Do not edit the code files in `blender_tissue_cartography/` directly. Cells to be exported should be marked with #| export at the top. To generate documentation, use `nbdev_docs` and `nbdev_readme`. Nbdev places docs in the `_docs` folder. To update the documentation webpage, delete the old `docs` folder, run the nbdev commands, then move `_docs` to `docs`.
 - In notebooks, use separate cells for defining functions/classes and for running code. Below a cell that defines a function/class, include a test cell that runs basic tests or examples of usage.

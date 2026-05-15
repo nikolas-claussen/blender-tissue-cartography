@@ -2,29 +2,30 @@ website:
   sidebar:
     contents:
       - index.ipynb
-      - 00_specs.ipynb
-      - 01a_io.ipynb
-      - 01b_mesh.ipynb
-      - 01c_interface_pymeshlab.ipynb
-      - 01d_interface_trimesh.ipynb
-      - 02_cartographic_interpolation.ipynb
-      - 03_differential_geometry.ipynb
-      - 04a_remeshing.ipynb
-      - 04b_remeshing_pymeshlab.ipynb
-      - 04c_smoothing.ipynb
-      - 05a_registration.ipynb
-      - 05b_registration_rotation.ipynb
-      - 05c_wrapping.ipynb
-      - 06_harmonic_wrapping.ipynb
-      - 07_volumetric_rendering.ipynb
-      - 08_blender_addon_notes.ipynb
+      - 00_tissue_cartography_overview.ipynb
+      - 01_blender_addon.ipynb
+      - section: Python library
+        contents:
+          - Python library/01a_io.ipynb
+          - Python library/01b_mesh.ipynb
+          - Python library/01c_interface_pymeshlab.ipynb
+          - Python library/01d_interface_trimesh.ipynb
+          - Python library/01e_morphsnakes.ipynb
+          - Python library/02_cartographic_interpolation.ipynb
+          - Python library/03_differential_geometry.ipynb
+          - Python library/04a_remeshing.ipynb
+          - Python library/04b_remeshing_pymeshlab.ipynb
+          - Python library/04c_smoothing.ipynb
+          - Python library/05a_registration.ipynb
+          - Python library/05b_registration_rotation.ipynb
+          - Python library/05c_wrapping.ipynb
+          - Python library/06_harmonic_wrapping.ipynb
       - section: Tutorials
         contents:
-          - Tutorials/00_tissue_cartography.ipynb
           - Tutorials/01_segmentation_with_ilastik.ipynb
           - Tutorials/02_blender_tutorial.ipynb
-          - Tutorials/03_blender_addon_tutorial.ipynb
-          - Tutorials/04_basic_example.ipynb
+          - Tutorials/03_btc_addon.ipynb
+          - Tutorials/04_btc_python_library.ipynb
           - Tutorials/05_UV_maps_with_seams.ipynb
           - Tutorials/06_improving_UV_maps.ipynb
           - Tutorials/07_advanced_segmentation_and_meshing.ipynb
