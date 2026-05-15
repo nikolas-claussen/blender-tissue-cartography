@@ -23,10 +23,10 @@ This project comprises an 3d-image processing software library for "tissue carto
 
 - The blender add-on is in the `blender_addon` folder. It is written in Python, but follows Blender's coding style and conventions, which are different from the rest of the project. These `.py` files are not generated from notebooks, and can be edited directly.
 
-- To package the add-on into an installable Blender add-on, use the `blender_addon/packaging` folder. 
-The `wheels/` directory contains the python libraries the add-on depends on. To build the package, run the shell command:
+- The add-on must be packaged into an installable Blender add-on,
+The `blender_addon/wheels/` directory contains the python libraries the add-on depends on. To build the package, run the shell command:
 ```sh
-/Applications/Blender.app/Contents/MacOS/Blender --command extension build --source-dir . --output-dir ../ --split-platforms
+/Applications/Blender.app/Contents/MacOS/Blender --command extension build --source-dir . --output-dir addon_zips/ --split-platforms
 ```
 To re-download the wheels, run this command [to do]:
 ```sh
