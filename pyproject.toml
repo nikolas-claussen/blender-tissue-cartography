@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blender-tissue-cartography"
+dynamic = ["version"]
+description = "Pipeline for tissue extraction and analysis of surfaces from volumetric mircroscopy data using blender"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "Apache-2.0"}
+authors = [{name = "Nikolas", email = "nclaussen@ucsb.edu"}]
+keywords = ['nbdev', 'jupyter', 'notebook', 'python']
+classifiers = ["Natural Language :: English", "Intended Audience :: Developers", "Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only"]
+dependencies = ['matplotlib', 'numpy', 'scipy', 'scikit-image', 'tifffile', 'h5py', 'jupyter', 'tqdm', 'libigl==2.6.1']
+
+[project.urls]
+Repository = "https://github.com/nikolas-claussen/blender-tissue-cartography"
+Documentation = "https://nikolas-claussen.github.io/blender-tissue-cartography"
+
+[project.entry-points.nbdev]
+blender_tissue_cartography = "blender_tissue_cartography._modidx:d"
+
+[project.optional-dependencies]
+dev = ['nbdev', 'pymeshlab', 'trimesh', 'quaternionic', 'spherical']
+
+[tool.setuptools.dynamic]
+version = {attr = "blender_tissue_cartography.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["blender_tissue_cartography"]
+
+[tool.nbdev]
