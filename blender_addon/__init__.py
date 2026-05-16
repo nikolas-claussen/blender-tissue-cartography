@@ -1,5 +1,5 @@
 bl_info = {
-    "name": "Tissue Cartography (V5)",
+    "name": "Tissue Cartography (V2)",
     "blender": (4, 2, 0),
     "category": "Scene",
 }
@@ -7,7 +7,7 @@ bl_info = {
 import bpy
 from bpy.props import (
     StringProperty, FloatProperty, FloatVectorProperty,
-    IntProperty, IntVectorProperty, BoolProperty, EnumProperty,
+    IntProperty, IntVectorProperty, BoolProperty, EnumProperty, PointerProperty,
 )
 
 from .operators import OPERATOR_CLASSES
@@ -22,6 +22,12 @@ def register():
 
     # In-memory store for 3D image data, keyed by bounding-box object.
     bpy.types.Scene.tissue_cartography_3D_data = {}
+
+    bpy.types.Scene.tissue_cartography_show_datasets = BoolProperty(
+        name="Show Loaded Datasets",
+        description="Expand/collapse the loaded datasets list",
+        default=False,
+    )
 
     # --- 3D image ---
     bpy.types.Scene.tissue_cartography_file = StringProperty(
@@ -193,14 +199,20 @@ def register():
         description="Allow scale transformation during pre-alignment",
         default=True,
     )
+    bpy.types.Scene.tissue_cartography_align_reference = PointerProperty(
+        name="Reference Mesh",
+        description="Reference mesh to align to (or to copy from)",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
     bpy.types.Scene.tissue_cartography_align_type = EnumProperty(
         name="Align Mode",
         description="Which mesh moves during alignment",
         items=[
-            ('selected', "Selected to Active",
-             "Align selected meshes to the active mesh"),
-            ('active', "Active to Selected",
-             "Align active mesh to each selected mesh (creates copies)"),
+            ('selected', "Align Selected to Reference",
+             "Align all selected meshes in-place to the reference mesh"),
+            ('active', "Align Reference Copy to Each Selected",
+             "For each selected mesh, create an aligned copy of the reference mesh"),
         ],
         default='selected',
     )
@@ -235,9 +247,11 @@ def register():
 
 def unregister():
     """Unregister all add-on classes and remove scene properties."""
-    bpy.utils.unregister_class(TissueCartographyPanel)
-    for cls in reversed(OPERATOR_CLASSES):
-        bpy.utils.unregister_class(cls)
+    for cls in [TissueCartographyPanel] + list(reversed(OPERATOR_CLASSES)):
+        try:
+            bpy.utils.unregister_class(cls)
+        except RuntimeError:
+            pass
 
     props = [
         "tissue_cartography_file",
@@ -265,11 +279,13 @@ def unregister():
         "tissue_cartography_prealign",
         "tissue_cartography_prealign_shear",
         "tissue_cartography_prealign_scale",
+        "tissue_cartography_align_reference",
         "tissue_cartography_align_type",
         "tissue_cartography_align_iter",
         "tissue_cartography_shrinkwrap_smooth",
         "tissue_cartography_shrinkwrap_iterative",
         "tissue_cartography_3D_data",
+        "tissue_cartography_show_datasets",
     ]
     for prop in props:
         if hasattr(bpy.types.Scene, prop):

@@ -1,14 +1,11 @@
-import bpy, importlib, sys
+import sys, importlib, bpy
 
-addon_pkg = "tissue_cartography"
-
-# Reload all submodules (leaf modules first, then the package)
+pkg = "bl_ext.user_default.tissue_cartography"
 for key in sorted(
-    (k for k in sys.modules if k == addon_pkg or k.startswith(addon_pkg + ".")),
-    key=lambda k: -k.count(".")   # submodules before package
+    (k for k in sys.modules if k == pkg or k.startswith(pkg + ".")),
+    key=lambda k: -k.count(".")
 ):
     importlib.reload(sys.modules[key])
 
-# Re-run unregister/register
-bpy.ops.preferences.addon_disable(module=addon_pkg)
-bpy.ops.preferences.addon_enable(module=addon_pkg)
+bpy.ops.preferences.addon_disable(module=pkg)
+bpy.ops.preferences.addon_enable(module=pkg)

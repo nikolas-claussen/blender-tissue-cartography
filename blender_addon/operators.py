@@ -14,7 +14,8 @@ from skimage import measure
 
 from .io_utils import normalize_quantiles, axis_order_to_transpose
 from .projection import (
-    get_uv_layout,
+    get_uv_mask,
+    get_uv_layout_disk,  # legacy: disk-based fallback for comparison
     get_uv_normal_world_per_loop,
     bake_per_loop_values_to_uv,
     bake_volumetric_data_to_uv,
@@ -250,10 +251,7 @@ class CreateProjectionOperator(Operator):
         baked_world_positions = bake_per_loop_values_to_uv(loop_uvs, loop_world_positions,
                                                            image_resolution=projection_resolution)
 
-        uv_layout_path = str(
-            Path(bpy.path.abspath("//")).joinpath(f'{obj.name}_UV_layout.png')
-        )
-        mask = get_uv_layout(obj, uv_layout_path, projection_resolution)
+        mask = get_uv_mask(obj, projection_resolution)
         baked_normals[~mask] = np.nan
         baked_world_positions[~mask] = np.nan
 
@@ -371,8 +369,7 @@ class BatchProjectionOperator(Operator):
             baked_world_positions = bake_per_loop_values_to_uv(
                 loop_uvs, loop_world_positions, image_resolution=projection_resolution
             )
-            uv_layout_path = str(batch_out_path.joinpath(f'{obj.name}_UV_layout.png'))
-            mask = get_uv_layout(obj, uv_layout_path, projection_resolution)
+            mask = get_uv_mask(obj, projection_resolution)
             baked_normals[~mask] = np.nan
             baked_world_positions[~mask] = np.nan
 
@@ -523,83 +520,91 @@ class VertexShaderOperator(Operator):
 # --- Mesh alignment operators ---
 
 class AlignOperator(Operator):
-    """Align active and selected meshes by rotation, translation, and scaling."""
+    """Align meshes to a reference mesh by rotation, translation, and scaling."""
     bl_idname = "scene.align"
-    bl_label = "Align Selected To Active Mesh"
+    bl_label = "Align Meshes"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
+        reference_mesh = context.scene.tissue_cartography_align_reference
+        if reference_mesh is None or reference_mesh.type != 'MESH':
+            self.report({'ERROR'}, "Set a valid Reference Mesh before aligning.")
+            return {'CANCELLED'}
+
+        others = [x for x in context.selected_objects
+                  if x != reference_mesh and x.type == 'MESH']
+        if not others:
+            self.report({'ERROR'}, "Select at least one mesh (other than the reference) to align.")
+            return {'CANCELLED'}
+
+        ref_verts = np.array([reference_mesh.matrix_world @ v.co
+                              for v in reference_mesh.data.vertices])
+
         if context.scene.tissue_cartography_align_type == "selected":
-            target_mesh = context.active_object
-            for source_mesh in [x for x in context.selected_objects if x != target_mesh]:
-                self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
+            # Align each selected mesh in-place to the reference.
+            for mesh in others:
+                self.report({'INFO'}, f"Aligning: {mesh.name} to {reference_mesh.name}")
                 bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
-                if target_mesh.type != 'MESH' or source_mesh.type != 'MESH':
-                    self.report({'ERROR'}, "Selected object(s) is not a mesh.")
-                    return {'CANCELLED'}
-                target = np.array([target_mesh.matrix_world @ v.co
-                                   for v in target_mesh.data.vertices])
-                source = np.array([source_mesh.matrix_world @ v.co
-                                   for v in source_mesh.data.vertices])
+                source = np.array([mesh.matrix_world @ v.co for v in mesh.data.vertices])
                 trafo_matrix = combined_alignment(
-                    source, target,
+                    source, ref_verts,
                     pre_align=context.scene.tissue_cartography_prealign,
                     shear=context.scene.tissue_cartography_prealign_shear,
                     scale=context.scene.tissue_cartography_prealign_scale,
                     iterations=context.scene.tissue_cartography_align_iter,
                 )
-                source_mesh.matrix_world = mathutils.Matrix(trafo_matrix) @ source_mesh.matrix_world
+                mesh.matrix_world = mathutils.Matrix(trafo_matrix) @ mesh.matrix_world
 
         elif context.scene.tissue_cartography_align_type == "active":
-            source_mesh = context.active_object
-            for target_mesh in [x for x in context.selected_objects if x != source_mesh]:
-                self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
-                if target_mesh.type != 'MESH' or source_mesh.type != 'MESH':
-                    self.report({'ERROR'}, "Selected object(s) is not a mesh.")
-                    return {'CANCELLED'}
+            # For each selected mesh, create an aligned copy of the reference.
+            for target_mesh in others:
+                self.report({'INFO'}, f"Aligning copy of {reference_mesh.name} to {target_mesh.name}")
+                bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
                 target = np.array([target_mesh.matrix_world @ v.co
                                    for v in target_mesh.data.vertices])
-                source = np.array([source_mesh.matrix_world @ v.co
-                                   for v in source_mesh.data.vertices])
                 trafo_matrix = combined_alignment(
-                    source, target,
+                    ref_verts, target,
                     pre_align=context.scene.tissue_cartography_prealign,
                     shear=context.scene.tissue_cartography_prealign_shear,
                     scale=context.scene.tissue_cartography_prealign_scale,
                     iterations=context.scene.tissue_cartography_align_iter,
                 )
-                source_mesh_copied = source_mesh.copy()
-                source_mesh_copied.data = source_mesh.data.copy()
-                bpy.context.collection.objects.link(source_mesh_copied)
-                source_mesh_copied.name = f"{target_mesh.name}_aligned"
-                source_mesh_copied.matrix_world = (
-                    mathutils.Matrix(trafo_matrix) @ source_mesh.matrix_world
+                ref_copied = reference_mesh.copy()
+                ref_copied.data = reference_mesh.data.copy()
+                bpy.context.collection.objects.link(ref_copied)
+                ref_copied.name = f"{target_mesh.name}_aligned"
+                ref_copied.matrix_world = (
+                    mathutils.Matrix(trafo_matrix) @ reference_mesh.matrix_world
                 )
         return {'FINISHED'}
 
 
 class ShrinkwrapOperator(Operator):
-    """Copy and shrink-wrap the active mesh to selected meshes. Set ICP iterations to 0 to skip registration."""
+    """Copy and shrink-wrap the reference mesh to each selected mesh. Set ICP iterations to 0 to skip registration."""
     bl_idname = "scene.shrinkwrap"
-    bl_label = "Shrink-Wrap Active to Selected"
+    bl_label = "Shrink-Wrap Reference to Selected"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
+        source_mesh = context.scene.tissue_cartography_align_reference
+        if source_mesh is None or source_mesh.type != 'MESH':
+            self.report({'ERROR'}, "Set a valid Reference Mesh before shrink-wrapping.")
+            return {'CANCELLED'}
+
         mode = context.scene.tissue_cartography_shrinkwrap_iterative
-        source_mesh = context.active_object
         targets = sorted(
-            [x for x in context.selected_objects if x != source_mesh],
+            [x for x in context.selected_objects if x != source_mesh and x.type == 'MESH'],
             key=lambda x: x.name,
         )
+        if not targets:
+            self.report({'ERROR'}, "Select at least one mesh (other than the reference) as a target.")
+            return {'CANCELLED'}
         if mode == "backward":
             targets = targets[::-1]
 
         for target_mesh in targets:
-            self.report({'INFO'}, f"Aligning: {source_mesh.name} to {target_mesh.name}")
+            self.report({'INFO'}, f"Shrink-wrapping: {source_mesh.name} to {target_mesh.name}")
             bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
-            if target_mesh.type != 'MESH' or source_mesh.type != 'MESH':
-                self.report({'ERROR'}, "Selected object(s) is not a mesh.")
-                return {'CANCELLED'}
 
             if context.scene.tissue_cartography_align_iter > 0:
                 target = np.array([target_mesh.matrix_world @ v.co
@@ -646,6 +651,36 @@ class ShrinkwrapOperator(Operator):
         return {'FINISHED'}
 
 
+class UnloadDatasetOperator(Operator):
+    """Remove a single loaded 3D dataset from memory. The bounding box object is kept."""
+    bl_idname = "scene.unload_dataset"
+    bl_label = "Unload Dataset"
+
+    box_name: bpy.props.StringProperty(name="Box Name", default="")
+
+    def execute(self, context):
+        data_store = bpy.types.Scene.tissue_cartography_3D_data
+        box = bpy.data.objects.get(self.box_name)
+        if box is None or box not in data_store:
+            self.report({'WARNING'}, f"No loaded data found for '{self.box_name}'")
+            return {'CANCELLED'}
+        del data_store[box]
+        self.report({'INFO'}, f"Unloaded data for '{self.box_name}'")
+        return {'FINISHED'}
+
+
+class UnloadAllDatasetsOperator(Operator):
+    """Remove all loaded 3D datasets from memory."""
+    bl_idname = "scene.unload_all_datasets"
+    bl_label = "Unload All Datasets"
+
+    def execute(self, context):
+        count = len(bpy.types.Scene.tissue_cartography_3D_data)
+        bpy.types.Scene.tissue_cartography_3D_data.clear()
+        self.report({'INFO'}, f"Unloaded {count} dataset(s)")
+        return {'FINISHED'}
+
+
 class HelpPopupOperator(Operator):
     """Open the online help page."""
     bl_idname = "scene.help_popup"
@@ -654,7 +689,6 @@ class HelpPopupOperator(Operator):
     def execute(self, context):
         bpy.ops.wm.url_open(
             url="https://nikolas-claussen.github.io/blender-tissue-cartography/"
-                "Tutorials/03_blender_addon_tutorial.html"
         )
         return {'FINISHED'}
 
@@ -673,5 +707,7 @@ OPERATOR_CLASSES = [
     VertexShaderOperator,
     AlignOperator,
     ShrinkwrapOperator,
+    UnloadDatasetOperator,
+    UnloadAllDatasetsOperator,
     HelpPopupOperator,
 ]

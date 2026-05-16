@@ -31,3 +31,5 @@ The `blender_addon/wheels/` directory contains the python libraries the add-on d
 To re-download the wheels, run this command [to do]:
 ```sh
 ```
+
+- To test the add-on interactively, I sym-linked the `blender_addon` folder to `~/Library/Application Support/Blender/4.5/extensions/user_default/tissue_cartography`. To install the add-on in Blender, go to Edit > Preferences > Add-ons > Install. To refresh the add-on, run the `blender_addon/reload_script.py` script.

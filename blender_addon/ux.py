@@ -28,6 +28,33 @@ class TissueCartographyPanel(Panel):
             text=(f"Loaded Image Shape: {scene.tissue_cartography_image_shape}. "
                   f"Loaded Image Channels: {scene.tissue_cartography_image_channels}")
         )
+
+        # --- Loaded datasets collapsible ---
+        datasets_box = layout.box()
+        header_row = datasets_box.row()
+        header_row.prop(
+            scene, "tissue_cartography_show_datasets",
+            icon='TRIA_DOWN' if scene.tissue_cartography_show_datasets else 'TRIA_RIGHT',
+            icon_only=True, emboss=False,
+        )
+        data_store = bpy.types.Scene.tissue_cartography_3D_data
+        header_row.label(text=f"Loaded 3D Datasets ({len(data_store)})")
+        if scene.tissue_cartography_show_datasets:
+            if not data_store:
+                datasets_box.label(text="No datasets currently loaded.", icon='INFO')
+            else:
+                for ds_obj, arr in data_store.items():
+                    try:
+                        obj_name = ds_obj.name
+                    except ReferenceError:
+                        continue
+                    row2 = datasets_box.row()
+                    row2.label(text=f"{obj_name}  shape={arr.shape}", icon='MESH_CUBE')
+                    op = row2.operator("scene.unload_dataset", text="", icon='X')
+                    op.box_name = obj_name
+            datasets_box.operator(
+                "scene.unload_all_datasets", text="Unload All Datasets", icon='TRASH'
+            )
         layout.separator()
 
         # --- Segmentation loading ---
@@ -79,6 +106,7 @@ class TissueCartographyPanel(Panel):
         layout.separator()
 
         # --- Alignment ---
+        layout.prop(scene, "tissue_cartography_align_reference")
         row_align = layout.row()
         row_align.prop(scene, "tissue_cartography_prealign")
         row_align.prop(scene, "tissue_cartography_prealign_shear")
@@ -92,7 +120,7 @@ class TissueCartographyPanel(Panel):
         row_shrink = layout.row()
         row_shrink.prop(scene, "tissue_cartography_shrinkwrap_smooth")
         row_shrink.prop(scene, "tissue_cartography_shrinkwrap_iterative")
-        layout.operator("scene.shrinkwrap", text="Shrinkwrap Meshes (Active To Selected)")
+        layout.operator("scene.shrinkwrap", text="Shrinkwrap Reference to Selected")
         layout.separator()
 
         layout.operator("scene.help_popup", text="Show help", icon='HELP')

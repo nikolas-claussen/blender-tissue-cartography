@@ -9,15 +9,75 @@ import bmesh
 import numpy as np
 from pathlib import Path
 from scipy import interpolate
+from skimage import draw as skdraw
 
 from .io_utils import load_png
 
 
-def get_uv_layout(obj, uv_layout_path, image_resolution):
+def get_uv_mask(mesh_obj, image_resolution):
     """
-    Get UV layout mask for obj as a boolean np.array.
+    Get UV coverage mask for a mesh object as a boolean np.array.
 
-    As a side effect, saves the layout PNG to disk and deselects everything except obj.
+    Rasterizes the mesh UV triangles using skimage.draw.polygon.
+    No files are written to disk; no edit-mode switch or selection side-effects.
+
+    Parameters
+    ----------
+    mesh_obj : bpy.types.Object
+        Mesh object with an active UV map.
+    image_resolution : int
+        Width/height of the output image in pixels.
+
+    Returns
+    -------
+    np.array of shape (image_resolution, image_resolution), dtype bool
+        True where the UV layout has coverage.
+    """
+
+    uv_layer = mesh_obj.data.uv_layers.active
+    if not uv_layer:
+        raise RuntimeError("Mesh does not have an active UV map")
+
+    # VERIFY (Blender 4.1+): calc_loop_triangles() may be a no-op; safe to call regardless.
+    mesh_obj.data.calc_loop_triangles()
+    n_tris = len(mesh_obj.data.loop_triangles)
+    if n_tris == 0:
+        return np.zeros((image_resolution, image_resolution), dtype=bool)
+
+    # Read all UV coordinates at once via foreach_get (fast, avoids Python loop over loops).
+    n_loops = len(mesh_obj.data.loops)
+    uv_flat = np.zeros(n_loops * 2, dtype=np.float32)
+    uv_layer.data.foreach_get("uv", uv_flat)
+    loop_uvs = uv_flat.reshape(n_loops, 2)
+
+    # Read all triangle loop indices at once into a flat int array.
+    # VERIFY: MeshLoopTriangle.foreach_get("loops", flat_int32) should fill
+    # [tri0_loop0, tri0_loop1, tri0_loop2, tri1_loop0, ...].
+    tri_loops_flat = np.zeros(n_tris * 3, dtype=np.int32)
+    mesh_obj.data.loop_triangles.foreach_get("loops", tri_loops_flat)
+    # UV coords for every triangle corner: shape (n_tris, 3, 2)
+    tri_uvs = loop_uvs[tri_loops_flat.reshape(n_tris, 3)]
+
+    # Convert UV [0,1] → pixel indices.
+    # u → column index, v → row index (row 0 = V=0, i.e. UV bottom, before [::-1] flip).
+    res = image_resolution
+    px = (tri_uvs * res).astype(np.int32).clip(0, res - 1)  # (n_tris, 3, 2)
+
+    mask = np.zeros((res, res), dtype=bool)
+    for i in range(n_tris):
+        rr, cc = skdraw.polygon(px[i, :, 1], px[i, :, 0], shape=(res, res))
+        mask[rr, cc] = True
+
+    # Flip rows so row 0 = V=1, matching the convention of bake_per_loop_values_to_uv.
+    return mask[::-1]
+
+
+def get_uv_layout_disk(obj, uv_layout_path, image_resolution):
+    """
+    [LEGACY] Get UV layout mask by exporting a PNG to disk and reloading it.
+
+    Kept for comparison with get_uv_mask. Has side-effects (writes to disk,
+    deselects objects, switches edit mode) and fails if the .blend file is unsaved.
 
     Parameters
     ----------
