@@ -10,8 +10,90 @@ from bpy.props import (
     IntProperty, IntVectorProperty, BoolProperty, EnumProperty, PointerProperty,
 )
 
+import numpy as np
+
 from .operators import OPERATOR_CLASSES
 from .ux import TissueCartographyPanel
+
+
+# ---------------------------------------------------------------------------
+# Slice-position sync helpers
+# ---------------------------------------------------------------------------
+
+_slice_sync_lock = False
+
+_AXIS_INDEX = {'x': 0, 'y': 1, 'z': 2}
+
+
+def _get_extent(context):
+    """Return the per-axis physical extents (µm) for the active bounding box.
+
+    Falls back to the stored scene property when no valid box is active.
+    Never writes any scene property, so it is safe to call from draw().
+    """
+    from .mesh_utils import get_numpy_attribute
+    active = context.active_object
+    if active and "3D_data" in active:
+        arr = bpy.types.Scene.tissue_cartography_3D_data.get(active)
+        if arr is not None and arr.ndim == 4:
+            res = get_numpy_attribute(active, "resolution")
+            if res is not None:
+                return np.array(arr.shape[1:]) * res
+    return np.array(context.scene.tissue_cartography_slice_extent)
+
+
+def _sync_pct_to_um(self, context):
+    """Called when the fraction slider changes — update the µm field."""
+    global _slice_sync_lock
+    if _slice_sync_lock:
+        return
+    _slice_sync_lock = True
+    try:
+        extent = _get_extent(context)
+        axis = context.scene.tissue_cartography_slice_axis
+        max_um = extent[_AXIS_INDEX[axis]]
+        if max_um > 0:
+            context.scene.tissue_cartography_slice_position = (
+                context.scene.tissue_cartography_slice_position_pct * max_um
+            )
+    finally:
+        _slice_sync_lock = False
+
+
+def _sync_um_to_pct(self, context):
+    """Called when the µm field changes — update the fraction slider."""
+    global _slice_sync_lock
+    if _slice_sync_lock:
+        return
+    _slice_sync_lock = True
+    try:
+        extent = _get_extent(context)
+        axis = context.scene.tissue_cartography_slice_axis
+        max_um = extent[_AXIS_INDEX[axis]]
+        if max_um > 0:
+            context.scene.tissue_cartography_slice_position_pct = max(
+                0.0, min(1.0, context.scene.tissue_cartography_slice_position / max_um)
+            )
+    finally:
+        _slice_sync_lock = False
+
+
+def _sync_axis_change(self, context):
+    """Called when the slice axis changes — recompute µm from preserved fraction."""
+    global _slice_sync_lock
+    if _slice_sync_lock:
+        return
+    _slice_sync_lock = True
+    try:
+        extent = _get_extent(context)
+        axis = context.scene.tissue_cartography_slice_axis
+        max_um = extent[_AXIS_INDEX[axis]]
+        if max_um > 0:
+            context.scene.tissue_cartography_slice_position = (
+                context.scene.tissue_cartography_slice_position_pct * max_um
+            )
+    finally:
+        _slice_sync_lock = False
 
 
 def register():
@@ -103,23 +185,42 @@ def register():
     )
 
     # --- Ortho-slice ---
+    bpy.types.Scene.tissue_cartography_slice_extent = FloatVectorProperty(
+        name="Slice Extent (µm)",
+        description="Physical size of the loaded image per axis (set automatically on TIFF load)",
+        size=3,
+        default=(100.0, 100.0, 100.0),
+        options={'HIDDEN'},
+    )
     bpy.types.Scene.tissue_cartography_slice_axis = EnumProperty(
-        name="Slice Axis",
+        name="Axis",
         description="Axis along which to slice",
         items=[
-            ('x', "X-Axis", "Slice along the X axis"),
-            ('y', "Y-Axis", "Slice along the Y axis"),
-            ('z', "Z-Axis", "Slice along the Z axis"),
+            ('x', "X", "Slice along the X axis"),
+            ('y', "Y", "Slice along the Y axis"),
+            ('z', "Z", "Slice along the Z axis"),
         ],
         default='x',
+        update=_sync_axis_change,
+    )
+    bpy.types.Scene.tissue_cartography_slice_position_pct = FloatProperty(
+        name="Slice Position",
+        description="Position along the selected axis as a fraction of the full extent (drag slider)",
+        default=0.0,
+        min=0.0,
+        max=1.0,
+        subtype='FACTOR',
+        update=_sync_pct_to_um,
     )
     bpy.types.Scene.tissue_cartography_slice_position = FloatProperty(
-        name="Slice Position (µm)",
-        description="Position along the selected axis in µm",
+        name="µm",
+        description="Position along the selected axis in µm (type for precise entry)",
         default=0.0,
+        min=0.0,
+        update=_sync_um_to_pct,
     )
     bpy.types.Scene.tissue_cartography_slice_channel = IntProperty(
-        name="Slice Channel",
+        name="Channel",
         description="Image channel to display on the slice plane",
         default=0,
         min=0,
@@ -199,6 +300,18 @@ def register():
         description="Allow scale transformation during pre-alignment",
         default=True,
     )
+    bpy.types.Scene.tissue_cartography_active_box = PointerProperty(
+        name="Active 3D Dataset",
+        description="BoundingBox object whose 3D image data is used for visualization and projection",
+        type=bpy.types.Object,
+        poll=lambda self, obj: "3D_data" in obj,
+    )
+    bpy.types.Scene.tissue_cartography_active_mesh = PointerProperty(
+        name="Active Mesh",
+        description="Mesh surface to project onto or shade",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH' and "3D_data" not in obj,
+    )
     bpy.types.Scene.tissue_cartography_align_reference = PointerProperty(
         name="Reference Mesh",
         description="Reference mesh to align to (or to copy from)",
@@ -265,7 +378,9 @@ def unregister():
         "tissue_cartography_segmentation_sigma",
         "tissue_cartography_segmentation_channels",
         "tissue_cartography_segmentation_shape",
+        "tissue_cartography_slice_extent",
         "tissue_cartography_slice_axis",
+        "tissue_cartography_slice_position_pct",
         "tissue_cartography_slice_position",
         "tissue_cartography_slice_channel",
         "tissue_cartography_vertex_shader_offset",
@@ -276,6 +391,8 @@ def unregister():
         "tissue_cartography_batch_directory",
         "tissue_cartography_batch_output_directory",
         "tissue_cartography_batch_create_materials",
+        "tissue_cartography_active_box",
+        "tissue_cartography_active_mesh",
         "tissue_cartography_prealign",
         "tissue_cartography_prealign_shear",
         "tissue_cartography_prealign_scale",

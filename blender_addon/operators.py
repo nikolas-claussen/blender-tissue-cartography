@@ -36,7 +36,6 @@ from .mesh_utils import (
     shrinkwrap_and_smooth,
     set_numpy_attribute,
     get_numpy_attribute,
-    separate_selected_into_mesh_and_box,
 )
 from .alignment import combined_alignment
 
@@ -101,7 +100,10 @@ class LoadTIFFOperator(Operator):
 
             context.scene.tissue_cartography_image_shape = str(data.shape[1:])
             context.scene.tissue_cartography_image_channels = data.shape[0]
-            self.report({'INFO'}, f"TIFF file loaded with shape {data.shape}")
+            self.report({'INFO'}, f"TIFF file loaded with shape {data.shape}. ⚠️ Check that axis order is as expected! Else, adjust axis order field and reload.")
+            context.scene.tissue_cartography_slice_extent = tuple(
+                float(v) for v in np.array(data.shape[1:]) * resolution
+            )
 
             box = create_box(*(np.array(data.shape[1:]) * resolution),
                              name=f"{Path(file_path).stem}_BoundingBox",
@@ -184,9 +186,12 @@ class SaveProjectionOperator(Operator):
         return {'RUNNING_MODAL'}
 
     def execute(self, context):
-        obj = context.active_object
-        if not obj or "baked_data" not in obj:
-            self.report({'ERROR'}, "No baked data found on the active object!")
+        obj = context.scene.tissue_cartography_active_mesh
+        if obj is None:
+            self.report({'ERROR'}, "Set an Active Mesh in the Selected Datasets section.")
+            return {'CANCELLED'}
+        if "baked_data" not in obj:
+            self.report({'ERROR'}, "No baked data found on the active mesh. Run 'Create Projection' first!")
             return {'CANCELLED'}
 
         baked_data = get_numpy_attribute(obj, "baked_data")
@@ -213,14 +218,20 @@ class CreateProjectionOperator(Operator):
     """
     Create a cartographic projection.
 
-    Select one mesh and one 3D image (BoundingBox) to project image data onto the surface.
+    Set the Active 3D Dataset and Active Mesh in the "Selected Datasets" section,
+    then click this button to project the image data onto the mesh surface.
     """
     bl_idname = "scene.create_projection"
     bl_label = "Create Projection"
 
     def execute(self, context):
-        box, obj = separate_selected_into_mesh_and_box(self, context)
+        box = context.scene.tissue_cartography_active_box
+        obj = context.scene.tissue_cartography_active_mesh
         if box is None:
+            self.report({'ERROR'}, "Set an Active 3D Dataset in the Selected Datasets section.")
+            return {'CANCELLED'}
+        if obj is None:
+            self.report({'ERROR'}, "Set an Active Mesh in the Selected Datasets section.")
             return {'CANCELLED'}
         if not obj.data.uv_layers:
             self.report({'ERROR'}, "The selected mesh does not have a UV map!")
@@ -415,15 +426,15 @@ class BatchProjectionOperator(Operator):
 
 
 class SlicePlaneOperator(Operator):
-    """Create a slice plane along the selected axis with a texture from 3D image data."""
+    """Create a slice plane along the selected axis with a texture from the Active 3D Dataset."""
     bl_idname = "scene.create_slice_plane"
     bl_label = "Create Slice Plane"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        box = context.active_object
-        if not box or "3D_data" not in box:
-            self.report({'ERROR'}, "Select exactly a 3D image (BoundingBox)!")
+        box = context.scene.tissue_cartography_active_box
+        if box is None:
+            self.report({'ERROR'}, "Set an Active 3D Dataset in the Selected Datasets section.")
             return {'CANCELLED'}
         try:
             data = bpy.types.Scene.tissue_cartography_3D_data[box]
@@ -459,14 +470,19 @@ class SlicePlaneOperator(Operator):
 
 
 class VertexShaderOperator(Operator):
-    """Color mesh vertices according to 3D image intensity from the selected BoundingBox."""
+    """Color mesh vertices according to 3D image intensity from the Active 3D Dataset."""
     bl_idname = "scene.vertex_shader"
     bl_label = "Initialize Vertex Shader"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        box, obj = separate_selected_into_mesh_and_box(self, context)
+        box = context.scene.tissue_cartography_active_box
+        obj = context.scene.tissue_cartography_active_mesh
         if box is None:
+            self.report({'ERROR'}, "Set an Active 3D Dataset in the Selected Datasets section.")
+            return {'CANCELLED'}
+        if obj is None:
+            self.report({'ERROR'}, "Set an Active Mesh in the Selected Datasets section.")
             return {'CANCELLED'}
         try:
             data = bpy.types.Scene.tissue_cartography_3D_data[box]

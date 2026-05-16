@@ -18,6 +18,8 @@ class TissueCartographyPanel(Panel):
         layout = self.layout
         scene = context.scene
 
+        layout.separator(type='LINE')
+        layout.label(text="DATA LOADING", icon='IMPORT')
         # --- 3D image loading ---
         layout.prop(scene, "tissue_cartography_file")
         row_tiff = layout.row()
@@ -25,8 +27,10 @@ class TissueCartographyPanel(Panel):
         row_tiff.prop(scene, "tissue_cartography_axis_order")
         layout.operator("scene.load_tiff", text="Load .tiff file")
         layout.label(
-            text=(f"Loaded Image Shape: {scene.tissue_cartography_image_shape}. "
-                  f"Loaded Image Channels: {scene.tissue_cartography_image_channels}")
+            text=("⚠️ Check that axis order is as expected (or adjust & reload). "
+                  f"Loaded Shape: {scene.tissue_cartography_image_shape}. "
+                  f"Loaded Channels: {scene.tissue_cartography_image_channels}."
+                  )
         )
 
         # --- Loaded datasets collapsible ---
@@ -69,11 +73,17 @@ class TissueCartographyPanel(Panel):
             text=(f"Loaded Segmentation Shape: {scene.tissue_cartography_segmentation_shape}. "
                   f"Loaded Segmentation Channels: {scene.tissue_cartography_segmentation_channels}")
         )
-        layout.separator()
-
+        layout.separator(type='LINE')
+        layout.label(text="SELECTED DATASETS", icon='PINNED')
+        row_sel = layout.row()
+        row_sel.prop(scene, "tissue_cartography_active_box")
+        row_sel.prop(scene, "tissue_cartography_active_mesh")
+        layout.separator(type='LINE')
+        layout.label(text="DATA VISUALIZATION", icon='HIDE_OFF')
         # --- Ortho-slice ---
         row_slice = layout.row()
-        row_slice.prop(scene, "tissue_cartography_slice_axis")
+        row_slice.prop(scene, "tissue_cartography_slice_axis", expand=True)
+        row_slice.prop(scene, "tissue_cartography_slice_position_pct", slider=True)
         row_slice.prop(scene, "tissue_cartography_slice_position")
         row_slice.prop(scene, "tissue_cartography_slice_channel")
         layout.operator("scene.create_slice_plane", text="Create slice plane")
@@ -86,8 +96,8 @@ class TissueCartographyPanel(Panel):
         row_vertex2 = layout.row()
         row_vertex2.prop(scene, "tissue_cartography_vertex_shader_create_material")
         row_vertex2.operator("scene.vertex_shader", text="Initialize/refresh vertex shading")
-        layout.separator()
-
+        layout.separator(type='LINE')
+        layout.label(text="PROJECTIONS", icon='IMAGE_DATA')
         # --- Projection ---
         row_proj = layout.row()
         row_proj.prop(scene, "tissue_cartography_offsets")
@@ -103,8 +113,8 @@ class TissueCartographyPanel(Panel):
         row_batch.prop(scene, "tissue_cartography_batch_output_directory")
         row_batch.prop(scene, "tissue_cartography_batch_create_materials")
         layout.operator("scene.batch_projection", text="Batch Process And Save")
-        layout.separator()
-
+        layout.separator(type='LINE')
+        layout.label(text="MESH REGISTRATION", icon='CON_SHRINKWRAP')
         # --- Alignment ---
         layout.prop(scene, "tissue_cartography_align_reference")
         row_align = layout.row()
