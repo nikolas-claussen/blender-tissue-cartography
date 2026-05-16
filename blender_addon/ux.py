@@ -8,7 +8,7 @@ from bpy.types import Panel
 
 class TissueCartographyPanel(Panel):
     """Panel defining the Tissue Cartography user interface layout."""
-    bl_label = "Tissue Cartography"
+    bl_label = "Tissue Cartography (V2)"
     bl_idname = "SCENE_PT_tissue_cartography"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'

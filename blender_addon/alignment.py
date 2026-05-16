@@ -94,11 +94,9 @@ def align_by_centroid_and_inertia(source, target, scale=True, shear=True, improp
         aligned = samples @ trafo_matrix.T + trafo_translate
         distances.append(np.mean(tree.query(aligned)[0]))
     trafo_matrix = trafo_matrix_candidates[np.argmin(distances)]
-    print('inferred rotation/scale', trafo_matrix)
     trafo_translate = target_centroid - trafo_matrix @ source_centroid
     aligned = source @ trafo_matrix.T + trafo_translate
     affine_matrix_rep = package_affine_transformation(trafo_matrix, trafo_translate)
-    print('inferred translation', trafo_translate)
     return affine_matrix_rep, aligned
 
 
@@ -208,16 +206,15 @@ def icp(source, target, initial=None, threshold=1e-4, max_iterations=20, scale=T
                                         size=min([n_samples, source.shape[0]])), :]
                if n_samples is not None else source[:])
     samples = samples @ total_matrix[:3, :3].T + total_matrix[:3, -1]
+    cost = np.inf
     old_cost = np.inf
     for i in range(max_iterations):
-        print('iteration', i, 'cost', old_cost)
         closest = target[tree.query(samples, 1)[1]]
         matrix, samples, cost = procrustes(samples, closest, scale=scale)
         total_matrix = np.dot(matrix, total_matrix)
         if old_cost - cost < threshold:
             break
-        else:
-            old_cost = cost
+        old_cost = cost
     aligned = source @ total_matrix[:3, :3].T + total_matrix[:3, -1]
     return total_matrix, aligned, cost
 

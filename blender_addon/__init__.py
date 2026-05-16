@@ -1,5 +1,5 @@
 bl_info = {
-    "name": "Tissue Cartography",
+    "name": "Tissue Cartography (V5)",
     "blender": (4, 2, 0),
     "category": "Scene",
 }
@@ -31,7 +31,7 @@ def register():
     )
     bpy.types.Scene.tissue_cartography_resolution = FloatVectorProperty(
         name="x/y/z Resolution (µm)",
-        description="Resolution in microns along x, y, z axes",
+        description="Resolution in µm along x, y, z axes",
         size=3,
         default=(1.0, 1.0, 1.0),
     )
@@ -45,13 +45,13 @@ def register():
     )
     bpy.types.Scene.tissue_cartography_image_channels = IntProperty(
         name="Image Channels",
-        description="Number of channels in the loaded image (read-only)",
+        description="#channels in loaded image (read-only)",
         default=0,
         min=0,
     )
     bpy.types.Scene.tissue_cartography_image_shape = StringProperty(
         name="Image Shape",
-        description="Shape of the loaded image (read-only)",
+        description="Shape of loaded image (read-only)",
         default="Not loaded",
     )
 
@@ -59,14 +59,14 @@ def register():
     bpy.types.Scene.tissue_cartography_segmentation_file = StringProperty(
         name="Segmentation File Path",
         description=(
-            "Path to the segmentation TIFF file (values 0-1). "
+            "Path to segmentation TIFF file (values 0-1). "
             "Select a folder to batch-process."
         ),
         subtype='FILE_PATH',
     )
     bpy.types.Scene.tissue_cartography_segmentation_resolution = FloatVectorProperty(
         name="Segmentation x/y/z Resolution (µm)",
-        description="Resolution of segmentation in microns along x, y, z axes",
+        description="Resolution of segmentation in µm along x, y, z axes",
         size=3,
         default=(1.0, 1.0, 1.0),
     )
@@ -86,13 +86,13 @@ def register():
     )
     bpy.types.Scene.tissue_cartography_segmentation_channels = IntProperty(
         name="Segmentation Channels",
-        description="Number of channels in the loaded segmentation (read-only)",
+        description="#channels in loaded segmentation (read-only)",
         default=0,
         min=0,
     )
     bpy.types.Scene.tissue_cartography_segmentation_shape = StringProperty(
         name="Segmentation Shape",
-        description="Shape of the loaded segmentation (read-only)",
+        description="Shape of loaded segmentation (read-only)",
         default="Not loaded",
     )
 
@@ -274,3 +274,4 @@ def unregister():
     for prop in props:
         if hasattr(bpy.types.Scene, prop):
             delattr(bpy.types.Scene, prop)
+

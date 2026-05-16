@@ -251,11 +251,15 @@ def compute_edge_lengths(obj):
     bpy.context.view_layer.objects.active = obj
     if obj.mode != 'OBJECT':
         bpy.ops.object.mode_set(mode='OBJECT')
-    edge_lengths = [
-        (obj.data.vertices[e.vertices[0]].co - obj.data.vertices[e.vertices[1]].co).length
-        for e in obj.data.edges
-    ]
-    return np.array(edge_lengths)
+    n_verts = len(obj.data.vertices)
+    n_edges = len(obj.data.edges)
+    vert_co_flat = np.zeros(n_verts * 3, dtype=np.float32)
+    obj.data.vertices.foreach_get("co", vert_co_flat)
+    vert_co = vert_co_flat.reshape(n_verts, 3)
+    edge_verts_flat = np.zeros(n_edges * 2, dtype=np.int32)
+    obj.data.edges.foreach_get("vertices", edge_verts_flat)
+    edge_verts = edge_verts_flat.reshape(n_edges, 2)
+    return np.linalg.norm(vert_co[edge_verts[:, 0]] - vert_co[edge_verts[:, 1]], axis=1)
 
 
 def assign_vertex_colors(obj, colors):
@@ -274,8 +278,12 @@ def assign_vertex_colors(obj, colors):
     if not obj.data.vertex_colors:
         obj.data.vertex_colors.new()
     color_layer = obj.data.vertex_colors.active
-    for loop in obj.data.loops:
-        color_layer.data[loop.index].color = (*colors[loop.vertex_index], 1.0)
+    n = len(obj.data.loops)
+    loop_vert_flat = np.zeros(n, dtype=np.int32)
+    obj.data.loops.foreach_get("vertex_index", loop_vert_flat)
+    colors_rgba = np.ones((n, 4), dtype=np.float32)
+    colors_rgba[:, :3] = np.asarray(colors, dtype=np.float32)[loop_vert_flat]
+    color_layer.data.foreach_set("color", colors_rgba.flatten())
 
 
 def create_vertex_color_material(obj, material_name="VertexColorMaterial"):
@@ -303,7 +311,7 @@ def create_vertex_color_material(obj, material_name="VertexColorMaterial"):
     vertex_color_node.layer_name = obj.data.vertex_colors[0].name
     vertex_color_node.location = (-1000, 0)
 
-    separate_color_node = nodes.new(type="ShaderNodeSeparateRGB")
+    separate_color_node = nodes.new(type="ShaderNodeSeparateColor")
     separate_color_node.location = (-800, 0)
 
     map_range_r = nodes.new(type="ShaderNodeMapRange")
@@ -318,7 +326,7 @@ def create_vertex_color_material(obj, material_name="VertexColorMaterial"):
     map_range_b.label = "Map Range B"
     map_range_b.location = (-600, -300)
 
-    combine_rgb = nodes.new(type="ShaderNodeCombineRGB")
+    combine_rgb = nodes.new(type="ShaderNodeCombineColor")
     combine_rgb.location = (-200, 0)
 
     bsdf_node = nodes.new(type="ShaderNodeBsdfPrincipled")
@@ -327,14 +335,14 @@ def create_vertex_color_material(obj, material_name="VertexColorMaterial"):
     output_node = nodes.new(type="ShaderNodeOutputMaterial")
     output_node.location = (400, 0)
 
-    links.new(vertex_color_node.outputs["Color"], separate_color_node.inputs["Image"])
-    links.new(separate_color_node.outputs["R"], map_range_r.inputs["Value"])
-    links.new(separate_color_node.outputs["G"], map_range_g.inputs["Value"])
-    links.new(separate_color_node.outputs["B"], map_range_b.inputs["Value"])
-    links.new(map_range_r.outputs["Result"], combine_rgb.inputs["R"])
-    links.new(map_range_g.outputs["Result"], combine_rgb.inputs["G"])
-    links.new(map_range_b.outputs["Result"], combine_rgb.inputs["B"])
-    links.new(combine_rgb.outputs["Image"], bsdf_node.inputs["Base Color"])
+    links.new(vertex_color_node.outputs["Color"], separate_color_node.inputs["Color"])
+    links.new(separate_color_node.outputs["Red"], map_range_r.inputs["Value"])
+    links.new(separate_color_node.outputs["Green"], map_range_g.inputs["Value"])
+    links.new(separate_color_node.outputs["Blue"], map_range_b.inputs["Value"])
+    links.new(map_range_r.outputs["Result"], combine_rgb.inputs["Red"])
+    links.new(map_range_g.outputs["Result"], combine_rgb.inputs["Green"])
+    links.new(map_range_b.outputs["Result"], combine_rgb.inputs["Blue"])
+    links.new(combine_rgb.outputs["Color"], bsdf_node.inputs["Base Color"])
     links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
 
     for map_range_node in [map_range_r, map_range_g, map_range_b]:

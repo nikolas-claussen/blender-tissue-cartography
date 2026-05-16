@@ -7,7 +7,7 @@ Converts 3D world-space data (positions, normals, image intensities) onto a 2D U
 import bpy
 import bmesh
 import numpy as np
-import os
+from pathlib import Path
 from scipy import interpolate
 
 from .io_utils import load_png
@@ -33,8 +33,7 @@ def get_uv_layout(obj, uv_layout_path, image_resolution):
     np.array of shape (image_resolution, image_resolution), dtype bool
         True where the UV layout has coverage.
     """
-    if os.path.exists(uv_layout_path):
-        os.remove(uv_layout_path)
+    Path(uv_layout_path).unlink(missing_ok=True)
 
     bpy.ops.object.select_all(action='DESELECT')
     obj.select_set(True)
@@ -86,14 +85,25 @@ def get_uv_normal_world_per_loop(mesh_obj, filter_unique=False):
         raise RuntimeError("Mesh does not have an active UV map")
 
     n = len(mesh_obj.data.loops)
-    loop_uvs = np.zeros((n, 2), dtype=np.float32)
-    loop_normals = np.zeros((n, 3), dtype=np.float32)
-    loop_world_positions = np.zeros((n, 3), dtype=np.float32)
-    mat3 = world_matrix.to_3x3()
-    for loop in mesh_obj.data.loops:
-        loop_uvs[loop.index] = uv_layer.data[loop.index].uv
-        loop_normals[loop.index] = mat3 @ mesh_obj.data.vertices[loop.vertex_index].normal
-        loop_world_positions[loop.index] = world_matrix @ mesh_obj.data.vertices[loop.vertex_index].co
+    n_verts = len(mesh_obj.data.vertices)
+
+    loop_vert_flat = np.zeros(n, dtype=np.int32)
+    mesh_obj.data.loops.foreach_get("vertex_index", loop_vert_flat)
+
+    uv_flat = np.zeros(n * 2, dtype=np.float32)
+    uv_layer.data.foreach_get("uv", uv_flat)
+    loop_uvs = uv_flat.reshape(n, 2)
+
+    vert_normals_flat = np.zeros(n_verts * 3, dtype=np.float32)
+    mesh_obj.data.vertices.foreach_get("normal", vert_normals_flat)
+    mat3 = np.array(world_matrix.to_3x3())
+    loop_normals = vert_normals_flat.reshape(n_verts, 3)[loop_vert_flat] @ mat3.T
+
+    vert_co_flat = np.zeros(n_verts * 3, dtype=np.float32)
+    mesh_obj.data.vertices.foreach_get("co", vert_co_flat)
+    vert_co = vert_co_flat.reshape(n_verts, 3)
+    translation = np.array(world_matrix.translation)
+    loop_world_positions = vert_co[loop_vert_flat] @ mat3.T + translation
 
     if filter_unique:
         unique_loops = np.unique(np.hstack([loop_uvs, loop_normals, loop_world_positions]), axis=0)

@@ -10,6 +10,7 @@ import difflib
 import tifffile
 from pathlib import Path
 from scipy import ndimage
+from skimage import measure
 
 from .io_utils import normalize_quantiles, axis_order_to_transpose
 from .projection import (
@@ -37,7 +38,6 @@ from .mesh_utils import (
     separate_selected_into_mesh_and_box,
 )
 from .alignment import combined_alignment
-from skimage import measure
 
 
 # ---------------------------------------------------------------------------
@@ -70,6 +70,8 @@ def _normalize_tiff_axes(data, axis_order_string):
 # ---------------------------------------------------------------------------
 # Operators
 # ---------------------------------------------------------------------------
+
+# --- I/O operators ---
 
 class LoadTIFFOperator(Operator):
     """Load .tif file and resolution. Also creates a bounding box object."""
@@ -169,6 +171,43 @@ class LoadSegmentationTIFFOperator(Operator):
         return {'FINISHED'}
 
 
+class SaveProjectionOperator(Operator):
+    """Save cartographic projection to disk."""
+    bl_idname = "scene.save_projection"
+    bl_label = "Save Projection"
+
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
+
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
+    def execute(self, context):
+        obj = context.active_object
+        if not obj or "baked_data" not in obj:
+            self.report({'ERROR'}, "No baked data found on the active object!")
+            return {'CANCELLED'}
+
+        baked_data = get_numpy_attribute(obj, "baked_data")
+        baked_normals = get_numpy_attribute(obj, "baked_normals")
+        baked_world_positions = get_numpy_attribute(obj, "baked_world_positions")
+        # Strip any user-supplied extension so suffixes are predictable
+        base = str(Path(self.filepath).with_suffix(''))
+        try:
+            tifffile.imwrite(base + "_BakedNormals.tif", baked_normals)
+            tifffile.imwrite(base + "_BakedPositions.tif", baked_world_positions)
+            tifffile.imwrite(base + "_BakedData.tif",
+                             baked_data.transpose((1, 0, 2, 3)).astype(np.float32),
+                             metadata={'axes': 'ZCYX'}, imagej=True)
+            self.report({'INFO'}, f"Cartographic projection saved to {base}")
+        except Exception as e:
+            self.report({'ERROR'}, f"Failed to save data: {e}")
+            return {'CANCELLED'}
+        return {'FINISHED'}
+
+
+# --- Cartography operators ---
+
 class CreateProjectionOperator(Operator):
     """
     Create a cartographic projection.
@@ -245,42 +284,8 @@ class CreateProjectionOperator(Operator):
         return {'FINISHED'}
 
 
-class SaveProjectionOperator(Operator):
-    """Save cartographic projection to disk."""
-    bl_idname = "scene.save_projection"
-    bl_label = "Save Projection"
-
-    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
-
-    def invoke(self, context, event):
-        context.window_manager.fileselect_add(self)
-        return {'RUNNING_MODAL'}
-
-    def execute(self, context):
-        obj = context.active_object
-        if not obj or "baked_data" not in obj:
-            self.report({'ERROR'}, "No baked data found on the active object!")
-            return {'CANCELLED'}
-
-        baked_data = get_numpy_attribute(obj, "baked_data")
-        baked_normals = get_numpy_attribute(obj, "baked_normals")
-        baked_world_positions = get_numpy_attribute(obj, "baked_world_positions")
-        # Strip any user-supplied extension so suffixes are predictable
-        base = str(Path(self.filepath).with_suffix(''))
-        try:
-            tifffile.imwrite(base + "_BakedNormals.tif", baked_normals)
-            tifffile.imwrite(base + "_BakedPositions.tif", baked_world_positions)
-            tifffile.imwrite(base + "_BakedData.tif",
-                             baked_data.transpose((1, 0, 2, 3)).astype(np.float32),
-                             metadata={'axes': 'ZCYX'}, imagej=True)
-            self.report({'INFO'}, f"Cartographic projection saved to {base}")
-        except Exception as e:
-            self.report({'ERROR'}, f"Failed to save data: {e}")
-            return {'CANCELLED'}
-        return {'FINISHED'}
-
-
 class BatchProjectionOperator(Operator):
+
     """
     Batch-process cartographic projections.
 
@@ -348,9 +353,7 @@ class BatchProjectionOperator(Operator):
                     self.report({'ERROR'},
                                 f"TIFF for {obj.name} must have 3 or 4 axes.")
                     return {'CANCELLED'}
-                if axis_order_string != '' and len(axis_order_string) != data.ndim:
-                    self.report({'ERROR'},
-                                "Number of axes in axis order does not match TIFF data.")
+                if _parse_axis_order(self, context, axis_order_string, data.shape) is None:
                     return {'CANCELLED'}
                 data = _normalize_tiff_axes(data, axis_order_string)
             except Exception as e:
@@ -409,6 +412,9 @@ class BatchProjectionOperator(Operator):
                     obj, baked_data, material_name=f"ProjectedMaterial_{obj.name}"
                 )
         return {'FINISHED'}
+
+
+# --- Visualization operators ---
 
 
 class SlicePlaneOperator(Operator):
@@ -489,7 +495,8 @@ class VertexShaderOperator(Operator):
         # anti-aliasing: use a scalar smoothing width (median edge length / resolution mean)
         median_edge = np.median(compute_edge_lengths(obj))
         aa_scale = float(1.5 * median_edge / np.mean(resolution))
-        anti_aliasing_filter = lambda x: ndimage.uniform_filter(x, size=max(1, int(round(aa_scale))))
+        def anti_aliasing_filter(x):
+            return ndimage.uniform_filter(x, size=max(1, int(round(aa_scale))))
 
         x, y, z = [np.arange(ni) for ni in data.shape[1:]]
         intensities = np.zeros((positions.shape[0], 3))
@@ -512,6 +519,8 @@ class VertexShaderOperator(Operator):
             create_vertex_color_material(obj, material_name=f"VertexColorMaterial_{obj.name}")
         return {'FINISHED'}
 
+
+# --- Mesh alignment operators ---
 
 class AlignOperator(Operator):
     """Align active and selected meshes by rotation, translation, and scaling."""

@@ -12,7 +12,8 @@ def load_png(image_path):
     """Load .png into numpy array."""
     image = bpy.data.images.load(image_path)
     width, height = image.size
-    pixels = np.array(image.pixels[:], dtype=np.float32)
+    pixels = np.empty(width * height * 4, dtype=np.float32)
+    image.pixels.foreach_get(pixels)
     return pixels.reshape((height, width, -1))
 
 
@@ -66,10 +67,10 @@ def normalize_quantiles(image, quantiles=(0.01, 0.99), channel_axis=None, clip=F
 
 def axis_order_to_transpose(axis_order_string):
     """Convert string describing axis order into tuple for use in np.transpose."""
-    assert ''.join(sorted(axis_order_string)) in ['xyz', 'cxyz'], \
-        "Must be xyz, cxyz, or permutation thereof"
+    if ''.join(sorted(axis_order_string)) not in ('xyz', 'cxyz'):
+        raise ValueError(
+            f"Axis order must be 'xyz', 'cxyz', or a permutation; got {axis_order_string!r}"
+        )
     if 'c' in axis_order_string:
-        transpose = [axis_order_string.index(k) for k in 'cxyz']
-    else:
-        transpose = [axis_order_string.index(k) for k in 'xyz']
-    return transpose
+        return [axis_order_string.index(k) for k in 'cxyz']
+    return [axis_order_string.index(k) for k in 'xyz']
