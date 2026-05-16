@@ -6,7 +6,6 @@ import bpy
 from bpy.types import Operator
 import mathutils
 import numpy as np
-import difflib
 import tifffile
 from pathlib import Path
 from scipy import ndimage
@@ -15,7 +14,6 @@ from skimage import measure
 from .io_utils import normalize_quantiles, axis_order_to_transpose
 from .projection import (
     get_uv_mask,
-    get_uv_layout_disk,  # legacy: disk-based fallback for comparison
     get_uv_normal_world_per_loop,
     bake_per_loop_values_to_uv,
     bake_volumetric_data_to_uv,
@@ -298,34 +296,61 @@ class BatchProjectionOperator(Operator):
     """
     Batch-process cartographic projections.
 
-    Select all meshes to process and one 3D image (BoundingBox) for resolution/position.
-    Additional 3D TIFF files are read from the Batch Process Input directory.
-    Mesh names should match TIFF file stems.
+    Meshes and TIFF files are matched by alphanumeric sort order: the first mesh (A→Z by name)
+    is paired with the first file (A→Z by stem), and so on. The number of selected meshes must
+    equal the number of TIFF files in the input directory.
+
+    Single-mesh mode ("One mesh, many images"): uses the active mesh for every file in the
+    input directory. Useful when the same surface is used across many image datasets.
+    Material creation is skipped in this mode.
+
+    The Active 3D Dataset (Selected Datasets section) provides the spatial reference
+    (position/orientation). Resolution and axis order are taken from the Data Loading section —
+    test these with a single mesh projection before running batch mode.
     """
     bl_idname = "scene.batch_projection"
     bl_label = "Create Projections (Batch Mode)"
 
     def execute(self, context):
-        try:
-            box = next(x for x in context.selected_objects if "3D_data" in x)
-        except StopIteration:
-            self.report({'ERROR'},
-                        "Select one 3D image (BoundingBox) for resolution and position information!")
+        box = context.scene.tissue_cartography_active_box
+        if box is None:
+            self.report({'ERROR'}, "Set an Active 3D Dataset in the Selected Datasets section.")
             return {'CANCELLED'}
 
         batch_path = Path(bpy.path.abspath(context.scene.tissue_cartography_batch_directory))
         batch_out_path = Path(
             bpy.path.abspath(context.scene.tissue_cartography_batch_output_directory)
         )
-        batch_files = {
-            f.stem: f for f in batch_path.iterdir()
-            if f.suffix in (".tif", ".tiff") and "Baked" not in f.stem
-        }
-        meshes_to_process = [obj for obj in context.selected_objects if obj != box]
-        matched = {
-            obj.name: difflib.get_close_matches(obj.name, batch_files.keys(), n=1, cutoff=0.1)
-            for obj in meshes_to_process
-        }
+        batch_files_sorted = sorted(
+            [f for f in batch_path.iterdir()
+             if f.suffix in (".tif", ".tiff") and "Baked" not in f.stem],
+            key=lambda f: f.stem,
+        )
+        if not batch_files_sorted:
+            self.report({'ERROR'}, "No TIFF files found in the Batch Input Directory.")
+            return {'CANCELLED'}
+
+        single_mesh_mode = context.scene.tissue_cartography_batch_single_mesh
+        if single_mesh_mode:
+            obj = context.active_object
+            if obj is None or obj.type != 'MESH':
+                self.report({'ERROR'}, "Set an active mesh object for single-mesh batch mode.")
+                return {'CANCELLED'}
+            pairs = [(obj, f) for f in batch_files_sorted]
+        else:
+            meshes_sorted = sorted(
+                [o for o in context.selected_objects if o.type == 'MESH'],
+                key=lambda o: o.name,
+            )
+            if len(meshes_sorted) != len(batch_files_sorted):
+                self.report(
+                    {'ERROR'},
+                    f"Number of selected meshes ({len(meshes_sorted)}) does not match "
+                    f"number of TIFF files ({len(batch_files_sorted)}). "
+                    "Both are sorted alphanumerically and paired in order.",
+                )
+                return {'CANCELLED'}
+            pairs = list(zip(meshes_sorted, batch_files_sorted))
 
         axis_order_string = context.scene.tissue_cartography_axis_order
         if ''.join(sorted(axis_order_string)) not in ('', 'xyz', 'cxyz'):
@@ -345,17 +370,13 @@ class BatchProjectionOperator(Operator):
         projection_resolution = context.scene.tissue_cartography_projection_resolution
         self.report({'INFO'}, f"Using projection resolution: {projection_resolution}")
 
-        for iobj, obj in enumerate(meshes_to_process):
-            self.report({'INFO'}, f"Processing {iobj + 1}/{len(meshes_to_process)}")
+        for iobj, (obj, file_path) in enumerate(pairs):
+            self.report({'INFO'}, f"Processing {iobj + 1}/{len(pairs)}")
             bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
             if not obj.data.uv_layers:
                 self.report({'ERROR'}, f"Mesh {obj.name} does not have a UV map!")
                 return {'CANCELLED'}
             set_numpy_attribute(obj, "projection_offsets", offsets_array)
-            if not matched[obj.name]:
-                self.report({'ERROR'}, f"No matching file found for {obj.name}!")
-                return {'CANCELLED'}
-            file_path = batch_files[matched[obj.name][0]]
             try:
                 data = tifffile.imread(file_path)
                 if data.ndim not in (3, 4):
@@ -385,33 +406,35 @@ class BatchProjectionOperator(Operator):
             baked_world_positions[~mask] = np.nan
 
             box_world_inv = np.linalg.inv(np.array(box.matrix_world))
+            resolution = np.array(context.scene.tissue_cartography_resolution)
             baked_data = bake_volumetric_data_to_uv(
                 data, baked_world_positions,
-                get_numpy_attribute(box, "resolution"),
+                resolution,
                 baked_normals,
                 normal_offsets=offsets_array,
                 affine_matrix=box_world_inv,
             )
+            out_stem = file_path.stem if single_mesh_mode else obj.name
             try:
                 tifffile.imwrite(
-                    batch_out_path / f"{obj.name}_BakedNormals.tif",
+                    batch_out_path / f"{out_stem}_BakedNormals.tif",
                     baked_normals.astype(np.float32),
                 )
                 tifffile.imwrite(
-                    batch_out_path / f"{obj.name}_BakedPositions.tif",
+                    batch_out_path / f"{out_stem}_BakedPositions.tif",
                     baked_world_positions.astype(np.float32),
                 )
                 tifffile.imwrite(
-                    batch_out_path / f"{obj.name}_BakedData.tif",
+                    batch_out_path / f"{out_stem}_BakedData.tif",
                     baked_data.astype(np.float32).transpose((1, 0, 2, 3)),
                     metadata={'axes': 'ZCYX'}, imagej=True,
                 )
-                self.report({'INFO'}, f"Projection saved for {obj.name}")
+                self.report({'INFO'}, f"Projection saved for {out_stem}")
             except Exception as e:
-                self.report({'ERROR'}, f"Failed to save data for {obj.name}: {e}")
+                self.report({'ERROR'}, f"Failed to save data for {out_stem}: {e}")
                 return {'CANCELLED'}
 
-            if context.scene.tissue_cartography_batch_create_materials:
+            if not single_mesh_mode and context.scene.tissue_cartography_batch_create_materials:
                 set_numpy_attribute(obj, "baked_data", baked_data.astype(np.float32))
                 set_numpy_attribute(obj, "baked_normals", baked_normals.astype(np.float32))
                 set_numpy_attribute(obj, "baked_world_positions",

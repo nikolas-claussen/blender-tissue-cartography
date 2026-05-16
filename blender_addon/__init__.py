@@ -280,6 +280,15 @@ def register():
         ),
         default=True,
     )
+    bpy.types.Scene.tissue_cartography_batch_single_mesh = BoolProperty(
+        name="One mesh, many images",
+        description=(
+            "Use the active mesh for every file in the input directory. "
+            "Useful when the same surface is used across many image datasets. "
+            "Material creation is skipped in this mode."
+        ),
+        default=False,
+    )
 
     # --- Alignment ---
     bpy.types.Scene.tissue_cartography_prealign = BoolProperty(
@@ -391,6 +400,7 @@ def unregister():
         "tissue_cartography_batch_directory",
         "tissue_cartography_batch_output_directory",
         "tissue_cartography_batch_create_materials",
+        "tissue_cartography_batch_single_mesh",
         "tissue_cartography_active_box",
         "tissue_cartography_active_mesh",
         "tissue_cartography_prealign",

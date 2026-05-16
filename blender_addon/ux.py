@@ -112,6 +112,11 @@ class TissueCartographyPanel(Panel):
         row_batch.prop(scene, "tissue_cartography_batch_directory")
         row_batch.prop(scene, "tissue_cartography_batch_output_directory")
         row_batch.prop(scene, "tissue_cartography_batch_create_materials")
+        row_batch.prop(scene, "tissue_cartography_batch_single_mesh")
+        layout.label(
+            text="Tip: Test resolution and axis order with a single mesh before batch processing.",
+            icon='INFO',
+        )
         layout.operator("scene.batch_projection", text="Batch Process And Save")
         layout.separator(type='LINE')
         layout.label(text="MESH REGISTRATION", icon='CON_SHRINKWRAP')

@@ -1,3 +1,6 @@
+# for internal, testing use: run this script in Blender's scripting workspace
+# to reload the addon after making changes to the code.
+
 import sys, importlib, bpy
 
 pkg = "bl_ext.user_default.tissue_cartography"
