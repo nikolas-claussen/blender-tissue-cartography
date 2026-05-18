@@ -65,6 +65,50 @@ def _normalize_tiff_axes(data, axis_order_string):
     return data
 
 
+def _run_projection(obj, data, box, projection_resolution, offsets_array):
+    """
+    Compute cartographic projection for a single (mesh, volumetric data) pair.
+
+    Parameters
+    ----------
+    obj : bpy.types.Object
+        Mesh object with an active UV map.
+    data : np.ndarray, shape (C, X, Y, Z)
+        Volumetric image data.
+    box : bpy.types.Object
+        Bounding-box object carrying the "resolution" attribute and world transform.
+    projection_resolution : int
+        UV image resolution in pixels.
+    offsets_array : np.ndarray
+        Normal offsets for the projection.
+
+    Returns
+    -------
+    tuple of (baked_data, baked_normals, baked_world_positions) as np.ndarray
+    """
+    loop_uvs, loop_normals, loop_world_positions = get_uv_normal_world_per_loop(
+        obj, filter_unique=True
+    )
+    baked_normals = bake_per_loop_values_to_uv(loop_uvs, loop_normals,
+                                               image_resolution=projection_resolution)
+    norms = np.linalg.norm(baked_normals, axis=-1, keepdims=True)
+    norms[norms == 0] = 1.0
+    baked_normals = baked_normals / norms
+    baked_world_positions = bake_per_loop_values_to_uv(loop_uvs, loop_world_positions,
+                                                       image_resolution=projection_resolution)
+    mask = get_uv_mask(obj, projection_resolution)
+    baked_normals[~mask] = np.nan
+    baked_world_positions[~mask] = np.nan
+    baked_data = bake_volumetric_data_to_uv(
+        data, baked_world_positions,
+        get_numpy_attribute(box, "resolution"),
+        baked_normals,
+        normal_offsets=offsets_array,
+        affine_matrix=np.linalg.inv(np.array(box.matrix_world)),
+    )
+    return baked_data, baked_normals, baked_world_positions
+
+
 # ---------------------------------------------------------------------------
 # Operators
 # ---------------------------------------------------------------------------
@@ -77,8 +121,6 @@ class LoadTIFFOperator(Operator):
     bl_label = "Load TIFF File"
 
     def execute(self, context):
-        if not hasattr(bpy.types.Scene, "tissue_cartography_3D_data"):
-            bpy.types.Scene.tissue_cartography_3D_data = {}
         file_path = bpy.path.abspath(context.scene.tissue_cartography_file)
         resolution = np.array(context.scene.tissue_cartography_resolution)
         self.report({'INFO'}, f"Resolution loaded: {resolution}")
@@ -279,25 +321,9 @@ class CreateProjectionOperator(Operator):
         projection_resolution = context.scene.tissue_cartography_projection_resolution
         self.report({'INFO'}, f"Using projection resolution: {projection_resolution}")
 
-        loop_uvs, loop_normals, loop_world_positions = get_uv_normal_world_per_loop(
-            obj, filter_unique=True
-        )
-        baked_normals = bake_per_loop_values_to_uv(loop_uvs, loop_normals,
-                                                   image_resolution=projection_resolution)
-        norms = np.linalg.norm(baked_normals, axis=-1, keepdims=True)
-        norms[norms == 0] = 1.0
-        baked_normals = baked_normals / norms
-        baked_world_positions = bake_per_loop_values_to_uv(loop_uvs, loop_world_positions,
-                                                           image_resolution=projection_resolution)
-
-        mask = get_uv_mask(obj, projection_resolution)
-        baked_normals[~mask] = np.nan
-        baked_world_positions[~mask] = np.nan
-
-        box_world_inv = np.linalg.inv(np.array(box.matrix_world))
         try:
             data = bpy.types.Scene.tissue_cartography_3D_data[box]
-        except KeyError:
+        except (KeyError, AttributeError):
             self.report({'ERROR'},
                         "Selected bounding box has no 3D data. Reload .tiff or select a different mesh.")
             return {'CANCELLED'}
@@ -305,12 +331,8 @@ class CreateProjectionOperator(Operator):
             self.report({'ERROR'}, "Invalid 3D data array.")
             return {'CANCELLED'}
 
-        baked_data = bake_volumetric_data_to_uv(
-            data, baked_world_positions,
-            get_numpy_attribute(box, "resolution"),
-            baked_normals,
-            normal_offsets=offsets_array,
-            affine_matrix=box_world_inv,
+        baked_data, baked_normals, baked_world_positions = _run_projection(
+            obj, data, box, projection_resolution, offsets_array
         )
         set_numpy_attribute(obj, "baked_data", baked_data.astype(np.float32))
         set_numpy_attribute(obj, "baked_normals", baked_normals.astype(np.float32))
@@ -322,7 +344,6 @@ class CreateProjectionOperator(Operator):
 
 
 class BatchProjectionOperator(Operator):
-
     """
     Batch-process cartographic projections.
 
@@ -335,8 +356,8 @@ class BatchProjectionOperator(Operator):
     Material creation is skipped in this mode.
 
     The Active 3D Dataset (Selected Datasets section) provides the spatial reference
-    (position/orientation). Resolution and axis order are taken from the Data Loading section —
-    test these with a single mesh projection before running batch mode.
+    (position/orientation) and resolution. Axis order is taken from the Data Loading section —
+    test with a single mesh projection before running batch mode.
     """
     bl_idname = "scene.batch_projection"
     bl_label = "Create Projections (Batch Mode)"
@@ -420,29 +441,8 @@ class BatchProjectionOperator(Operator):
                 self.report({'ERROR'}, f"Failed loading TIFF for {obj.name}: {e}")
                 return {'CANCELLED'}
 
-            loop_uvs, loop_normals, loop_world_positions = get_uv_normal_world_per_loop(
-                obj, filter_unique=True
-            )
-            baked_normals = bake_per_loop_values_to_uv(loop_uvs, loop_normals,
-                                                       image_resolution=projection_resolution)
-            norms = np.linalg.norm(baked_normals, axis=-1, keepdims=True)
-            norms[norms == 0] = 1.0
-            baked_normals = baked_normals / norms
-            baked_world_positions = bake_per_loop_values_to_uv(
-                loop_uvs, loop_world_positions, image_resolution=projection_resolution
-            )
-            mask = get_uv_mask(obj, projection_resolution)
-            baked_normals[~mask] = np.nan
-            baked_world_positions[~mask] = np.nan
-
-            box_world_inv = np.linalg.inv(np.array(box.matrix_world))
-            resolution = np.array(context.scene.tissue_cartography_resolution)
-            baked_data = bake_volumetric_data_to_uv(
-                data, baked_world_positions,
-                resolution,
-                baked_normals,
-                normal_offsets=offsets_array,
-                affine_matrix=box_world_inv,
+            baked_data, baked_normals, baked_world_positions = _run_projection(
+                obj, data, box, projection_resolution, offsets_array
             )
             out_stem = file_path.stem if single_mesh_mode else obj.name
             try:

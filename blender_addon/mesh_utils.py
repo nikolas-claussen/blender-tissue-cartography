@@ -98,23 +98,3 @@ def get_numpy_attribute(mesh, name):
     if name not in mesh:
         raise KeyError(f"Attribute '{name}' not found on mesh/object")
     return np.frombuffer(mesh[name][0], dtype=mesh[name][2]).reshape(mesh[name][1])
-
-
-def separate_selected_into_mesh_and_box(self, context):
-    """
-    From the current selection, separate exactly one mesh and one bounding-box object
-    (identified by the '3D_data' custom property).
-
-    Reports an error and returns (None, None) if the selection does not match exactly.
-    """
-    n_data_selected = sum(1 for x in context.selected_objects if "3D_data" in x)
-    n_mesh_selected = sum(1 for x in context.selected_objects if "3D_data" not in x)
-    if not (n_data_selected == 1 and n_mesh_selected == 1):
-        self.report({'ERROR'}, "Select exactly one mesh and one 3D image (BoundingBox)!")
-        return None, None
-    box = next(x for x in context.selected_objects if "3D_data" in x)
-    obj = next(x for x in context.selected_objects if "3D_data" not in x)
-    if obj.type != 'MESH':
-        self.report({'ERROR'}, "No mesh object selected!")
-        return None, None
-    return box, obj
