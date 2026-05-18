@@ -1,11 +1,11 @@
 """
 I/O and image normalization utilities.
 
-Pure numpy/tifffile functions — no bpy dependency (except load_png which needs bpy).
+Pure numpy/tifffile functions, except load_png which needs bpy.
 """
 
-import bpy
 import numpy as np
+import bpy
 
 
 def load_png(image_path):

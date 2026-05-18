@@ -92,10 +92,11 @@ def get_numpy_attribute(mesh, name):
 
     Raises
     ------
-    AssertionError
+    KeyError
         If the attribute is not found.
     """
-    assert name in mesh, f"Attribute '{name}' not found"
+    if name not in mesh:
+        raise KeyError(f"Attribute '{name}' not found on mesh/object")
     return np.frombuffer(mesh[name][0], dtype=mesh[name][2]).reshape(mesh[name][1])
 
 

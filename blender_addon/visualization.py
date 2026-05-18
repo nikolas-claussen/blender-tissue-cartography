@@ -114,13 +114,13 @@ def get_slice_image(image_3d, resolution, axis='z', position=0.0):
     np.array of shape (n_channels, h, w)
     """
     if axis == 'x':
-        ind = int(np.round(position / resolution[0]))
+        ind = np.clip(int(np.round(position / resolution[0])), 0, image_3d.shape[1] - 1)
         return image_3d[:, ind, :, ::-1]
     elif axis == 'y':
-        ind = int(np.round(position / resolution[1]))
+        ind = np.clip(int(np.round(position / resolution[1])), 0, image_3d.shape[2] - 1)
         return image_3d[:, :, ind, :].transpose((0, 2, 1))
     else:
-        ind = int(np.round(position / resolution[2]))
+        ind = np.clip(int(np.round(position / resolution[2])), 0, image_3d.shape[3] - 1)
         return image_3d[:, :, :, ind].transpose((0, 2, 1))
 
 
@@ -177,6 +177,10 @@ def create_material_from_array(slice_plane, array, material_name="SliceMaterial"
 def create_material_from_multilayer_array(mesh, array, material_name="ProjectedMaterial"):
     """
     Create and assign a material for a mesh using a multi-channel, multi-layer projection.
+
+    All channel/layer textures are added as image texture nodes in the shader graph,
+    but only channel 0, layer 0 is wired to the BSDF Base Color by default.
+    Additional textures can be connected manually in the shader editor.
 
     Parameters
     ----------
@@ -275,9 +279,10 @@ def assign_vertex_colors(obj, colors):
     """
     if obj.type != 'MESH':
         raise ValueError("Object is not a mesh.")
-    if not obj.data.vertex_colors:
-        obj.data.vertex_colors.new()
-    color_layer = obj.data.vertex_colors.active
+    ca = obj.data.color_attributes
+    if not ca:
+        ca.new(name="Col", type='BYTE_COLOR', domain='CORNER')
+    color_layer = ca.active_color
     n = len(obj.data.loops)
     loop_vert_flat = np.zeros(n, dtype=np.int32)
     obj.data.loops.foreach_get("vertex_index", loop_vert_flat)
@@ -297,7 +302,7 @@ def create_vertex_color_material(obj, material_name="VertexColorMaterial"):
     material_name : str, optional
         Name for the new material.
     """
-    if not obj.data.vertex_colors:
+    if not obj.data.color_attributes:
         raise ValueError("The object has no vertex color layers.")
 
     material = bpy.data.materials.new(name=material_name)
@@ -308,7 +313,7 @@ def create_vertex_color_material(obj, material_name="VertexColorMaterial"):
         nodes.remove(node)
 
     vertex_color_node = nodes.new(type="ShaderNodeVertexColor")
-    vertex_color_node.layer_name = obj.data.vertex_colors[0].name
+    vertex_color_node.layer_name = obj.data.color_attributes[0].name
     vertex_color_node.location = (-1000, 0)
 
     separate_color_node = nodes.new(type="ShaderNodeSeparateColor")

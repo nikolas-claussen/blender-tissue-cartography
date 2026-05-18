@@ -1,5 +1,8 @@
 #  Copilot Instructions (Repository-wide)
 
+Overall, prioritize concise code and clear documentation. Prioritize simple and 
+maintainable solutions over complex ones, and inform me if a new feature would add significant complexity.
+
 ## Project context
 
 This project comprises an 3d-image processing software library for "tissue cartography", a method that extracts 2D surfaces from 3D image data and maps them to 2D. It has two components: a standalone python library, and an add-on for the 3D modelling software Blender.

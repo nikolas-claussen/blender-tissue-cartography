@@ -35,10 +35,9 @@ def _get_extent(context):
     active = context.active_object
     if active and "3D_data" in active:
         arr = bpy.types.Scene.tissue_cartography_3D_data.get(active)
-        if arr is not None and arr.ndim == 4:
+        if arr is not None and arr.ndim == 4 and "resolution" in active:
             res = get_numpy_attribute(active, "resolution")
-            if res is not None:
-                return np.array(arr.shape[1:]) * res
+            return np.array(arr.shape[1:]) * res
     return np.array(context.scene.tissue_cartography_slice_extent)
 
 
@@ -73,24 +72,6 @@ def _sync_um_to_pct(self, context):
         if max_um > 0:
             context.scene.tissue_cartography_slice_position_pct = max(
                 0.0, min(1.0, context.scene.tissue_cartography_slice_position / max_um)
-            )
-    finally:
-        _slice_sync_lock = False
-
-
-def _sync_axis_change(self, context):
-    """Called when the slice axis changes — recompute µm from preserved fraction."""
-    global _slice_sync_lock
-    if _slice_sync_lock:
-        return
-    _slice_sync_lock = True
-    try:
-        extent = _get_extent(context)
-        axis = context.scene.tissue_cartography_slice_axis
-        max_um = extent[_AXIS_INDEX[axis]]
-        if max_um > 0:
-            context.scene.tissue_cartography_slice_position = (
-                context.scene.tissue_cartography_slice_position_pct * max_um
             )
     finally:
         _slice_sync_lock = False
@@ -201,7 +182,7 @@ def register():
             ('z', "Z", "Slice along the Z axis"),
         ],
         default='x',
-        update=_sync_axis_change,
+        update=_sync_pct_to_um,
     )
     bpy.types.Scene.tissue_cartography_slice_position_pct = FloatProperty(
         name="Slice Position",

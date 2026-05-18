@@ -5,13 +5,9 @@ Converts 3D world-space data (positions, normals, image intensities) onto a 2D U
 """
 
 import bpy
-import bmesh
 import numpy as np
-from pathlib import Path
 from scipy import interpolate
 from skimage import draw as skdraw
-
-from .io_utils import load_png
 
 
 def get_uv_mask(mesh_obj, image_resolution):
@@ -70,52 +66,6 @@ def get_uv_mask(mesh_obj, image_resolution):
 
     # Flip rows so row 0 = V=1, matching the convention of bake_per_loop_values_to_uv.
     return mask[::-1]
-
-
-def get_uv_layout_disk(obj, uv_layout_path, image_resolution):
-    """
-    [LEGACY] Get UV layout mask by exporting a PNG to disk and reloading it.
-
-    Kept for comparison with get_uv_mask. Has side-effects (writes to disk,
-    deselects objects, switches edit mode) and fails if the .blend file is unsaved.
-
-    Parameters
-    ----------
-    obj : bpy.types.Object
-        Mesh object with an active UV map.
-    uv_layout_path : str
-        Path to write the UV layout PNG.
-    image_resolution : int
-        Width/height of the output image in pixels.
-
-    Returns
-    -------
-    np.array of shape (image_resolution, image_resolution), dtype bool
-        True where the UV layout has coverage.
-    """
-    Path(uv_layout_path).unlink(missing_ok=True)
-
-    bpy.ops.object.select_all(action='DESELECT')
-    obj.select_set(True)
-    bpy.context.view_layer.objects.active = obj
-    try:
-        bpy.ops.object.mode_set(mode='EDIT')
-        mesh = bmesh.from_edit_mesh(obj.data)
-        for face in mesh.faces:
-            face.select = True
-        bmesh.update_edit_mesh(obj.data)
-        bpy.ops.uv.export_layout(
-            filepath=uv_layout_path,
-            size=(image_resolution, image_resolution),
-            opacity=1,
-            export_all=False,
-            check_existing=False,
-        )
-    finally:
-        bpy.ops.object.mode_set(mode='OBJECT')
-
-    uv_layout = load_png(uv_layout_path)
-    return (uv_layout.sum(axis=-1) > 0)[::-1]
 
 
 def get_uv_normal_world_per_loop(mesh_obj, filter_unique=False):
