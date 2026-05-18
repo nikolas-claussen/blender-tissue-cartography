@@ -10,64 +10,6 @@ from scipy import interpolate
 from skimage import draw as skdraw
 
 
-def get_uv_mask(mesh_obj, image_resolution):
-    """
-    Get UV coverage mask for a mesh object as a boolean np.array.
-
-    Rasterizes the mesh UV triangles using skimage.draw.polygon.
-    No files are written to disk; no edit-mode switch or selection side-effects.
-
-    Parameters
-    ----------
-    mesh_obj : bpy.types.Object
-        Mesh object with an active UV map.
-    image_resolution : int
-        Width/height of the output image in pixels.
-
-    Returns
-    -------
-    np.array of shape (image_resolution, image_resolution), dtype bool
-        True where the UV layout has coverage.
-    """
-
-    uv_layer = mesh_obj.data.uv_layers.active
-    if not uv_layer:
-        raise RuntimeError("Mesh does not have an active UV map")
-
-    # VERIFY (Blender 4.1+): calc_loop_triangles() may be a no-op; safe to call regardless.
-    mesh_obj.data.calc_loop_triangles()
-    n_tris = len(mesh_obj.data.loop_triangles)
-    if n_tris == 0:
-        return np.zeros((image_resolution, image_resolution), dtype=bool)
-
-    # Read all UV coordinates at once via foreach_get (fast, avoids Python loop over loops).
-    n_loops = len(mesh_obj.data.loops)
-    uv_flat = np.zeros(n_loops * 2, dtype=np.float32)
-    uv_layer.data.foreach_get("uv", uv_flat)
-    loop_uvs = uv_flat.reshape(n_loops, 2)
-
-    # Read all triangle loop indices at once into a flat int array.
-    # VERIFY: MeshLoopTriangle.foreach_get("loops", flat_int32) should fill
-    # [tri0_loop0, tri0_loop1, tri0_loop2, tri1_loop0, ...].
-    tri_loops_flat = np.zeros(n_tris * 3, dtype=np.int32)
-    mesh_obj.data.loop_triangles.foreach_get("loops", tri_loops_flat)
-    # UV coords for every triangle corner: shape (n_tris, 3, 2)
-    tri_uvs = loop_uvs[tri_loops_flat.reshape(n_tris, 3)]
-
-    # Convert UV [0,1] → pixel indices.
-    # u → column index, v → row index (row 0 = V=0, i.e. UV bottom, before [::-1] flip).
-    res = image_resolution
-    px = (tri_uvs * res).astype(np.int32).clip(0, res - 1)  # (n_tris, 3, 2)
-
-    mask = np.zeros((res, res), dtype=bool)
-    for i in range(n_tris):
-        rr, cc = skdraw.polygon(px[i, :, 1], px[i, :, 0], shape=(res, res))
-        mask[rr, cc] = True
-
-    # Flip rows so row 0 = V=1, matching the convention of bake_per_loop_values_to_uv.
-    return mask[::-1]
-
-
 def get_uv_normal_world_per_loop(mesh_obj, filter_unique=False):
     """
     Get UV coordinates, normals, and world positions for each loop (half-edge).
@@ -127,29 +69,71 @@ def get_uv_normal_world_per_loop(mesh_obj, filter_unique=False):
     return loop_uvs, loop_normals, loop_world_positions
 
 
-def bake_per_loop_values_to_uv(loop_uvs, loop_values, image_resolution):
+def get_uv_area_per_loop(mesh_obj):
     """
-    Bake (interpolate) per-loop values onto a uniform UV grid.
+    Get per-triangle-corner UV coordinates and 3D/UV area ratios for a mesh.
 
-    UV coordinates outside [0, 1] are ignored.
+    Analogous to get_uv_normal_world_per_loop: returns raw per-loop data suitable
+    for passing to bake_per_loop_values_to_uv. Degenerate UV triangles (zero UV
+    area) are assigned NaN and should be filtered before baking.
 
     Parameters
     ----------
-    loop_uvs : np.array of shape (n_loops, 2)
-        UV coordinates of each loop.
-    loop_values : np.array of shape (n_loops, ...)
-        Values to bake. Can have any trailing shape (scalar or vector field).
-    image_resolution : int
-        Size of the UV grid (number of pixels per side).
+    mesh_obj : bpy.types.Object
+        Mesh object with an active UV map. Vertex coordinates should be in µm.
 
     Returns
     -------
-    np.array of shape (image_resolution, image_resolution, ...)
-        Field across the [0, 1]^2 UV grid. Positions without data are np.nan.
+    tri_loop_uvs : np.ndarray, shape (n_tris * 3, 2)
+        UV coordinates for each triangle corner.
+    loop_area_ratio : np.ndarray, shape (n_tris * 3,)
+        3D area (µm²) per UV area (UV-unit²) for the triangle containing each corner.
+        NaN for degenerate UV triangles.
     """
-    U, V = np.meshgrid(*(2 * (np.linspace(0, 1, image_resolution),)))
-    interpolated = interpolate.griddata(loop_uvs, loop_values, (U, V), method='linear')[::-1]
-    return interpolated
+    uv_layer = mesh_obj.data.uv_layers.active
+    if not uv_layer:
+        raise RuntimeError("Mesh does not have an active UV map")
+
+    mesh_obj.data.calc_loop_triangles()
+    n_tris = len(mesh_obj.data.loop_triangles)
+    if n_tris == 0:
+        return np.empty((0, 2), dtype=np.float32), np.empty((0,), dtype=np.float32)
+
+    n_loops = len(mesh_obj.data.loops)
+    n_verts = len(mesh_obj.data.vertices)
+
+    uv_flat = np.zeros(n_loops * 2, dtype=np.float32)
+    uv_layer.data.foreach_get("uv", uv_flat)
+    loop_uvs_all = uv_flat.reshape(n_loops, 2)
+
+    tri_loops_flat = np.zeros(n_tris * 3, dtype=np.int32)
+    mesh_obj.data.loop_triangles.foreach_get("loops", tri_loops_flat)
+    tri_verts_flat = np.zeros(n_tris * 3, dtype=np.int32)
+    mesh_obj.data.loop_triangles.foreach_get("vertices", tri_verts_flat)
+
+    vert_co_flat = np.zeros(n_verts * 3, dtype=np.float32)
+    mesh_obj.data.vertices.foreach_get("co", vert_co_flat)
+    mat3 = np.array(mesh_obj.matrix_world.to_3x3())
+    translation = np.array(mesh_obj.matrix_world.translation)
+    vert_world = vert_co_flat.reshape(n_verts, 3) @ mat3.T + translation
+
+    tri_uvs = loop_uvs_all[tri_loops_flat].reshape(n_tris, 3, 2)
+    tri_pos = vert_world[tri_verts_flat].reshape(n_tris, 3, 3)
+
+    e1_3d = tri_pos[:, 1] - tri_pos[:, 0]
+    e2_3d = tri_pos[:, 2] - tri_pos[:, 0]
+    area_3d = 0.5 * np.linalg.norm(np.cross(e1_3d, e2_3d), axis=-1)
+
+    e1_uv = tri_uvs[:, 1] - tri_uvs[:, 0]
+    e2_uv = tri_uvs[:, 2] - tri_uvs[:, 0]
+    area_uv = 0.5 * np.abs(e1_uv[:, 0] * e2_uv[:, 1] - e1_uv[:, 1] * e2_uv[:, 0])
+
+    with np.errstate(invalid='ignore', divide='ignore'):
+        area_ratio = np.where(area_uv > 0, area_3d / area_uv, np.nan)
+
+    tri_loop_uvs = loop_uvs_all[tri_loops_flat]        # (n_tris * 3, 2)
+    loop_area_ratio = np.repeat(area_ratio, 3)         # (n_tris * 3,)
+    return tri_loop_uvs, loop_area_ratio
 
 
 def chunked_interpn(points, values, xi, method='linear', bounds_error=True,
@@ -229,6 +213,31 @@ def chunked_interpn(points, values, xi, method='linear', bounds_error=True,
     return results.reshape(xi_shape[:-1])
 
 
+def bake_per_loop_values_to_uv(loop_uvs, loop_values, image_resolution):
+    """
+    Bake (interpolate) per-loop values onto a uniform UV grid.
+
+    UV coordinates outside [0, 1] are ignored.
+
+    Parameters
+    ----------
+    loop_uvs : np.array of shape (n_loops, 2)
+        UV coordinates of each loop.
+    loop_values : np.array of shape (n_loops, ...)
+        Values to bake. Can have any trailing shape (scalar or vector field).
+    image_resolution : int
+        Size of the UV grid (number of pixels per side).
+
+    Returns
+    -------
+    np.array of shape (image_resolution, image_resolution, ...)
+        Field across the [0, 1]^2 UV grid. Positions without data are np.nan.
+    """
+    U, V = np.meshgrid(*(2 * (np.linspace(0, 1, image_resolution),)))
+    interpolated = interpolate.griddata(loop_uvs, loop_values, (U, V), method='linear')[::-1]
+    return interpolated
+
+
 def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_normals,
                                 normal_offsets=(0,), affine_matrix=None):
     """
@@ -275,3 +284,91 @@ def bake_volumetric_data_to_uv(image, baked_world_positions, resolution, baked_n
             bounds_error=False, local_filter=None,
         )
     return baked_data
+
+
+def get_uv_mask(mesh_obj, image_resolution):
+    """
+    Get UV coverage mask for a mesh object as a boolean np.array.
+
+    Rasterizes the mesh UV triangles using skimage.draw.polygon.
+    No files are written to disk; no edit-mode switch or selection side-effects.
+
+    Parameters
+    ----------
+    mesh_obj : bpy.types.Object
+        Mesh object with an active UV map.
+    image_resolution : int
+        Width/height of the output image in pixels.
+
+    Returns
+    -------
+    np.array of shape (image_resolution, image_resolution), dtype bool
+        True where the UV layout has coverage.
+    """
+
+    uv_layer = mesh_obj.data.uv_layers.active
+    if not uv_layer:
+        raise RuntimeError("Mesh does not have an active UV map")
+
+    # VERIFY (Blender 4.1+): calc_loop_triangles() may be a no-op; safe to call regardless.
+    mesh_obj.data.calc_loop_triangles()
+    n_tris = len(mesh_obj.data.loop_triangles)
+    if n_tris == 0:
+        return np.zeros((image_resolution, image_resolution), dtype=bool)
+
+    # Read all UV coordinates at once via foreach_get (fast, avoids Python loop over loops).
+    n_loops = len(mesh_obj.data.loops)
+    uv_flat = np.zeros(n_loops * 2, dtype=np.float32)
+    uv_layer.data.foreach_get("uv", uv_flat)
+    loop_uvs = uv_flat.reshape(n_loops, 2)
+
+    # Read all triangle loop indices at once into a flat int array.
+    # VERIFY: MeshLoopTriangle.foreach_get("loops", flat_int32) should fill
+    # [tri0_loop0, tri0_loop1, tri0_loop2, tri1_loop0, ...].
+    tri_loops_flat = np.zeros(n_tris * 3, dtype=np.int32)
+    mesh_obj.data.loop_triangles.foreach_get("loops", tri_loops_flat)
+    # UV coords for every triangle corner: shape (n_tris, 3, 2)
+    tri_uvs = loop_uvs[tri_loops_flat.reshape(n_tris, 3)]
+
+    # Convert UV [0,1] → pixel indices.
+    # u → column index, v → row index (row 0 = V=0, i.e. UV bottom, before [::-1] flip).
+    res = image_resolution
+    px = (tri_uvs * res).astype(np.int32).clip(0, res - 1)  # (n_tris, 3, 2)
+
+    mask = np.zeros((res, res), dtype=bool)
+    for i in range(n_tris):
+        rr, cc = skdraw.polygon(px[i, :, 1], px[i, :, 0], shape=(res, res))
+        mask[rr, cc] = True
+
+    # Flip rows so row 0 = V=1, matching the convention of bake_per_loop_values_to_uv.
+    return mask[::-1]
+
+
+def compute_uv_area_distortion(mesh_obj, image_resolution):
+    """
+    Compute local resolution map (sqrt of 3D surface area per pixel) for a UV-unwrapped mesh.
+
+    For each UV pixel, the local resolution is the square root of the 3D surface area (µm²)
+    mapped to that pixel. Pixels outside the UV coverage are undefined.
+
+    Parameters
+    ----------
+    mesh_obj : bpy.types.Object
+        Mesh object with an active UV map. Vertex coordinates should be in µm.
+    image_resolution : int
+        UV image resolution in pixels.
+
+    Returns
+    -------
+    np.ndarray of shape (image_resolution, image_resolution), dtype float32
+        Local resolution in µm/pixel. Undefined outside UV coverage.
+    """
+    tri_loop_uvs, loop_area_ratio = get_uv_area_per_loop(mesh_obj)
+    if tri_loop_uvs.shape[0] == 0:
+        return np.full((image_resolution, image_resolution), np.nan, dtype=np.float32)
+    valid = np.isfinite(loop_area_ratio)
+    baked_ratio = bake_per_loop_values_to_uv(
+        tri_loop_uvs[valid], loop_area_ratio[valid], image_resolution
+    )
+    local_resolution = (np.sqrt(np.abs(baked_ratio)) / image_resolution).astype(np.float32)
+    return local_resolution

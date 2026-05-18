@@ -269,6 +269,7 @@ def compute_edge_lengths(obj):
 def assign_vertex_colors(obj, colors):
     """
     Assign RGB colors to each vertex of a mesh object.
+    The new attribute obj.data.color_attributes["VertexColor"].
 
     Parameters
     ----------

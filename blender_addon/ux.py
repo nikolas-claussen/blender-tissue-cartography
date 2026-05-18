@@ -42,7 +42,7 @@ class TissueCartographyPanel(Panel):
             icon_only=True, emboss=False,
         )
         data_store = bpy.types.Scene.tissue_cartography_3D_data
-        header_row.label(text=f"Loaded 3D Datasets ({len(data_store)}) Datasets with deleted boxes may not appear here.")
+        header_row.label(text=f"Loaded 3D Datasets ({len(data_store)}). Datasets with deleted boxes may not appear here.")
         if scene.tissue_cartography_show_datasets:
             if not data_store:
                 datasets_box.label(text="No datasets currently loaded.", icon='INFO')
@@ -66,7 +66,8 @@ class TissueCartographyPanel(Panel):
         row_seg = layout.row()
         row_seg.prop(scene, "tissue_cartography_segmentation_resolution")
         row_seg.prop(scene, "tissue_cartography_segmentation_axis_order")
-        row_seg.prop(scene, "tissue_cartography_segmentation_sigma")
+        row_seg_smooth = layout.row()
+        row_seg_smooth.prop(scene, "tissue_cartography_segmentation_sigma")
         layout.operator("scene.load_segmentation",
                         text="Get mesh(es) from binary segmentation .tiff file(s)")
         layout.label(
@@ -81,18 +82,22 @@ class TissueCartographyPanel(Panel):
         layout.separator(type='LINE')
         layout.label(text="DATA VISUALIZATION", icon='HIDE_OFF')
         # --- Ortho-slice ---
-        row_slice = layout.row()
-        row_slice.prop(scene, "tissue_cartography_slice_axis", expand=True)
-        row_slice.prop(scene, "tissue_cartography_slice_position_pct", slider=True)
-        row_slice.prop(scene, "tissue_cartography_slice_position")
-        row_slice.prop(scene, "tissue_cartography_slice_channel")
+        split_slice = layout.split(factor=0.2)
+        axis_row = split_slice.row()
+        axis_row.prop(scene, "tissue_cartography_slice_axis", expand=True)
+        rest_row = split_slice.row()
+        rest_row.prop(scene, "tissue_cartography_slice_position_pct", slider=True)
+        rest_row.prop(scene, "tissue_cartography_slice_position")
+        rest_row.prop(scene, "tissue_cartography_slice_channel")
         layout.operator("scene.create_slice_plane", text="Create slice plane")
         layout.separator()
 
         # --- Vertex shader ---
-        row_vertex = layout.row()
+        split_vertex = layout.split(factor=0.3)
+        row_vertex = split_vertex.row()
         row_vertex.prop(scene, "tissue_cartography_vertex_shader_offset")
-        row_vertex.prop(scene, "tissue_cartography_vertex_shader_channel_RGB")
+        row_vertex_ch = split_vertex.row()
+        row_vertex_ch.prop(scene, "tissue_cartography_vertex_shader_channel_RGB")
         row_vertex2 = layout.row()
         row_vertex2.prop(scene, "tissue_cartography_vertex_shader_create_material")
         row_vertex2.operator("scene.vertex_shader", text="Initialize/refresh vertex shading")
@@ -126,8 +131,9 @@ class TissueCartographyPanel(Panel):
         row_align.prop(scene, "tissue_cartography_prealign")
         row_align.prop(scene, "tissue_cartography_prealign_shear")
         row_align.prop(scene, "tissue_cartography_prealign_scale")
-        row_align.prop(scene, "tissue_cartography_align_type")
-        row_align.prop(scene, "tissue_cartography_align_iter")
+        row_align2 = layout.row()
+        row_align2.prop(scene, "tissue_cartography_align_type")
+        row_align2.prop(scene, "tissue_cartography_align_iter")
         layout.operator("scene.align", text="Align Meshes")
         layout.separator()
 

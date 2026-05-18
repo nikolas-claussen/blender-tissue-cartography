@@ -209,7 +209,7 @@ def register():
 
     # --- Vertex shader ---
     bpy.types.Scene.tissue_cartography_vertex_shader_offset = FloatProperty(
-        name="Vertex Shader Normal Offset (µm)",
+        name="Normal Offset (µm)",
         description="Normal offset for vertex shading",
         default=0.0,
     )

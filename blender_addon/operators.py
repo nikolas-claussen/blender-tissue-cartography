@@ -18,6 +18,7 @@ from .projection import (
     bake_per_loop_values_to_uv,
     bake_volumetric_data_to_uv,
     chunked_interpn,
+    compute_uv_area_distortion,
 )
 from .visualization import (
     create_box,
@@ -84,7 +85,7 @@ def _run_projection(obj, data, box, projection_resolution, offsets_array):
 
     Returns
     -------
-    tuple of (baked_data, baked_normals, baked_world_positions) as np.ndarray
+    tuple of (baked_data, baked_normals, baked_world_positions, baked_local_resolution)
     """
     loop_uvs, loop_normals, loop_world_positions = get_uv_normal_world_per_loop(
         obj, filter_unique=True
@@ -106,7 +107,9 @@ def _run_projection(obj, data, box, projection_resolution, offsets_array):
         normal_offsets=offsets_array,
         affine_matrix=np.linalg.inv(np.array(box.matrix_world)),
     )
-    return baked_data, baked_normals, baked_world_positions
+    baked_local_resolution = compute_uv_area_distortion(obj, projection_resolution)
+    baked_local_resolution[~mask] = np.nan
+    return baked_data, baked_normals, baked_world_positions, baked_local_resolution
 
 
 # ---------------------------------------------------------------------------
@@ -245,7 +248,10 @@ class LoadSegmentationTIFFOperator(Operator):
 
 
 class SaveProjectionOperator(Operator):
-    """Save cartographic projection to disk."""
+    """
+    Save cartographic projection to disk.
+    
+    Creates a folder with projected image data and surface geometry."""
     bl_idname = "scene.save_projection"
     bl_label = "Save Projection"
 
@@ -264,18 +270,26 @@ class SaveProjectionOperator(Operator):
             self.report({'ERROR'}, "No baked data found on the active mesh. Run 'Create Projection' first!")
             return {'CANCELLED'}
 
-        baked_data = get_numpy_attribute(obj, "baked_data")
-        baked_normals = get_numpy_attribute(obj, "baked_normals")
-        baked_world_positions = get_numpy_attribute(obj, "baked_world_positions")
-        # Strip any user-supplied extension so suffixes are predictable
-        base = str(Path(self.filepath).with_suffix(''))
+        # Build output folder: {parent}/{name}/ with geometry subfolder
+        name = Path(self.filepath).stem
+        out_dir = Path(self.filepath).parent / name
+        geom_dir = out_dir / f"{name}_geometry"
         try:
-            tifffile.imwrite(base + "_BakedNormals.tif", baked_normals)
-            tifffile.imwrite(base + "_BakedPositions.tif", baked_world_positions)
-            tifffile.imwrite(base + "_BakedData.tif",
-                             baked_data.transpose((1, 0, 2, 3)).astype(np.float32),
+            out_dir.mkdir(parents=True, exist_ok=True)
+            geom_dir.mkdir(parents=True, exist_ok=True)
+            tifffile.imwrite(out_dir / f"{name}_ProjectedImageData.tif",
+                             get_numpy_attribute(obj, "baked_data").transpose((1, 0, 2, 3)).astype(np.float32),
                              metadata={'axes': 'ZCYX'}, imagej=True)
-            self.report({'INFO'}, f"Cartographic projection saved to {base}")
+            tifffile.imwrite(geom_dir / f"{name}_ProjectedNormals.tif",
+                             get_numpy_attribute(obj, "baked_normals"))
+            tifffile.imwrite(geom_dir / f"{name}_ProjectedPositions.tif",
+                             get_numpy_attribute(obj, "baked_world_positions"))
+            if "baked_local_resolution" in obj:
+                tifffile.imwrite(geom_dir / f"{name}_LocalResolution.tif",
+                                 get_numpy_attribute(obj, "baked_local_resolution"))
+            else:
+                self.report({'WARNING'}, "No local resolution data found. Re-run 'Create Projection' to compute it.")
+            self.report({'INFO'}, f"Cartographic projection saved to {out_dir}")
         except Exception as e:
             self.report({'ERROR'}, f"Failed to save data: {e}")
             return {'CANCELLED'}
@@ -289,8 +303,7 @@ class CreateProjectionOperator(Operator):
     Create a cartographic projection.
 
     Set the Active 3D Dataset and Active Mesh in the "Selected Datasets" section,
-    then click this button to project the image data onto the mesh surface.
-    """
+    then click this button to project the image data onto the mesh surface."""
     bl_idname = "scene.create_projection"
     bl_label = "Create Projection"
 
@@ -331,12 +344,13 @@ class CreateProjectionOperator(Operator):
             self.report({'ERROR'}, "Invalid 3D data array.")
             return {'CANCELLED'}
 
-        baked_data, baked_normals, baked_world_positions = _run_projection(
+        baked_data, baked_normals, baked_world_positions, baked_local_resolution = _run_projection(
             obj, data, box, projection_resolution, offsets_array
         )
         set_numpy_attribute(obj, "baked_data", baked_data.astype(np.float32))
         set_numpy_attribute(obj, "baked_normals", baked_normals.astype(np.float32))
         set_numpy_attribute(obj, "baked_world_positions", baked_world_positions.astype(np.float32))
+        set_numpy_attribute(obj, "baked_local_resolution", baked_local_resolution)
         create_material_from_multilayer_array(
             obj, baked_data, material_name=f"ProjectedMaterial_{obj.name}"
         )
@@ -441,23 +455,31 @@ class BatchProjectionOperator(Operator):
                 self.report({'ERROR'}, f"Failed loading TIFF for {obj.name}: {e}")
                 return {'CANCELLED'}
 
-            baked_data, baked_normals, baked_world_positions = _run_projection(
+            baked_data, baked_normals, baked_world_positions, baked_local_resolution = _run_projection(
                 obj, data, box, projection_resolution, offsets_array
             )
             out_stem = file_path.stem if single_mesh_mode else obj.name
+            out_dir = batch_out_path / out_stem
+            geom_dir = out_dir / f"{out_stem}_geometry"
             try:
+                out_dir.mkdir(parents=True, exist_ok=True)
+                geom_dir.mkdir(parents=True, exist_ok=True)
                 tifffile.imwrite(
-                    batch_out_path / f"{out_stem}_BakedNormals.tif",
+                    out_dir / f"{out_stem}_BakedData.tif",
+                    baked_data.astype(np.float32).transpose((1, 0, 2, 3)),
+                    metadata={'axes': 'ZCYX'}, imagej=True,
+                )
+                tifffile.imwrite(
+                    geom_dir / f"{out_stem}_BakedNormals.tif",
                     baked_normals.astype(np.float32),
                 )
                 tifffile.imwrite(
-                    batch_out_path / f"{out_stem}_BakedPositions.tif",
+                    geom_dir / f"{out_stem}_BakedPositions.tif",
                     baked_world_positions.astype(np.float32),
                 )
                 tifffile.imwrite(
-                    batch_out_path / f"{out_stem}_BakedData.tif",
-                    baked_data.astype(np.float32).transpose((1, 0, 2, 3)),
-                    metadata={'axes': 'ZCYX'}, imagej=True,
+                    geom_dir / f"{out_stem}_LocalResolution.tif",
+                    baked_local_resolution,
                 )
                 self.report({'INFO'}, f"Projection saved for {out_stem}")
             except Exception as e:
@@ -469,6 +491,7 @@ class BatchProjectionOperator(Operator):
                 set_numpy_attribute(obj, "baked_normals", baked_normals.astype(np.float32))
                 set_numpy_attribute(obj, "baked_world_positions",
                                     baked_world_positions.astype(np.float32))
+                set_numpy_attribute(obj, "baked_local_resolution", baked_local_resolution)
                 create_material_from_multilayer_array(
                     obj, baked_data, material_name=f"ProjectedMaterial_{obj.name}"
                 )
