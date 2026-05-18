@@ -525,7 +525,8 @@ class SlicePlaneOperator(Operator):
 class VertexShaderOperator(Operator):
     """Color mesh vertices according to 3D image intensity from the Active 3D Dataset.
     
-    Input data is normalized to [0, 1] based on 5th and 99th intensity percentiles.
+    Input data is anti-aliased and interpolated at vertex positions. The resulting
+    intensities are normalized to [0, 1] based on 1st and 99th percentiles.
     """
     bl_idname = "scene.vertex_shader"
     bl_label = "Initialize Vertex Shader"
@@ -563,7 +564,7 @@ class VertexShaderOperator(Operator):
 
         # anti-aliasing: use a scalar smoothing width (median edge length / resolution mean)
         median_edge = np.median(compute_edge_lengths(obj))
-        aa_scale = float(1.5 * median_edge / np.mean(resolution))
+        aa_scale = float(1. * median_edge / np.mean(resolution))
         def anti_aliasing_filter(x):
             return ndimage.uniform_filter(x, size=max(1, int(round(aa_scale))))
 
@@ -577,8 +578,9 @@ class VertexShaderOperator(Operator):
                 local_filter=anti_aliasing_filter,
             )
 
-        qmins = np.array([np.quantile(data[ic, ::4, ::4, ::4], 0.05) for ic in channels_rgb])
-        qmaxs = np.array([np.quantile(data[ic, ::4, ::4, ::4], 0.99) for ic in channels_rgb])
+        #qmins = np.array([np.quantile(data[ic, ::4, ::4, ::4], 0.05) for ic in channels_rgb])
+        #qmaxs = np.array([np.quantile(data[ic, ::4, ::4, ::4], 0.99) for ic in channels_rgb])
+        qmins, qmaxs = np.percentile(intensities, (1, 99), axis=0)
         denom = qmaxs - qmins
         denom[denom == 0] = 1.0
         intensities = np.clip((intensities - qmins) / denom, 0, 1)
