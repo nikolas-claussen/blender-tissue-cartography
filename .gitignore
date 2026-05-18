@@ -74,11 +74,10 @@ tools/fastai
 .quarto
 
 # large .blend file from tissue cartography
-nbs/blender_addon/blender_addon.blend
-nbs/blender_addon/blender_addon.blend1
+blender_addon/test_data/*.blend
+blender_addon/test_data/*.blend1
+
 
 # Blender package files
 blender_addon/packaging/wheels/
 blender_addon/packaging/wheels_bak/
-blender_addon/test_data/
-blender_addon/test_scripts/

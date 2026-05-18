@@ -2,6 +2,10 @@
 
 ## Purpose
 
+Tissue cartography extracts curved, 2d surfaces from volumetric microscopy and maps the image data to the plane
+The purpose of this project is to leverage Blender's capabilities, notably the UV editor for cartography and 
+visualization.
+
 The Blender add-on provides an interactive GUI for the tissue cartography pipeline: loading volumetric TIFF images and segmentations, generating and registering meshes, and baking image data onto UV-unwrapped surfaces. It shares algorithmic logic with the standalone Python library (`blender_tissue_cartography/`), but is self-contained. The add-on relies on Blender's UV unwrapping and is designed for interactive, single-dataset workflows. The standalone library targets automated batch pipelines.
 
 ---
@@ -49,7 +53,7 @@ From the `blender_addon/` directory:
 
 ```sh
 /Applications/Blender.app/Contents/MacOS/Blender --command extension build \
-  --source-dir . --output-dir addon_zips/ --split-platforms
+  --source-dir . --output-dir ./blender_addon_download/ --split-platforms
 ```
 
 This produces platform-specific `.zip` files in `addon_zips/`.

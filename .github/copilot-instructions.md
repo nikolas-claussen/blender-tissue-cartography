@@ -5,7 +5,9 @@ maintainable solutions over complex ones, and inform me if a new feature would a
 
 ## Project context
 
-This project comprises an 3d-image processing software library for "tissue cartography", a method that extracts 2D surfaces from 3D image data and maps them to 2D. It has two components: a standalone python library, and an add-on for the 3D modelling software Blender.
+This project comprises an 3d-image processing software library for "tissue cartography", a method that extracts 2D surfaces from 3D image data and maps them to 2D. The purpose of this project is to leverage Blender's capabilities, notably the UV editor for cartography and visualization, for tissue cartography.
+
+It has two components: a standalone python library, and an add-on for the 3D modelling software Blender.
 
 ## Coding standards (applies to all Python)
 
@@ -24,12 +26,12 @@ This project comprises an 3d-image processing software library for "tissue carto
 
 ## Blender add-on
 
-- The blender add-on is in the `blender_addon` folder. It is written in Python, but follows Blender's coding style and conventions, which are different from the rest of the project. These `.py` files are not generated from notebooks, and can be edited directly.
+- The blender add-on is in the `blender_addon_src` folder. It is written in Python, but follows Blender's coding style and conventions, which are different from the rest of the project. These `.py` files are not generated from notebooks, and can be edited directly.
 
 - The add-on must be packaged into an installable Blender add-on,
-The `blender_addon/wheels/` directory contains the python libraries the add-on depends on. To build the package, run the shell command:
+The `blender_addon_src/wheels/` directory contains the python libraries the add-on depends on. To build the package, run the shell command from the `blender_addon_src/` directory:
 ```sh
-/Applications/Blender.app/Contents/MacOS/Blender --command extension build --source-dir . --output-dir addon_zips/ --split-platforms
+/Applications/Blender.app/Contents/MacOS/Blender --command extension build --source-dir . --output-dir ./blender_addon_download/ --split-platforms
 ```
 To re-download the wheels, run this command [to do]:
 ```sh
