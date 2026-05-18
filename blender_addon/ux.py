@@ -42,7 +42,7 @@ class TissueCartographyPanel(Panel):
             icon_only=True, emboss=False,
         )
         data_store = bpy.types.Scene.tissue_cartography_3D_data
-        header_row.label(text=f"Loaded 3D Datasets ({len(data_store)})")
+        header_row.label(text=f"Loaded 3D Datasets ({len(data_store)}) Datasets with deleted boxes may not appear here.")
         if scene.tissue_cartography_show_datasets:
             if not data_store:
                 datasets_box.label(text="No datasets currently loaded.", icon='INFO')

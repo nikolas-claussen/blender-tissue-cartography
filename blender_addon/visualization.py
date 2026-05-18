@@ -276,19 +276,22 @@ def assign_vertex_colors(obj, colors):
         Mesh object.
     colors : array-like of shape (n_vertices, 3)
         RGB values in [0, 1] for each vertex.
+
+    Returns
+    -------
+    None
     """
     if obj.type != 'MESH':
         raise ValueError("Object is not a mesh.")
     ca = obj.data.color_attributes
-    if not ca:
-        ca.new(name="Col", type='BYTE_COLOR', domain='CORNER')
-    color_layer = ca.active_color
+    if "VertexColor" not in {a.name for a in ca}:
+        ca.new(name="VertexColor", type='FLOAT_COLOR', domain='CORNER')
     n = len(obj.data.loops)
     loop_vert_flat = np.zeros(n, dtype=np.int32)
     obj.data.loops.foreach_get("vertex_index", loop_vert_flat)
     colors_rgba = np.ones((n, 4), dtype=np.float32)
     colors_rgba[:, :3] = np.asarray(colors, dtype=np.float32)[loop_vert_flat]
-    color_layer.data.foreach_set("color", colors_rgba.flatten())
+    ca["VertexColor"].data.foreach_set("color", colors_rgba.flatten())
 
 
 def create_vertex_color_material(obj, material_name="VertexColorMaterial"):
@@ -313,7 +316,7 @@ def create_vertex_color_material(obj, material_name="VertexColorMaterial"):
         nodes.remove(node)
 
     vertex_color_node = nodes.new(type="ShaderNodeVertexColor")
-    vertex_color_node.layer_name = obj.data.color_attributes[0].name
+    vertex_color_node.layer_name = "VertexColor"
     vertex_color_node.location = (-1000, 0)
 
     separate_color_node = nodes.new(type="ShaderNodeSeparateColor")

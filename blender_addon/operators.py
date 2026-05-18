@@ -117,6 +117,36 @@ class LoadTIFFOperator(Operator):
         return {'FINISHED'}
 
 
+class UnloadDatasetOperator(Operator):
+    """Remove a single loaded 3D dataset from memory. The bounding box object is kept."""
+    bl_idname = "scene.unload_dataset"
+    bl_label = "Unload Dataset"
+
+    box_name: bpy.props.StringProperty(name="Box Name", default="")
+
+    def execute(self, context):
+        data_store = bpy.types.Scene.tissue_cartography_3D_data
+        box = bpy.data.objects.get(self.box_name)
+        if box is None or box not in data_store:
+            self.report({'WARNING'}, f"No loaded data found for '{self.box_name}'")
+            return {'CANCELLED'}
+        del data_store[box]
+        self.report({'INFO'}, f"Unloaded data for '{self.box_name}'")
+        return {'FINISHED'}
+
+
+class UnloadAllDatasetsOperator(Operator):
+    """Remove all loaded 3D datasets from memory."""
+    bl_idname = "scene.unload_all_datasets"
+    bl_label = "Unload All Datasets"
+
+    def execute(self, context):
+        count = len(bpy.types.Scene.tissue_cartography_3D_data)
+        bpy.types.Scene.tissue_cartography_3D_data.clear()
+        self.report({'INFO'}, f"Unloaded {count} dataset(s)")
+        return {'FINISHED'}
+
+
 class LoadSegmentationTIFFOperator(Operator):
     """
     Load segmentation .tif file and create a mesh from binary segmentation.
@@ -493,7 +523,10 @@ class SlicePlaneOperator(Operator):
 
 
 class VertexShaderOperator(Operator):
-    """Color mesh vertices according to 3D image intensity from the Active 3D Dataset."""
+    """Color mesh vertices according to 3D image intensity from the Active 3D Dataset.
+    
+    Input data is normalized to [0, 1] based on 5th and 99th intensity percentiles.
+    """
     bl_idname = "scene.vertex_shader"
     bl_label = "Initialize Vertex Shader"
     bl_options = {'REGISTER', 'UNDO'}
@@ -544,7 +577,7 @@ class VertexShaderOperator(Operator):
                 local_filter=anti_aliasing_filter,
             )
 
-        qmins = np.array([np.quantile(data[ic, ::4, ::4, ::4], 0.01) for ic in channels_rgb])
+        qmins = np.array([np.quantile(data[ic, ::4, ::4, ::4], 0.05) for ic in channels_rgb])
         qmaxs = np.array([np.quantile(data[ic, ::4, ::4, ::4], 0.99) for ic in channels_rgb])
         denom = qmaxs - qmins
         denom[denom == 0] = 1.0
@@ -687,36 +720,6 @@ class ShrinkwrapOperator(Operator):
 
             if mode in ("forward", "backward"):
                 source_mesh = source_mesh_copied
-        return {'FINISHED'}
-
-
-class UnloadDatasetOperator(Operator):
-    """Remove a single loaded 3D dataset from memory. The bounding box object is kept."""
-    bl_idname = "scene.unload_dataset"
-    bl_label = "Unload Dataset"
-
-    box_name: bpy.props.StringProperty(name="Box Name", default="")
-
-    def execute(self, context):
-        data_store = bpy.types.Scene.tissue_cartography_3D_data
-        box = bpy.data.objects.get(self.box_name)
-        if box is None or box not in data_store:
-            self.report({'WARNING'}, f"No loaded data found for '{self.box_name}'")
-            return {'CANCELLED'}
-        del data_store[box]
-        self.report({'INFO'}, f"Unloaded data for '{self.box_name}'")
-        return {'FINISHED'}
-
-
-class UnloadAllDatasetsOperator(Operator):
-    """Remove all loaded 3D datasets from memory."""
-    bl_idname = "scene.unload_all_datasets"
-    bl_label = "Unload All Datasets"
-
-    def execute(self, context):
-        count = len(bpy.types.Scene.tissue_cartography_3D_data)
-        bpy.types.Scene.tissue_cartography_3D_data.clear()
-        self.report({'INFO'}, f"Unloaded {count} dataset(s)")
         return {'FINISHED'}
 
 
