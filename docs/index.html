@@ -74,13 +74,13 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="styles.css">
 <meta property="og:title" content="blender-tissue-cartography">
 <meta property="og:description" content="Extract surfaces from volumetric microscopy data and map image data to 2D using Blender">
-<meta property="og:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/index_files/figure-html/376a1260-1-ee28c1cc-3737-4a46-b1ec-e96e9291126d.png">
+<meta property="og:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/index_files/figure-html/6d8785bd-1-ee28c1cc-3737-4a46-b1ec-e96e9291126d.png">
 <meta property="og:site_name" content="blender-tissue-cartography">
 <meta property="og:image:height" content="1063">
 <meta property="og:image:width" content="2108">
 <meta name="twitter:title" content="blender-tissue-cartography">
 <meta name="twitter:description" content="Extract surfaces from volumetric microscopy data and map image data to 2D using Blender">
-<meta name="twitter:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/index_files/figure-html/376a1260-1-ee28c1cc-3737-4a46-b1ec-e96e9291126d.png">
+<meta name="twitter:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/index_files/figure-html/6d8785bd-1-ee28c1cc-3737-4a46-b1ec-e96e9291126d.png">
 <meta name="twitter:image-height" content="1063">
 <meta name="twitter:image-width" content="2108">
 <meta name="twitter:card" content="summary_large_image">
@@ -127,20 +127,32 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./00_tissue_cartography_overview.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Tissue cartography with <code>blender_tisssue_cartography</code></span></a>
+  <a href="./01_blender_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2. Blender tutorial</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./01_blender_addon.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Blender add-on</span></a>
+  <a href="./02_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03_btc_addon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3. <code>blender_tissue_cartography</code> add-on</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03_more_on_tissue_cartography.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tissue cartography with <code>blender_tisssue_cartography</code></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
- <span class="menu-text">Python library</span></a>
+ <span class="menu-text">Python Libary Tutorials</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -148,86 +160,44 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Python library/io.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Image I/O</span></a>
+  <a href="./Python Libary Tutorials/04_btc_python_library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4. <code>blender_tissue_cartography</code> Python library</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Python library/01b_mesh.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Mesh data structure</span></a>
+  <a href="./Python Libary Tutorials/05_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5. Tissue cartography with “seams”</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Python library/01c_interface_pymeshlab.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><code>pymeshlab</code> interface</span></a>
+  <a href="./Python Libary Tutorials/06_improving_UV_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">6. Iteratively improving cartographic projections</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Python library/01d_interface_trimesh.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><code>trimesh</code> interface</span></a>
+  <a href="./Python Libary Tutorials/07_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7. Advanced segmentation and meshing</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Python library/01e_morphsnakes.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Morphsnakes segmentation</span></a>
+  <a href="./Python Libary Tutorials/08_multiple_recordings_and_reference_meshes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8. Consistent cartographic projections across multiple recordings</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Python library/02_cartographic_interpolation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Cartographic interpolation</span></a>
+  <a href="./Python Libary Tutorials/09_movies_and_dynamic_surfaces.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">9. Time-lapse imaging and dynamic surfaces</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Python library/differential_geometry.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Surface differential geometry</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./Python library/remeshing.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Mesh creation and remeshing</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./Python library/remeshing_pymeshlab.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Mesh creation and remeshing with MeshLab</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./Python library/04c_smoothing.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Mesh smoothing</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./Python library/registration.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Rigid-body registration</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./Python library/registration_rotation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3D-rotation registration</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./Python library/05c_wrapping.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Shrink-wrapping</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./Python library/06_harmonic_wrapping.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Harmonic mapping</span></a>
+  <a href="./Python Libary Tutorials/10_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">10. 3D Image analysis with cartographic projections</span></a>
   </div>
 </li>
       </ul>
@@ -235,7 +205,7 @@ ul.task-list li input[type="checkbox"] {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
- <span class="menu-text">Tutorials</span></a>
+ <span class="menu-text">Python library Source</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -243,62 +213,86 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Tutorials/01_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
+  <a href="./Python library Source/io.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Image I/O</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Tutorials/02_blender_tutorial.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">2. Blender tutorial</span></a>
+  <a href="./Python library Source/01b_mesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh data structure</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Tutorials/03_btc_addon.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3. <code>blender_tissue_cartography</code> add-on</span></a>
+  <a href="./Python library Source/01c_interface_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>pymeshlab</code> interface</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Tutorials/04_btc_python_library.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4. <code>blender_tissue_cartography</code> Python library</span></a>
+  <a href="./Python library Source/01d_interface_trimesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>trimesh</code> interface</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Tutorials/05_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">5. Tissue cartography with “seams”</span></a>
+  <a href="./Python library Source/01e_morphsnakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Morphsnakes segmentation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Tutorials/06_improving_UV_maps.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">6. Iteratively improving cartographic projections</span></a>
+  <a href="./Python library Source/02_cartographic_interpolation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cartographic interpolation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Tutorials/07_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">7. Advanced segmentation and meshing</span></a>
+  <a href="./Python library Source/differential_geometry.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Surface differential geometry</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Tutorials/08_multiple_recordings_and_reference_meshes.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">8. Consistent cartographic projections across multiple recordings</span></a>
+  <a href="./Python library Source/remeshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Tutorials/09_movies_and_dynamic_surfaces.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">9. Time-lapse imaging and dynamic surfaces</span></a>
+  <a href="./Python library Source/remeshing_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing with MeshLab</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./Tutorials/10_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">10. 3D Image analysis with cartographic projections</span></a>
+  <a href="./Python library Source/04c_smoothing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh smoothing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Python library Source/registration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rigid-body registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Python library Source/registration_rotation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3D-rotation registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Python library Source/05c_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Shrink-wrapping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Python library Source/06_harmonic_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Harmonic mapping</span></a>
   </div>
 </li>
       </ul>
@@ -313,34 +307,27 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#what-this-tool-does" id="toc-what-this-tool-does" class="nav-link active" data-scroll-target="#what-this-tool-does">What this tool does</a>
-  <ul class="collapse">
-  <li><a href="#click-here-for-a-2-minute-video-demo" id="toc-click-here-for-a-2-minute-video-demo" class="nav-link" data-scroll-target="#click-here-for-a-2-minute-video-demo">Click here for a 2-minute video demo</a></li>
-  <li><a href="#work-in-progress" id="toc-work-in-progress" class="nav-link" data-scroll-target="#work-in-progress">Work in progress!</a></li>
-  </ul></li>
-  <li><a href="#installation" id="toc-installation" class="nav-link" data-scroll-target="#installation">Installation</a>
+  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a>
   <ul class="collapse">
   <li><a href="#blender-add-on" id="toc-blender-add-on" class="nav-link" data-scroll-target="#blender-add-on">Blender add-on</a></li>
   <li><a href="#python-library" id="toc-python-library" class="nav-link" data-scroll-target="#python-library">Python library</a></li>
-  <li><a href="#known-issues" id="toc-known-issues" class="nav-link" data-scroll-target="#known-issues">Known issues</a></li>
+  <li><a href="#developer-instructions" id="toc-developer-instructions" class="nav-link" data-scroll-target="#developer-instructions">Developer instructions</a></li>
   </ul></li>
-  <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation">Documentation</a></li>
-  <li><a href="#basic-usage" id="toc-basic-usage" class="nav-link" data-scroll-target="#basic-usage">Basic usage</a>
+  <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation">Documentation</a>
+  <ul class="collapse">
+  <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting">Troubleshooting</a></li>
+  </ul></li>
+  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a>
   <ul class="collapse">
   <li><a href="#tissue-cartography-workflow" id="toc-tissue-cartography-workflow" class="nav-link" data-scroll-target="#tissue-cartography-workflow">Tissue cartography workflow</a></li>
   <li><a href="#blender-add-on-1" id="toc-blender-add-on-1" class="nav-link" data-scroll-target="#blender-add-on-1">Blender add-on</a></li>
-  <li><a href="#dynamic-datasets" id="toc-dynamic-datasets" class="nav-link" data-scroll-target="#dynamic-datasets">Dynamic datasets</a></li>
-  <li><a href="#python-library-1" id="toc-python-library-1" class="nav-link" data-scroll-target="#python-library-1">Python library</a></li>
-  <li><a href="#tutorials" id="toc-tutorials" class="nav-link" data-scroll-target="#tutorials">Tutorials</a></li>
+  <li><a href="#blender_tissue_cartography-python-library" id="toc-blender_tissue_cartography-python-library" class="nav-link" data-scroll-target="#blender_tissue_cartography-python-library"><code>blender_tissue_cartography</code> Python library</a></li>
   </ul></li>
-  <li><a href="#software-stack" id="toc-software-stack" class="nav-link" data-scroll-target="#software-stack">Software stack</a>
+  <li><a href="#other-useful-software-for-tissue-cartography" id="toc-other-useful-software-for-tissue-cartography" class="nav-link" data-scroll-target="#other-useful-software-for-tissue-cartography">Other useful software for tissue cartography</a></li>
+  <li><a href="#citation" id="toc-citation" class="nav-link" data-scroll-target="#citation">Citation</a>
   <ul class="collapse">
-  <li><a href="#required" id="toc-required" class="nav-link" data-scroll-target="#required">Required</a></li>
-  <li><a href="#optional" id="toc-optional" class="nav-link" data-scroll-target="#optional">Optional</a></li>
-  <li><a href="#other-useful-software" id="toc-other-useful-software" class="nav-link" data-scroll-target="#other-useful-software">Other useful software</a></li>
-  </ul></li>
   <li><a href="#acknowledgements" id="toc-acknowledgements" class="nav-link" data-scroll-target="#acknowledgements">Acknowledgements</a></li>
-  <li><a href="#citation" id="toc-citation" class="nav-link" data-scroll-target="#citation">Citation</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -372,201 +359,134 @@ ul.task-list li input[type="checkbox"] {
 
 
 <!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
-<section id="what-this-tool-does" class="level2">
-<h2 class="anchored" data-anchor-id="what-this-tool-does">What this tool does</h2>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/376a1260-1-ee28c1cc-3737-4a46-b1ec-e96e9291126d.png" class="img-fluid figure-img"></p>
+<p><img src="index_files/figure-html/6d8785bd-1-ee28c1cc-3737-4a46-b1ec-e96e9291126d.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
-<p>Tissue cartography extracts and cartographically projects curved surfaces from volumetric image data. This turns your 3D data into 2D data, which is much easier to visualize, analyze, and computationally process. Tissue cartography is particularly useful in developmental biology, analyzing 3d microscopy data by taking advantage of many biological tissues’ laminar, sheet-like organization. For more on tissue cartography, see our <a href="https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1">methods paper</a>, <a href="https://doi.org/10.1038/nmeth.3648">Heemskerk &amp; Streichan 2015</a> and <a href="https://doi.org/10.1038/s41592-023-02081-w">Mitchell &amp; Cislo 2023</a>.</p>
-<p><code>blender_tissue_cartography</code> comprises an add-on for tissue cartography using the popular 3d creation software <a href="https://www.blender.org/">blender</a>, a Python library for creating custom/automatized analysis pipelines, and a set of template analysis pipelines/tutorials.</p>
-<section id="click-here-for-a-2-minute-video-demo" class="level3">
-<h3 class="anchored" data-anchor-id="click-here-for-a-2-minute-video-demo">Click here for a <a href="https://youtu.be/Y3Vb6IDv0g0">2-minute video demo</a></h3>
+<p>Tissue cartography extracts and cartographically projects curved surfaces from volumetric image data. This turns your 3D data into 2D data, which is much easier to visualize, analyze, and computationally process. Tissue cartography takes advantage of the laminar, sheet-like organization of many biological tissues. For more on tissue cartography, see our <a href="https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1">methods paper</a> and <a href="https://doi.org/10.1038/nmeth.3648">Heemskerk &amp; Streichan 2015</a>.</p>
+<p>This repository contains two tissue-cartography tools:</p>
+<ol type="1">
+<li><p>An add-on for the 3d creation software <a href="https://www.blender.org/">blender</a> to do tissue cartography 100% in an interactive, graphical user interface. Use the add-on to quickly process a new dataset, or if you are not a coding expert.</p></li>
+<li><p>A Python library for custom and automatized analysis pipelines. The library is available on <a href="https://pypi.org/project/blender-tissue-cartography/">pip</a>, and as source in <a href="this directory of the repo">https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_tissue_cartography</a>.</p></li>
+</ol>
+<section id="click-here-for-a-2-minute-video-demo" class="level4">
+<h4 class="anchored" data-anchor-id="click-here-for-a-2-minute-video-demo">Click here for a <a href="https://youtu.be/Y3Vb6IDv0g0">2-minute video demo</a></h4>
 </section>
-<section id="work-in-progress" class="level3">
-<h3 class="anchored" data-anchor-id="work-in-progress">Work in progress!</h3>
-<p>This project is a work in progress and may change rapidly. Please update regularly.</p>
-</section>
+<section id="news-and-updates" class="level4">
+<h4 class="anchored" data-anchor-id="news-and-updates">News and updates</h4>
+<ul>
+<li>Version 2 of the Blender add-on is now available for download.</li>
+</ul>
 </section>
 <section id="installation" class="level2">
 <h2 class="anchored" data-anchor-id="installation">Installation</h2>
-<p><code>blender_tissue_cartography</code> comprises both a Blender <strong>add-on</strong> and a <strong>python library</strong>.</p>
-<ul>
-<li><p>The <strong>add-on</strong> does tissue cartography 100% within the Blender graphical user interface. Use the add-on if you quickly want to process a new dataset, or if you are not a coding expert.</p></li>
-<li><p>The <strong>python library</strong> allows expert users to develop custom or automatized pipelines.</p></li>
-</ul>
-<p><strong>System requirements</strong> Both the Python library and the add-on have no minimum system requirements and can run on any modern laptop. For processing volumetric image data, you will need sufficient RAM (at least ~4x of the size of the volumetric data, e.g.&nbsp;8GB RAM for a 2GB volumetric <code>.tif</code> file). Blender will run <em>much</em> faster if your computer has a GPU. The MeshLab library which is required for some (non-essential) operations is not available for new ARM Apple computers.</p>
+<p><strong>System requirements</strong></p>
+<p>Processing volumetric image data requires sufficient RAM (at least ~4x of the size of the image). Blender will run <em>much</em> faster if your computer has a GPU.</p>
 <section id="blender-add-on" class="level3">
 <h3 class="anchored" data-anchor-id="blender-add-on">Blender add-on</h3>
 <ol type="1">
-<li><p>Install the non-python programs: <a href="https://www.blender.org/">Blender 4.2 or later</a> (pre-4.2 version will <em>not</em> work) and <a href="https://www.ilastik.org/">Ilastik</a>. You do not need to install Python or any Python libraries.</p>
+<li><p>Install <a href="https://www.blender.org/">Blender 4.2 or later</a> (pre-4.2 version will <em>not</em> work)</p>
 <ul>
-<li>Optionally, install <a href="https://fiji.sc/">Fiji</a> (for looking at 3D <code>.tif</code>s) and <a href="https://www.meshlab.net/">Meshlab</a> (for advanced surface extraction and remeshing)</li>
+<li>Optional: install <a href="https://fiji.sc/">Fiji</a> (for looking at 3D <code>.tif</code>s) and <a href="https://www.ilastik.org/">Ilastik</a> (for 3D segmentation).</li>
 </ul></li>
-<li><p>From <a href="https://github.com/nikolas-claussen/blender-tissue-cartography">GitHub</a>, download the file <code>blender_addon/blender_tissue_cartography-1.0.0-[XXX].zip</code> where <code>[XXX]</code> is your operating system (e.g.&nbsp;<code>linux_x64</code>). You do <em>not</em> need to unpack the <code>.zip</code>.</p>
+<li><p>Download the add-on <code>.zip</code> from <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_download">GitHub</a>. Choose the file that matches your operating system (e.g.&nbsp;<code>linux_x64</code>).</p>
 <ul>
-<li>If your operating system is not available, you can also download <code>blender_addon/blender_tissue_cartography.py</code>. In this case you will need to install the python library <code>scikit-image</code> in Blender’s Python interface.</li>
+<li>If your OS is unavailable, download the <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_src">add-on source code</a>, and install the python library <code>scikit-image</code> in Blender’s Python interface.</li>
 </ul></li>
-<li><p><a href="https://docs.blender.org/manual/en/latest/editors/preferences/addons.html">Install the add-on</a>: Click “Edit -&gt; Preferences -&gt; Add-ons -&gt; Add-on Settings -&gt; Install from disk” and select the <code>.zip</code> file you just downloaded (you don’t need to unpack it).</p></li>
-<li><p>Restart Blender. The add-on can now be found under “Scene -&gt; Tissue Cartography”.</p></li>
+<li><p><a href="https://docs.blender.org/manual/en/latest/editors/preferences/addons.html">Install the add-on</a>: Click “Edit -&gt; Preferences -&gt; Add-ons -&gt; Add-on Settings -&gt; Install from disk” and select the <code>.zip</code> file you just downloaded.</p></li>
+<li><p>Restart Blender. The add-on is under “Scene -&gt; Tissue Cartography”.</p></li>
 </ol>
 </section>
 <section id="python-library" class="level3">
 <h3 class="anchored" data-anchor-id="python-library">Python library</h3>
 <ol type="1">
-<li><p>Install the non-python programs: <a href="https://fiji.sc/">Fiji</a> (optional), <a href="https://www.ilastik.org/">Ilastik</a>, <a href="https://www.meshlab.net/">Meshlab</a> (optional), and <a href="https://www.blender.org/">Blender</a>.</p></li>
-<li><p>Install Python via <a href="https://docs.anaconda.com/miniconda/miniconda-install/">anaconda/miniconda</a>, if you haven’t already.</p></li>
-<li><p>Install <code>blender_tissue_cartography</code>: run <code>pip install blender-tissue-cartography</code> in a command window.</p></li>
-<li><p>(Optional) Install extra Python library for <code>pymeshlab</code>, required for some advanced (re)meshing functionality. This package is not available on new ARM Apple computers.</p>
+<li><p>Optional: Install <a href="https://www.blender.org/">Blender 4.2 or later</a></p>
 <ul>
-<li>run <code>pip install pymeshlab</code> in a command window</li>
+<li>Some workflows also require <a href="https://fiji.sc/">Fiji</a>, <a href="https://www.ilastik.org/">Ilastik</a>, or <a href="https://www.meshlab.net/">Meshlab</a>.</li>
 </ul></li>
+<li><p>Install <code>blender-tissue-cartography</code> from pip: run <code>pip install blender-tissue-cartography</code> in a command window.</p></li>
+<li><p>(Optional) Install the Python library for <code>pymeshlab</code> for advanced (re)meshing functionality. Run <code>pip install pymeshlab</code> in a command window</p></li>
 </ol>
-<p>The project is hosted on <a href="https://pypi.org/project/blender-tissue-cartography/">pip</a>, with source code on <a href="https://github.com/nikolas-claussen/blender-tissue-cartography">GitHub</a>.</p>
-<section id="developer-installation" class="level4">
-<h4 class="anchored" data-anchor-id="developer-installation">Developer installation</h4>
-<p>If you want to extend <code>blender_tissue_cartography</code>:</p>
+</section>
+<section id="developer-instructions" class="level3">
+<h3 class="anchored" data-anchor-id="developer-instructions">Developer instructions</h3>
+<p>To extend the <code>blender-tissue-cartography</code> <strong>Blender add-on</strong>:</p>
+<ol type="1">
+<li><p>Download the add-on source code from <a href="GitHub">https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_src</a>.</p></li>
+<li><p>Read the <a href="add-on developer readme">https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_addon_src/DEVELOPER_README.md</a>.</p></li>
+</ol>
+<p>To extend the <code>blender-tissue-cartography</code> <strong>Python library</strong>:</p>
 <ol type="1">
 <li><p><a href="https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository">Clone</a> the <a href="https://github.com/nikolas-claussen/blender-tissue-cartography">github repository</a>.</p></li>
-<li><p>Create a <code>conda</code> environment with all Python dependencies and install the <code>blender_tissue_cartography</code> module. Open a command window in the <code>blender-tissue-cartography</code> directory and type:</p>
+<li><p>Create a <code>conda</code> environment and install the <code>blender_tissue_cartography</code> module. In a command window:</p>
 <ul>
 <li><code>conda env create -n blender_tissue_cartography -f environment.yml</code></li>
 <li><code>conda activate blender_tissue_cartography</code></li>
 <li><code>pip install -e .</code></li>
 </ul></li>
-<li><p>(Optional) Install extra Python library for <code>pymeshlab</code>, required for certain advanced functionality (remeshing and surface reconstruction from within Python).</p>
-<ul>
-<li><code>pip install pymeshlab</code> - Note that this package is not available on new ARM Apple computers.</li>
-</ul></li>
-<li><p>Install <a href="https://nbdev.fast.ai/">nbdev</a></p></li>
+<li><p>Install <a href="https://nbdev.fast.ai/">nbdev</a>. The python library is developed in Jupyter notebooks that are exported to Python modules and the documentation webpage.</p></li>
 </ol>
-</section>
-</section>
-<section id="known-issues" class="level3">
-<h3 class="anchored" data-anchor-id="known-issues">Known issues</h3>
-<ul>
-<li><p>When using the add-on, please save your <code>.blend</code> project to disk before using any of the add-on functionality. Otherwise, Blender may crash.</p></li>
-<li><p>3D <code>.tif</code> files loaded into Blender are not saved to the <code>.blend</code> (which would explode in size). If you close Blender, you need to reimport your 3D image data.</p></li>
-<li><p>Please report any issues or bugs you find on GitHub!</p></li>
-</ul>
 </section>
 </section>
 <section id="documentation" class="level2">
 <h2 class="anchored" data-anchor-id="documentation">Documentation</h2>
 <ul>
-<li><p><a href="https://nikolas-claussen.github.io/blender-tissue-cartography/">Documentation webpage</a></p></li>
-<li><p>Datasets and interactive Jupyter notebooks for the tutorials can be downloaded <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials/">from GitHub</a></p></li>
-<li><p>The <a href="https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1">methods paper</a> explains the general idea of tissue cartography, the design of <code>blender_tissue_cartography</code>, and shows several examples.</p></li>
+<li><p><a href="https://nikolas-claussen.github.io/blender-tissue-cartography/">Documentation webpage</a>. Datasets and interactive Jupyter notebooks for the tutorials can be downloaded <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials/">from GitHub</a></p></li>
+<li><p>The <a href="https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1">methods paper</a> explains the basics of tissue cartography, the design of <code>blender_tissue_cartography</code>, and shows several examples.</p></li>
+</ul>
+<section id="troubleshooting" class="level3">
+<h3 class="anchored" data-anchor-id="troubleshooting">Troubleshooting</h3>
+<ul>
+<li><p>3D <code>.tif</code> files loaded into Blender are not saved to disk. If you close Blender, you need to reload your 3D image data.</p></li>
+<li><p>Check the “shape” of 3D data loaded into the add-on (image bounding box). If it is off, adjust the axis order and spatial resolution.</p></li>
+<li><p>Save your <code>.blend</code> project to disk before using the add-on. Otherwise, Blender may crash.</p></li>
+<li><p>Please report any bugs on GitHub!</p></li>
 </ul>
 </section>
-<section id="basic-usage" class="level2">
-<h2 class="anchored" data-anchor-id="basic-usage">Basic usage</h2>
-<p>For a complete set of tutorials, see the <a href="https://nikolas-claussen.github.io/blender-tissue-cartography/00_tissue_cartography_overview.html#tutorials">documentation website</a>.</p>
+</section>
+<section id="usage" class="level2">
+<h2 class="anchored" data-anchor-id="usage">Usage</h2>
+<p>For details, see the <a href="https://nikolas-claussen.github.io/blender-tissue-cartography/00_tissue_cartography_overview.html#tutorials">documentation</a>.</p>
 <section id="tissue-cartography-workflow" class="level3">
 <h3 class="anchored" data-anchor-id="tissue-cartography-workflow">Tissue cartography workflow</h3>
-<p>Tissue cartography starts with a 3D, volumetric image.</p>
+<p>The workflow starts with a 3D, volumetric image, and a 3D segmentation of the object you want to extract. This repo does not contain any image segmentation tools as excellent software is already available (e.g.&nbsp;<a href="https://www.ilastik.org/">Ilastik</a>)</p>
 <ol type="1">
-<li><p>Create a segmentation of your 3D data to identify the surface you want to extract</p></li>
-<li><p>Convert the segmentation into a mesh of your surface of interest</p></li>
-<li><p>Cartographically unwrap the mesh into a 2D plane</p></li>
-<li><p>Project your 3D data onto the unwrapped mesh</p></li>
-<li><p>Visualize the results in 3D using Blender or use the 2D projected data for quantitative analysis.</p></li>
+<li><p>Convert the 3D segmentation into a surface</p></li>
+<li><p>Cartographically unwrap the surface into a 2D plane (UV mapping)</p></li>
+<li><p>Project your 3D data to 2D</p></li>
+<li><p>Visualize the results in 2D or 3D, and use the 2D projections for quantitative analysis</p></li>
 <li><p>Batch process multiple 3D images (e.g.&nbsp;frames of a movie)</p></li>
 </ol>
+<section id="advanced-usage-dynamic-datasets" class="level4">
+<h4 class="anchored" data-anchor-id="advanced-usage-dynamic-datasets">Advanced usage: Dynamic datasets</h4>
+<p>In dynamic datasets (i.e., movies), the surface of interest can move or deform over time. Alternatively, you may want to align recordings of multiple samples. The add-on and library also provide tools for this more complex use case. You create a cartographic projection for a <em>reference time point</em> which is aligned to all other time points using surface-to-surface registration algorithms. This generates consistent projections across multiple frames or samples.</p>
+</section>
 </section>
 <section id="blender-add-on-1" class="level3">
 <h3 class="anchored" data-anchor-id="blender-add-on-1">Blender add-on</h3>
-<p>The Blender add-on allows you to carry out steps 2-5 entirely within Blender. Here is a screenshot using the example <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/nbs/Tutorials/addon_example/Drosophila_CAAX-mCherry.tif"><em>Drosophila</em> dataset</a>:</p>
+<p>The add-on can carry out steps 1-5 entirely within Blender, so you can edit meshes and cartographic projections interactively. Here is a screenshot using the example <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/nbs/Tutorials/addon_example/Drosophila_CAAX-mCherry.tif"><em>Drosophila</em> blastoderm dataset</a>:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/824d53b8-1-48b7a123-b1e4-4b12-ab3c-e804252bc2b7.png" class="img-fluid figure-img"></p>
+<p><img src="../index_files/addon_screenshot.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
 <p>Left: Projected 2D image. Center: 3D view of image data (volume bounding box, image slices, and extracted surface). Right: Tissue Cartography add-on panel.</p>
-<p>In Blender, you can edit meshes and cartographic projections interactively - you can create a preliminary projection of your data automatically, and use it as guidance when editing your cartographic map in blender. Here, we edit the “seam” of our cartographic map based on the region occupied by cells during zebrafish epiboly (tutorial 6).</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="index_files/figure-html/2aa746f8-1-image-2.png" class="img-fluid figure-img"></p>
-<figcaption>image-2.png</figcaption>
-</figure>
-</div>
 </section>
-<section id="dynamic-datasets" class="level3">
-<h3 class="anchored" data-anchor-id="dynamic-datasets">Dynamic datasets</h3>
-<p><code>blender_tissue_cartography</code> also allows the creation of cartographic projections of dynamic datasets (i.e.&nbsp;movies), where the surface of interest can move or deform over time. The user creates a cartographic projection for a <em>reference time point</em> which is transferred to all other time points using surface-to-surface registration algorithms. This generates consistent projections across all time points - see tutorials <a href="https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/08_multiple_recordings_and_reference_meshes.html">8</a> and <a href="https://nikolas-claussen.github.io/blender-tissue-cartography/Tutorials/09_movies_and_dynamic_surfaces.html">9</a>.</p>
+<section id="blender_tissue_cartography-python-library" class="level3">
+<h3 class="anchored" data-anchor-id="blender_tissue_cartography-python-library"><code>blender_tissue_cartography</code> Python library</h3>
+<p>With the Python library you can build automated tissue cartography pipelines. The library also has tools for quantitative image analysis on projections (namely, to mathematically account for <strong>cartographic distortion</strong>).</p>
 </section>
-<section id="python-library-1" class="level3">
-<h3 class="anchored" data-anchor-id="python-library-1">Python library</h3>
-<p>For advanced users, the <code>blender_tissue_cartography</code> library allows the creation of custom and automated tissue cartography pipelines, typically run from a jupyter computational notebook (which can also serve as lab notebook - notes, comments on the data). <code>blender_tissue_cartography</code> also provides tools for correct quantitative analysis of image data on curved surfaces.</p>
-<p>Below is a screenshot to give you an idea of the workflow for the example <em>Drosophila</em> dataset: Volumetric data in ImageJ (center), jupyter computational notebook to run the <code>blender_tissue_cartography</code> module (left), and blender project with extracted mesh and texture (right).</p>
 </section>
-<section id="tutorials" class="level3">
-<h3 class="anchored" data-anchor-id="tutorials">Tutorials</h3>
-<p>Fully worked-out tutorials are provided on the <a href="https://nikolas-claussen.github.io/blender-tissue-cartography/">documentation webpage</a>. Test data for the tutorials can be downloaded from the <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials"><code>nbs/Tutorials/</code> directory</a>.</p>
-<p>For the Python library, tutorials take the form of jupyter computational notebooks which you can download and run on your own computer (click the green button “Code” to download a <code>.zip</code>.) To run a tutorial on your computer, follow the installation instructions and then <a href="https://docs.jupyter.org/en/latest/running.html">launch jupyter</a> and work through the notebooks in the <code>Tutorials</code> directory in order. I recommended being comfortable with running simple Python code (you don’t have to do any coding yourself).</p>
-<p>The tutorial notebooks can be used as <em>templates</em> for your analysis pipelines. Here is an example of a jupyter computational notebook (left), and the created projection visualized in Blender (right).</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="index_files/figure-html/7bc8f85e-1-image.png" class="img-fluid figure-img"></p>
-<figcaption>image.png</figcaption>
-</figure>
-</div>
-<section id="notes-for-python-beginners" class="level4">
-<h4 class="anchored" data-anchor-id="notes-for-python-beginners">Notes for Python beginners</h4>
+<section id="other-useful-software-for-tissue-cartography" class="level2">
+<h2 class="anchored" data-anchor-id="other-useful-software-for-tissue-cartography">Other useful software for tissue cartography</h2>
 <ul>
-<li><p>You will need a working Python installation (see here: <a href="https://docs.anaconda.com/miniconda/miniconda-install/">installing anaconda/miniconda</a>, and know how to <a href="https://docs.jupyter.org/en/latest/running.html">launch jupyter notebooks</a>. You will run the computational notebooks in your browser. Here is a <a href="https://www.youtube.com/watch?v=HW29067qVWk">video tutorial</a></p></li>
-<li><p>Create a new folder for each tissue cartography project. Do not place them into the folder into which you unpacked <code>blender_tissue_cartography</code> - otherwise, your files will be overwritten if you want to update the software</p></li>
-<li><p>The repository contains two sets of notebooks: the <code>nbs</code> folder and the <code>nbs/Tutorials</code> folder. The <code>nbs</code>-notebooks are for developing the code. If you don’t want to develop/adapt the code to your needs, you don’t need to look at them. Copy a notebook from the <code>nbs/Tutorials</code> folder - e.g.&nbsp;<code>03_basics_example.ipynb</code> - into your project folder to use it as a template.</p></li>
-<li><p>You do not need to copy functions into your notebooks manually. If you follow the installation instructions, the code will be installed as a Python package and can be “imported” by Python. See tutorials!</p></li>
+<li><a href="https://www.meshlab.net/">Meshlab</a>: GUI and <a href="https://pymeshlab.readthedocs.io/en/latest/index.html">Python library</a> with advanced remeshing and surface reconstruction tools.</li>
+<li><a href="https://github.com/oanegros/MicroscopyNodes">MicroscopyNodes</a>: plug-in for rendering volumetric <code>.tif</code> files in blender</li>
+<li><a href="https://github.com/GeometryCollective/boundary-first-flattening">Boundary First Flattening</a>: advanced tool for creating UV maps with graphical and command line interface</li>
 </ul>
-</section>
-</section>
-</section>
-<section id="software-stack" class="level2">
-<h2 class="anchored" data-anchor-id="software-stack">Software stack</h2>
-<p>Note: the Python libraries will be installed automatically if you follow the installation instructions above.</p>
-<section id="required" class="level3">
-<h3 class="anchored" data-anchor-id="required">Required</h3>
-<ul>
-<li>Python, with the following libraries
-<ul>
-<li><a href="https://jupyter.org/">jupyter</a></li>
-<li><a href="https://numpy.org/">numpy</a> / <a href="https://matplotlib.org/">Matplotlib</a> / <a href="https://scipy.org/">Scipy</a></li>
-<li><a href="https://scikit-image.org">skimage</a> various image processing tools.</li>
-<li><a href="https://www.h5py.org/">h5py</a> for reading/writing of <code>.h5</code> files.</li>
-<li><a href="https://github.com/cgohlke/tifffile/">tifffile</a> for reading/writing of <code>.tif</code> files, including metadata.</li>
-<li><a href="https://libigl.github.io/libigl-python-bindings">libigl</a> version 2.6.1, Geometry processing.</li>
-</ul></li>
-<li><a href="https://www.ilastik.org/">Ilastik</a> Image classification and segmentation,</li>
-<li><a href="https://www.blender.org/">Blender</a> Mesh editing and UV mapping.</li>
-</ul>
-</section>
-<section id="optional" class="level3">
-<h3 class="anchored" data-anchor-id="optional">Optional</h3>
-<ul>
-<li><p><a href="https://www.meshlab.net/">Meshlab</a> GUI and Python library with advanced surface reconstruction tools (required for some workflows).</p></li>
-<li><p>Python libraries:</p>
-<ul>
-<li><a href="https://pymeshlab.readthedocs.io/en/latest/index.html">PyMeshLab</a> Python interface to MeshLab.</li>
-<li><a href="https://nbdev.fast.ai/tutorials/tutorial.html">nbdev</a> for notebook-based development, if you want to add your code</li>
-</ul></li>
-</ul>
-</section>
-<section id="other-useful-software" class="level3">
-<h3 class="anchored" data-anchor-id="other-useful-software">Other useful software</h3>
-<ul>
-<li><a href="https://github.com/oanegros/MicroscopyNodes">MicroscopyNodes</a> plug-in for rendering volumetric <code>.tif</code> files in blender</li>
-<li><a href="https://github.com/GeometryCollective/boundary-first-flattening">Boundary First Flattening</a> advanced tool for creating UV maps with graphical and command line interface</li>
-<li><a href="https://github.com/RobinMagnet/pyFM">pyFM</a> python library for mesh-to-mesh registration (for dynamic data) which may complement the algorithms that ship with <code>blender_tissue-cartography</code></li>
-</ul>
-</section>
-</section>
-<section id="acknowledgements" class="level2">
-<h2 class="anchored" data-anchor-id="acknowledgements">Acknowledgements</h2>
-<p>This software is being developed by Nikolas Claussen in the <a href="https://streichanlab.physics.ucsb.edu/">Streichan lab at UCSB</a>. We thank Cecile Regis, Susan Wopat, Noah Mitchell, An Yan, Pieter Derksen, Matthew Lefebvre, Sean Komura, Gary Han, Boris Fosso, and Dillon Cislo, for sharing data, advice, and software testing.</p>
 </section>
 <section id="citation" class="level2">
 <h2 class="anchored" data-anchor-id="citation">Citation</h2>
@@ -574,8 +494,12 @@ ul.task-list li input[type="checkbox"] {
 <blockquote class="blockquote">
 <p>Nikolas Claussen, Cécile Regis, Susan Wopat, and Sebastian Streichan: <em>Blender tissue cartography: an intuitive tool for the analysis of dynamic 3D microscopy data</em>. bioRxiv 2025.02.04.636523; doi: https://doi.org/10.1101/2025.02.04.636523</p>
 </blockquote>
+<section id="acknowledgements" class="level3">
+<h3 class="anchored" data-anchor-id="acknowledgements">Acknowledgements</h3>
+<p>This software is being developed by <a href="https://pcts.princeton.edu/people/nikolas-claussen">Nikolas Claussen</a>. We thank Susan Wopat, Matthew Lefebvre (members of <a href="https://streichanlab.physics.ucsb.edu/">Streichan lab at UCSB</a>), Cecile Regis, Noah Mitchell, An Yan, Pieter Derksen, Matthew Lefebvre, Sean Komura, Gary Han, Boris Fosso, and Dillon Cislo for sharing data, advice, and software testing.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

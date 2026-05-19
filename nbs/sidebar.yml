@@ -2,33 +2,32 @@ website:
   sidebar:
     contents:
       - index.ipynb
-      - 00_tissue_cartography_overview.ipynb
-      - 01_blender_addon.ipynb
-      - section: Python library
+      - 01_blender_tutorial.ipynb
+      - 02_segmentation_with_ilastik.ipynb
+      - 03_btc_addon.ipynb
+      - 03_more_on_tissue_cartography.ipynb
+      - section: Python Libary Tutorials
         contents:
-          - Python library/01a_io.ipynb
-          - Python library/01b_mesh.ipynb
-          - Python library/01c_interface_pymeshlab.ipynb
-          - Python library/01d_interface_trimesh.ipynb
-          - Python library/01e_morphsnakes.ipynb
-          - Python library/02_cartographic_interpolation.ipynb
-          - Python library/03_differential_geometry.ipynb
-          - Python library/04a_remeshing.ipynb
-          - Python library/04b_remeshing_pymeshlab.ipynb
-          - Python library/04c_smoothing.ipynb
-          - Python library/05a_registration.ipynb
-          - Python library/05b_registration_rotation.ipynb
-          - Python library/05c_wrapping.ipynb
-          - Python library/06_harmonic_wrapping.ipynb
-      - section: Tutorials
+          - Python Libary Tutorials/04_btc_python_library.ipynb
+          - Python Libary Tutorials/05_UV_maps_with_seams.ipynb
+          - Python Libary Tutorials/06_improving_UV_maps.ipynb
+          - Python Libary Tutorials/07_advanced_segmentation_and_meshing.ipynb
+          - Python Libary Tutorials/08_multiple_recordings_and_reference_meshes.ipynb
+          - Python Libary Tutorials/09_movies_and_dynamic_surfaces.ipynb
+          - Python Libary Tutorials/10_analysis_in_3d.ipynb
+      - section: Python library Source
         contents:
-          - Tutorials/01_segmentation_with_ilastik.ipynb
-          - Tutorials/02_blender_tutorial.ipynb
-          - Tutorials/03_btc_addon.ipynb
-          - Tutorials/04_btc_python_library.ipynb
-          - Tutorials/05_UV_maps_with_seams.ipynb
-          - Tutorials/06_improving_UV_maps.ipynb
-          - Tutorials/07_advanced_segmentation_and_meshing.ipynb
-          - Tutorials/08_multiple_recordings_and_reference_meshes.ipynb
-          - Tutorials/09_movies_and_dynamic_surfaces.ipynb
-          - Tutorials/10_analysis_in_3d.ipynb
+          - Python library Source/01a_io.ipynb
+          - Python library Source/01b_mesh.ipynb
+          - Python library Source/01c_interface_pymeshlab.ipynb
+          - Python library Source/01d_interface_trimesh.ipynb
+          - Python library Source/01e_morphsnakes.ipynb
+          - Python library Source/02_cartographic_interpolation.ipynb
+          - Python library Source/03_differential_geometry.ipynb
+          - Python library Source/04a_remeshing.ipynb
+          - Python library Source/04b_remeshing_pymeshlab.ipynb
+          - Python library Source/04c_smoothing.ipynb
+          - Python library Source/05a_registration.ipynb
+          - Python library Source/05b_registration_rotation.ipynb
+          - Python library Source/05c_wrapping.ipynb
+          - Python library Source/06_harmonic_wrapping.ipynb

@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Tools for surface differential geometry: maps between triangle meshes, map distortion, induced metric, vector calculus">
+
+<title>Surface differential geometry – blender-tissue-cartography</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-f245066ca199b7326ac6b360085ddf3a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Surface differential geometry – blender-tissue-cartography">
+<meta property="og:description" content="Tools for surface differential geometry: maps between triangle meshes, map distortion, induced metric, vector calculus">
+<meta property="og:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Python library Source/03_differential_geometry_files/figure-html/cell-8-output-1.png">
+<meta property="og:site_name" content="blender-tissue-cartography">
+<meta property="og:image:height" content="415">
+<meta property="og:image:width" content="547">
+<meta name="twitter:title" content="Surface differential geometry – blender-tissue-cartography">
+<meta name="twitter:description" content="Tools for surface differential geometry: maps between triangle meshes, map distortion, induced metric, vector calculus">
+<meta name="twitter:image" content="https://nikolas-claussen.github.io/blender-tissue-cartography/Python library Source/03_differential_geometry_files/figure-html/cell-8-output-1.png">
+<meta name="twitter:image-height" content="415">
+<meta name="twitter:image-width" content="547">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">blender-tissue-cartography</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Python library Source/io.html">Python library Source</a></li><li class="breadcrumb-item"><a href="../Python library Source/differential_geometry.html">Surface differential geometry</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">blender-tissue-cartography</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_blender_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">2. Blender tutorial</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03_btc_addon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3. <code>blender_tissue_cartography</code> add-on</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03_more_on_tissue_cartography.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tissue cartography with <code>blender_tisssue_cartography</code></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Python Libary Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python Libary Tutorials/04_btc_python_library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4. <code>blender_tissue_cartography</code> Python library</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python Libary Tutorials/05_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5. Tissue cartography with “seams”</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python Libary Tutorials/06_improving_UV_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">6. Iteratively improving cartographic projections</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python Libary Tutorials/07_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7. Advanced segmentation and meshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python Libary Tutorials/08_multiple_recordings_and_reference_meshes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8. Consistent cartographic projections across multiple recordings</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python Libary Tutorials/09_movies_and_dynamic_surfaces.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">9. Time-lapse imaging and dynamic surfaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python Libary Tutorials/10_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">10. 3D Image analysis with cartographic projections</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Python library Source</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/io.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Image I/O</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/01b_mesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh data structure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/01c_interface_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>pymeshlab</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/01d_interface_trimesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>trimesh</code> interface</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/01e_morphsnakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Morphsnakes segmentation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/02_cartographic_interpolation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cartographic interpolation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/differential_geometry.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Surface differential geometry</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/remeshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/remeshing_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh creation and remeshing with MeshLab</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/04c_smoothing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mesh smoothing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/registration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rigid-body registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/registration_rotation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3D-rotation registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/05c_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Shrink-wrapping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Python library Source/06_harmonic_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Harmonic mapping</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#mapping-distortion" id="toc-mapping-distortion" class="nav-link active" data-scroll-target="#mapping-distortion">Mapping distortion</a></li>
+  <li><a href="#flatten" id="toc-flatten" class="nav-link" data-scroll-target="#flatten">flatten</a></li>
+  <li><a href="#compute_per_vertex_area_distortion" id="toc-compute_per_vertex_area_distortion" class="nav-link" data-scroll-target="#compute_per_vertex_area_distortion">compute_per_vertex_area_distortion</a></li>
+  <li><a href="#impute_boundary_values" id="toc-impute_boundary_values" class="nav-link" data-scroll-target="#impute_boundary_values">impute_boundary_values</a></li>
+  <li><a href="#get_area_distortion_in_uv" id="toc-get_area_distortion_in_uv" class="nav-link" data-scroll-target="#get_area_distortion_in_uv">get_area_distortion_in_UV</a></li>
+  <li><a href="#compute_per_vertex_angle_distortion" id="toc-compute_per_vertex_angle_distortion" class="nav-link" data-scroll-target="#compute_per_vertex_angle_distortion">compute_per_vertex_angle_distortion</a></li>
+  <li><a href="#jacobian" id="toc-jacobian" class="nav-link" data-scroll-target="#jacobian">Jacobian</a></li>
+  <li><a href="#compute_per_vertex_jacobian" id="toc-compute_per_vertex_jacobian" class="nav-link" data-scroll-target="#compute_per_vertex_jacobian">compute_per_vertex_jacobian</a></li>
+  <li><a href="#compute_per_face_jacobian" id="toc-compute_per_face_jacobian" class="nav-link" data-scroll-target="#compute_per_face_jacobian">compute_per_face_jacobian</a></li>
+  <li><a href="#induced-metric-tensor" id="toc-induced-metric-tensor" class="nav-link" data-scroll-target="#induced-metric-tensor">Induced metric tensor</a></li>
+  <li><a href="#get_induced_metric" id="toc-get_induced_metric" class="nav-link" data-scroll-target="#get_induced_metric">get_induced_metric</a></li>
+  <li><a href="#get_metric_angle" id="toc-get_metric_angle" class="nav-link" data-scroll-target="#get_metric_angle">get_metric_angle</a></li>
+  <li><a href="#get_metric_norm" id="toc-get_metric_norm" class="nav-link" data-scroll-target="#get_metric_norm">get_metric_norm</a></li>
+  <li><a href="#vector-calculus-on-curved-surfaces" id="toc-vector-calculus-on-curved-surfaces" class="nav-link" data-scroll-target="#vector-calculus-on-curved-surfaces">Vector calculus on curved surfaces</a>
+  <ul class="collapse">
+  <li><a href="#tri_grad" id="toc-tri_grad" class="nav-link" data-scroll-target="#tri_grad">tri_grad</a></li>
+  </ul></li>
+  <li><a href="#projection-onto-surface-normal" id="toc-projection-onto-surface-normal" class="nav-link" data-scroll-target="#projection-onto-surface-normal">Projection onto surface normal</a>
+  <ul class="collapse">
+  <li><a href="#get_normal_projector" id="toc-get_normal_projector" class="nav-link" data-scroll-target="#get_normal_projector">get_normal_projector</a></li>
+  <li><a href="#separate_tangential_normal" id="toc-separate_tangential_normal" class="nav-link" data-scroll-target="#separate_tangential_normal">separate_tangential_normal</a></li>
+  </ul></li>
+  <li><a href="#div-and-rot" id="toc-div-and-rot" class="nav-link" data-scroll-target="#div-and-rot">div and rot</a>
+  <ul class="collapse">
+  <li><a href="#get_grad_perp" id="toc-get_grad_perp" class="nav-link" data-scroll-target="#get_grad_perp">get_grad_perp</a></li>
+  <li><a href="#get_rot" id="toc-get_rot" class="nav-link" data-scroll-target="#get_rot">get_rot</a></li>
+  <li><a href="#get_div" id="toc-get_div" class="nav-link" data-scroll-target="#get_div">get_div</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../Python library Source/io.html">Python library Source</a></li><li class="breadcrumb-item"><a href="../Python library Source/differential_geometry.html">Surface differential geometry</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Surface differential geometry</h1>
+</div>
+
+<div>
+  <div class="description">
+    Tools for surface differential geometry: maps between triangle meshes, map distortion, induced metric, vector calculus
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>When analyzing data in cartographic projections, we have to make sure we are always accounting for mapping distortion and curvature. This notebook builds the relevant tools, including for vector calculus on curved surfaces.</p>
+<p>When analyzing quantities computed in the UV cartographic projection (e.g.&nbsp;cell areas, orientation, tissue flow speed obtained from optical flow), you need to account for the cartographic projection. I generally recommend doing this by <em>mapping every object back to 3d as soon as possible</em>. This will minimize the number of possible errors. Example: you want to evaluate the angle between two edges of a cell. 1. You could do so in the UV map using the induced metric (see below). This is error-prone: did you calculate the metric correctly? Did you use the metric or its inverse? 2. You could map back the location of the cell vertices to 3d, and then calculate the edge vectors in 3d. This minimizes possibilities for confusion.</p>
+<section id="mapping-distortion" class="level3">
+<h3 class="anchored" data-anchor-id="mapping-distortion">Mapping distortion</h3>
+<p>A map between two meshes is defined on a per-triangle basis (i.e.&nbsp;which triangle of the “source” mesh gets mapped to which one of the “target” mesh). The map between a 3d mesh and its UV unwrapping is a special case of this.</p>
+<p>The mapping distortion is described by the <em>Jacobian</em>, defined per triangle. For more details, see <a href="https://www.cs.cmu.edu/~kmcrane/Projects/Other/OverviewConformalGeometryProcessing.pdf">here</a>. The simplest kind of mapping distortion is <em>area distortion</em>, which is simply the ratio of (target triangle area) / (source triangle area).</p>
+<p>In general, many mapping-related quantities, like area distortion, are most easily computed per triangle. We can “move” them to mesh vertices by interpolation. If we keep all of our quantities of interest defined per vertex, it will simplify bookkeeping.</p>
+<p>The tools in this notebook only work for triangular meshes! Only for triangular meshes is the per-face map distortion uniquely defined.</p>
+<hr>
+</section>
+<section id="flatten" class="level3">
+<h3 class="anchored" data-anchor-id="flatten">flatten</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> flatten(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    lst, <span class="co"># list-of-lists.</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    max_depth:<span class="bu">int</span><span class="op">=</span><span class="dv">1000</span>, <span class="co"># To what depth to flatten the list.</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    iter_count:<span class="bu">int</span><span class="op">=</span><span class="dv">0</span>, <span class="co"># Helper argument for recursion depth determination.</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Flatten a list of lists into a list.</em></p>
+<p>Also works with inhomogeneous lists, e.g., [[0,1],2]. The argument depth determines how “deep” to flatten the list, e.g.&nbsp;with max_depth=1: [[(1,0), (1,0)]] -&gt; [(1,0), (1,0)].</p>
+<hr>
+</section>
+<section id="compute_per_vertex_area_distortion" class="level3">
+<h3 class="anchored" data-anchor-id="compute_per_vertex_area_distortion">compute_per_vertex_area_distortion</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_per_vertex_area_distortion(</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    source_vertices, <span class="co"># Source mesh vertices.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    source_faces, <span class="co"># Spurce mesh faces. Must be triangular.</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    target_vertices, <span class="co"># Target mesh vertices.</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    target_faces, <span class="co"># Target mesh faces. Must be triangular.</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    evaluate_at:<span class="bu">str</span><span class="op">=</span><span class="st">'source'</span>, <span class="co"># Whether to evaluate the result at the source or target</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>mesh vertices.</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    cutoff:<span class="bu">float</span><span class="op">=</span><span class="fl">1e-15</span>, <span class="co"># Numerical cutoff for small target areas (avoid 0 division error)</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Area distortion factor (source area/target area) evaluated on source or target mesh vertices.</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Compute area distortion factor for a map between meshes.</em></p>
+<p>The result is evaluated at the vertices of the source or target mesh. Faces must be such that faces[i] is mapped to target_faces[i]. This function computes (target area / source area).</p>
+<p>This can be used to (a) visualize map distortion and (b) correct for it, for example by using it as a weighting factor for averages.</p>
+<p>Example (compute distortion of UV map): <code>compute_per_vertex_area_distortion(mesh.texture_vertices, mesh.texture_tris,                                    mesh.vertices, mesh.tris)</code></p>
+<hr>
+</section>
+<section id="impute_boundary_values" class="level3">
+<h3 class="anchored" data-anchor-id="impute_boundary_values">impute_boundary_values</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> impute_boundary_values(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    per_vertex_field, tris, fill_value:<span class="bu">float</span><span class="op">=</span>nan</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Replace values of per_vertex_field at boundary vertices by average of its non-boundary neighbors.</em> If there are no non-boundary neighbors, use fill_value.</p>
+<hr>
+</section>
+<section id="get_area_distortion_in_uv" class="level3">
+<h3 class="anchored" data-anchor-id="get_area_distortion_in_uv">get_area_distortion_in_UV</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_area_distortion_in_UV(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    mesh, <span class="co"># Input mesh with UV coordinates.</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    uv_grid_steps:<span class="bu">int</span><span class="op">=</span><span class="dv">1024</span>, <span class="co"># Size of UV grid. Determines resolution of result.</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    map_back:<span class="bu">bool</span><span class="op">=</span><span class="va">True</span>, <span class="co"># Map back the UV coordinates to [0,1]^2. Else, coordinates outside [0,1] are ignored.</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Area distortion across [0,1]^2 UV grid, with uniform step size. UV positions that don't</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>correspond to <span class="bu">any</span> value are <span class="bu">set</span> to np.nan.</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Get area distortion of UV map, interpolated across the UV square.</em></p>
+<p>Used to measure area distortion of your cartographic mapping. This can be used to (a) visualize map distortion and (b) correct for it, for example by using it as a weighting factor for averages.</p>
+<p>Assumes the map <span class="math inline">\(x,y,z \mapsto u,v\)</span> to be invertible. This is not guaranteed - you can create overlapping UV coordinates in blender. The provided UV coordinates will be mapped back to [0, 1]^2 if map_back is True. Else, coordinates outside [0,1] are ignored.</p>
+<div id="59182d2d" class="cell" data-execution_count="39">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"datasets/movie_example/initial_uv.obj"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o mesh_01_cylinder_seams_uv</code></pre>
+</div>
+</div>
+<div id="79246213" class="cell" data-execution_count="40">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>distortion <span class="op">=</span> compute_per_vertex_area_distortion(mesh.texture_vertices, mesh.texture_tris,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                                                mesh.vertices, mesh.tris)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="f44dab39" class="cell" data-execution_count="41">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>plt.scatter(<span class="op">*</span>mesh.texture_vertices.T, c<span class="op">=</span>distortion, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="fl">1e7</span>, s<span class="op">=</span><span class="fl">0.1</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"equal"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="03_differential_geometry_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="4aa371fe-8209-4938-bacf-fc15310bd1b5" class="cell" data-execution_count="42">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>distortion_interpolated <span class="op">=</span> get_area_distortion_in_UV(mesh)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>plt.imshow(distortion_interpolated, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="fl">0.75</span><span class="op">*</span><span class="fl">1e7</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/home/nikolas/Documents/UCSB/streichan/numerics/code/python_code/jupyter_notebooks/blender-tissue-cartography/blender_tissue_cartography/interpolation.py:217: RuntimeWarning: UV map has self-intersections, 33 flipped triangles. Try use_fallback=True?
+  warnings.warn("UV map has self-intersections, {} flipped triangles. Try use_fallback=True?".format(</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="03_differential_geometry_files/figure-html/cell-9-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="compute_per_vertex_angle_distortion" class="level3">
+<h3 class="anchored" data-anchor-id="compute_per_vertex_angle_distortion">compute_per_vertex_angle_distortion</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_per_vertex_angle_distortion(</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    source_vertices, <span class="co"># Source mesh vertices.</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    source_faces, <span class="co"># Spurce mesh faces. Must be triangular.</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    target_vertices, <span class="co"># Target mesh vertices.</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    target_faces, <span class="co"># Target mesh faces. Must be triangular.</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    evaluate_at:<span class="bu">str</span><span class="op">=</span><span class="st">'source'</span>, <span class="co"># Whether to evaluate the result at the source or target</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>mesh vertices.</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    cutoff:<span class="bu">float</span><span class="op">=</span><span class="fl">1e-15</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Area distortion factor (source area/target area) evaluated on source or target mesh vertices.</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Compute angle distortion for a map between meshes.</em></p>
+<p>The result is evaluated at the vertices of the source or target mesh. Faces must be such that faces[i] is mapped to target_faces[i]. This function computes np.abs(target angles - source angles), averaged over each triangle (in radians).</p>
+<p>This can be used to visualize map distortion.</p>
+<p>Example (compute distortion of UV map): <code>compute_per_vertex_angle_distortion(mesh.texture_vertices, mesh.texture_tris,                                     mesh.vertices, mesh.tris)</code></p>
+<div id="7ac72415" class="cell" data-execution_count="47">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>compute_per_vertex_angle_distortion(mesh.texture_vertices, mesh.texture_tris,</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>                                    mesh.vertices, mesh.tris).mean()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="47">
+<pre><code>0.19397542576446897</code></pre>
+</div>
+</div>
+</section>
+<section id="jacobian" class="level3">
+<h3 class="anchored" data-anchor-id="jacobian">Jacobian</h3>
+<p>In general, in addition to getting inflated or shrunk, during the mapping process, a triangle is also rotated and sheared. The full transformation properties are encoded by the Jacobian matrix.</p>
+<p>You need the Jacobian for example to map vectors (e.g.&nbsp;displacement from optical flow) that you calculated in UV space back into 3d.</p>
+<p>Using the <code>tcinterp.interpolate_per_vertex_field_to_UV</code>, you can interpolate the Jacobian from mesh vertices into the whole UV square.</p>
+<div id="979fa71e" class="cell" data-execution_count="48">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>source_vertices, source_faces <span class="op">=</span> (mesh.texture_vertices, mesh.texture_tris)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>target_vertices, target_faces <span class="op">=</span> (mesh.vertices, mesh.tris)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="b2c8407c" class="cell" data-execution_count="49">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> source_vertices[source_faces]</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> target_vertices[target_faces]</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> (A.transpose((<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">2</span>)) <span class="op">-</span> A.mean(axis<span class="op">=</span><span class="dv">1</span>)).transpose((<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">2</span>))</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> (B.transpose((<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">2</span>)) <span class="op">-</span> B.mean(axis<span class="op">=</span><span class="dv">1</span>)).transpose((<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">2</span>))</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>A.shape, B.shape</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="49">
+<pre><code>((40420, 3, 2), (40420, 3, 3))</code></pre>
+</div>
+</div>
+<div id="4627083b" class="cell" data-execution_count="50">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>jac <span class="op">=</span> np.stack([np.linalg.lstsq(a, b, rcond<span class="op">=</span><span class="va">None</span>)[<span class="dv">0</span>].T <span class="cf">for</span> a,b <span class="kw">in</span> <span class="bu">zip</span>(A, B)]) <span class="co"># vectorize?</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>i <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>np.linalg.norm(A[i] <span class="op">@</span> jac[i].T <span class="op">-</span> B[i], axis<span class="op">=-</span><span class="dv">1</span>) <span class="op">/</span> np.linalg.norm(B[i], axis<span class="op">=-</span><span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="50">
+<pre><code>array([0., 0., 0.])</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="compute_per_vertex_jacobian" class="level3">
+<h3 class="anchored" data-anchor-id="compute_per_vertex_jacobian">compute_per_vertex_jacobian</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_per_vertex_jacobian(</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    source_vertices, <span class="co"># Source mesh vertices.</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    source_faces, <span class="co"># Spurce mesh faces. Must be triangular.</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    target_vertices, <span class="co"># Target mesh vertices.</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    target_faces, <span class="co"># Target mesh faces. Must be triangular.</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    evaluate_at:<span class="bu">str</span><span class="op">=</span><span class="st">'source'</span>, <span class="co"># Whether to evaluate the result at the source or target</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>mesh vertices.</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Jacobian. Shape is (n_vertices, d_target, d_source),</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>where d <span class="kw">is</span> the spatial dimension (e.g. <span class="dv">2</span>, <span class="dv">3</span>).</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Compute Jacobian factor for a map between meshes.</em></p>
+<p>Faces must be such that faces[i] is mapped to target_faces[i]. This function computes the Jacobian mapping tangent vectors of the source mesh to tangent vectors of the target mesh. The result is evaluated at the vertices of the source mesh.</p>
+<p>Important: after you apply the per-vertex Jacobian, you may still need to permute the result, defined per source vertex, so it is defined per target mesh, e.g.&nbsp;using mesh.get_vertex_to_texture_vertex_indices() if mapping from 3d to UV.</p>
+<p>Example (compute distortion of UV map): <code>compute_per_vertex_jacobian(mesh.texture_vertices, mesh.texture_tris                             mesh.vertices, mesh.tris)</code></p>
+<hr>
+</section>
+<section id="compute_per_face_jacobian" class="level3">
+<h3 class="anchored" data-anchor-id="compute_per_face_jacobian">compute_per_face_jacobian</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_per_face_jacobian(</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    source_vertices, <span class="co"># Source mesh vertices.</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    source_faces, <span class="co"># Spurce mesh faces. Must be triangular.</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    target_vertices, <span class="co"># Target mesh vertices.</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    target_faces, <span class="co"># Target mesh faces. Must be triangular.</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Jacobian. Shape is (n_faces, d_target, d_source),</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>where d <span class="kw">is</span> the spatial dimension (e.g. <span class="dv">2</span>, <span class="dv">3</span>).</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Compute Jacobian factor for a map between meshes.</em></p>
+<p>Faces must be such that faces[i] is mapped to target_faces[i]. This function computes the Jacobian mapping tangent vectors of the source mesh to tangent vectors of the target mesh. The result is evaluated at the mesh faces.</p>
+<p>Example (compute distortion of UV map): <code>compute_per_vertex_jacobian(mesh.texture_vertices, mesh.texture_tris                             mesh.vertices, mesh.tris)</code></p>
+<div id="ca098776" class="cell" data-execution_count="78">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>jac <span class="op">=</span> compute_per_vertex_jacobian(mesh.texture_vertices, mesh.texture_tris, mesh.vertices, mesh.tris)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="ca6d7488" class="cell" data-execution_count="79">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>area_distortion <span class="op">=</span> compute_per_vertex_area_distortion(mesh.texture_vertices, mesh.texture_tris,</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>                                                     mesh.vertices, mesh.tris)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="33299d3a" class="cell" data-execution_count="80">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the product of the Jacobian singular values will give you the area distortion</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>np.prod(np.linalg.svd(jac).S, axis<span class="op">=</span><span class="dv">1</span>) <span class="op">/</span> np.<span class="bu">abs</span>(area_distortion)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="80">
+<pre><code>array([0.99769177, 0.99467172, 0.99815593, ..., 1.        , 0.99925048,
+       1.        ])</code></pre>
+</div>
+</div>
+<div id="8e90edf8" class="cell" data-execution_count="81">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>jac <span class="op">=</span> impute_boundary_values(jac, mesh.texture_tris, fill_value<span class="op">=</span>np.nan<span class="op">*</span>np.ones((<span class="dv">3</span>,<span class="dv">2</span>)))</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>jac_interpolated <span class="op">=</span> tcinterp.interpolate_per_vertex_field_to_UV(mesh, jac, uv_grid_steps<span class="op">=</span><span class="dv">256</span>,</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>                                                               map_back<span class="op">=</span><span class="va">True</span>, domain<span class="op">=</span><span class="st">'per-texture-vertex'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/home/nikolas/Documents/UCSB/streichan/numerics/code/python_code/jupyter_notebooks/blender-tissue-cartography/blender_tissue_cartography/interpolation.py:217: RuntimeWarning: UV map has self-intersections, 33 flipped triangles. Try use_fallback=True?
+  warnings.warn("UV map has self-intersections, {} flipped triangles. Try use_fallback=True?".format(</code></pre>
+</div>
+</div>
+<div id="2d6968e9" class="cell" data-execution_count="82">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>plt.imshow(jac_interpolated[..., <span class="dv">0</span>,<span class="dv">1</span>], vmin<span class="op">=-</span><span class="fl">1e4</span>, vmax<span class="op">=</span><span class="fl">1e4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="03_differential_geometry_files/figure-html/cell-21-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="induced-metric-tensor" class="level3">
+<h3 class="anchored" data-anchor-id="induced-metric-tensor">Induced metric tensor</h3>
+<p>The induced metric is defined via <span class="math inline">\(g = J^T \cdot J\)</span> where <span class="math inline">\(J\)</span> is the Jacobian of the map from UV-space to 3d space.</p>
+<p>Note: when doing calculations like those shown below, <code>np.einsum</code> is invaluable.</p>
+<hr>
+</section>
+<section id="get_induced_metric" class="level3">
+<h3 class="anchored" data-anchor-id="get_induced_metric">get_induced_metric</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_induced_metric(</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    mesh, <span class="co"># Mesh. Must have texture map defined</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Induced metric.</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Compute induced metric, evaluated at textures vertices.</em></p>
+<p>See https://en.wikipedia.org/wiki/Induced_metric.</p>
+<hr>
+</section>
+<section id="get_metric_angle" class="level3">
+<h3 class="anchored" data-anchor-id="get_metric_angle">get_metric_angle</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_metric_angle(</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    vf1, vf2, g</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Compute angle in radians between two vector fields (shape (…, d)) in degrees using metric g (shape (…, d, d)).</em></p>
+<hr>
+</section>
+<section id="get_metric_norm" class="level3">
+<h3 class="anchored" data-anchor-id="get_metric_norm">get_metric_norm</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_metric_norm(</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    vf, g</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Compute norm of vector field vf (shape (…, d)) using metric g (shape (…, d, d)).</em></p>
+<div id="4bdfc568" class="cell" data-execution_count="84">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This is how you calculate the induced metric</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>jac <span class="op">=</span> compute_per_vertex_jacobian(mesh.texture_vertices, mesh.texture_tris, mesh.vertices, mesh.tris)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> np.einsum(<span class="st">'via,vib-&gt;vab'</span>, jac, jac)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="d293f4b7" class="cell" data-execution_count="85">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The determinant of the metric gives the local area distortion</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.linalg.det(g)) <span class="op">/</span> np.<span class="bu">abs</span>(area_distortion)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="85">
+<pre><code>array([0.99769177, 0.99467172, 0.99815593, ..., 1.        , 0.99925048,
+       1.        ])</code></pre>
+</div>
+</div>
+<div id="84427222" class="cell" data-execution_count="86">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using the metric, and np.einsum, you can calculate norms and angles of vectors</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>vf <span class="op">=</span> np.random.normal(size<span class="op">=</span>jac[:,<span class="dv">0</span>].shape, scale<span class="op">=</span><span class="fl">0.1</span>)</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.einsum(<span class="st">'...i,...ij,...j-&gt;...'</span>, vf, g, vf))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="86">
+<pre><code>array([  898.28014016,   854.89157326,  1314.41088305, ...,
+       50596.27040954, 81144.22642543,  8305.58231028])</code></pre>
+</div>
+</div>
+<div id="aef6851e" class="cell" data-execution_count="87">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>mapped_to_3d <span class="op">=</span> np.einsum(<span class="st">'vij,vj-&gt;vi'</span>, jac, vf)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>np.linalg.norm(mapped_to_3d, axis<span class="op">=-</span><span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="87">
+<pre><code>array([  898.28014016,   854.89157326,  1314.41088305, ...,
+       50596.27040954, 81144.22642543,  8305.58231028])</code></pre>
+</div>
+</div>
+<div id="3ecb7539" class="cell" data-execution_count="88">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>jac.shape</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="88">
+<pre><code>(20623, 3, 2)</code></pre>
+</div>
+</div>
+</section>
+<section id="vector-calculus-on-curved-surfaces" class="level2">
+<h2 class="anchored" data-anchor-id="vector-calculus-on-curved-surfaces">Vector calculus on curved surfaces</h2>
+<p>How to generalize the familiar operations of vector calculus (div, rot, grad, etc) to curved surfaces is a key part of differential geometry. There are different approaches for doing surface differential geometry numerically:</p>
+<ol type="1">
+<li>Using local coordinates/parametrizations (i.e.&nbsp;the way physicists learn it in GR). This is prone to errors and numerically unfavorable</li>
+<li>Using “intrinsic” discretization schemes like <a href="https://www.cs.cmu.edu/~kmcrane/Projects/DDG/paper.pdf">Discrete Exterior Calculus</a>. These are elegant and numerically efficient, but difficult to use and understand for non-experts.</li>
+</ol>
+<p>Here, we take a less elegant, but simpler approach that takes advantage of the fact that our surfaces are embedded in 3d cartesian space. All vector and tensor fields are mapped back into 3d so that their components are defined in <span class="math inline">\(x,y,z\)</span> coordinates. Then we can imagine “extending” from the surface into full 3d space by defining them to be constant along the local surface normal. Then we are back to normal vector calculus!</p>
+<p>In practice, we don’t need to do this extension explicitly. We can compute the derivative of any quantity defined on mesh vertices in such a way that the derivative along the normal direction is 0. This is implemented by standard “finite-element” gradient operators. See here: https://libigl.github.io/libigl-python-bindings/tut-chapter1/#gradient</p>
+<hr>
+<section id="tri_grad" class="level3">
+<h3 class="anchored" data-anchor-id="tri_grad">tri_grad</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> tri_grad(</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    field, <span class="co"># scalar, vector, or tensor field defined at mesh vertices</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>    vertices, <span class="co"># vertices.</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    faces, <span class="co"># Triangular faces.</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>    grad_matrix:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># Gradient operator. The default is None (calculate from vertices, faces).</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Gradient of scalar function/tensor, defined on vertices.</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>Axis <span class="dv">1</span> comprises the gradients along x,y,z.</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Calculate the gradient of a function defined on vertices of a triangular mesh.</em></p>
+<p>If a vector or tensor field is passed, the gradient is applied to each component individually.</p>
+<p>See https://libigl.github.io/libigl-python-bindings/tut-chapter1/#gradient</p>
+<div id="8d68456e" class="cell" data-execution_count="127">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> tcmesh.ObjMesh.read_obj(<span class="st">"datasets/movie_example/initial_uv.obj"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: readOBJ() ignored non-comment line 4:
+  o mesh_01_cylinder_seams_uv</code></pre>
+</div>
+</div>
+<div id="3cfba52c-71b3-4aaa-a18a-844f478823f9" class="cell" data-execution_count="130">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get some random fields - eigenfunctions of the laplacian</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>laplacian <span class="op">=</span> igl.cotmatrix(mesh.vertices, mesh.tris)</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>mass <span class="op">=</span> igl.massmatrix(mesh.vertices, mesh.tris)</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>eigen_vals, eigen_vecs <span class="op">=</span> sparse.linalg.eigsh(<span class="op">-</span>laplacian, M<span class="op">=</span>mass, k<span class="op">=</span><span class="dv">10</span>, which<span class="op">=</span><span class="st">"SM"</span>)</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>eigen_vals, eigen_vecs <span class="op">=</span> (eigen_vals[<span class="dv">1</span>:], eigen_vecs[:, <span class="dv">1</span>:])</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>np.savetxt(<span class="st">'datasets/diffgeo/eigen_vals.txt'</span>, eigen_vals)</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>np.savetxt(<span class="st">'datasets/diffgeo/eigen_vecs.txt'</span>, eigen_vecs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="8f8133af-f32f-40fb-998a-37465e30beb5" class="cell" data-execution_count="133">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>eigen_vals <span class="op">=</span> np.loadtxt(<span class="st">'datasets/diffgeo/eigen_vals.txt'</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>eigen_vecs <span class="op">=</span> np.loadtxt(<span class="st">'datasets/diffgeo/eigen_vecs.txt'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="a344d10e" class="cell" data-execution_count="134">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>eigen_vals <span class="op">=</span> eigen_vals <span class="op">/</span> eigen_vals[<span class="dv">0</span>]</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>eigen_vecs <span class="op">=</span> eigen_vecs <span class="op">/</span> np.<span class="bu">abs</span>(eigen_vecs).mean()</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>scalar_field <span class="op">=</span> eigen_vecs[:,<span class="dv">0</span>]</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>vector_field <span class="op">=</span> eigen_vecs[:,:<span class="dv">3</span>]</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>tensor_field <span class="op">=</span> eigen_vecs.reshape((<span class="op">-</span><span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="298d7836" class="cell" data-execution_count="136">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>tri_grad(tensor_field, mesh.vertices, mesh.tris, ).shape</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="136">
+<pre><code>(20212, 3, 3, 3)</code></pre>
+</div>
+</div>
+<div id="13e14b06" class="cell" data-execution_count="137">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>scalar_gradient <span class="op">=</span> tri_grad(scalar_field, mesh.vertices, mesh.tris,)</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>normals <span class="op">=</span> igl.per_vertex_normals(mesh.vertices, mesh.tris)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>normals <span class="op">=</span> (normals.T<span class="op">/</span>np.linalg.norm(normals, axis<span class="op">=-</span><span class="dv">1</span>)).T</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="ff194e99" class="cell" data-execution_count="114">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>normal_component <span class="op">=</span> (np.<span class="bu">abs</span>(np.einsum(<span class="st">'vi,vi-&gt;v'</span>, normals, scalar_gradient))</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>                    <span class="op">/</span> np.linalg.norm(scalar_gradient, axis<span class="op">=-</span><span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="fe9ffe0f" class="cell" data-execution_count="138">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>np.mean(normal_component)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="138">
+<pre><code>0.005454238703166104</code></pre>
+</div>
+</div>
+<div id="82d0ed0d" class="cell" data-execution_count="116">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Here is how you would map the gradients to 2d. You first need to apply the Jacobian,</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and then you still need to reindex.</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>jac <span class="op">=</span> compute_per_vertex_jacobian(mesh.vertices, mesh.tris, mesh.texture_vertices, mesh.texture_tris, )</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>scalar_gradient_projected <span class="op">=</span> np.einsum(<span class="st">'vij,vj-&gt;vi'</span>, jac, scalar_gradient)[mesh.get_vertex_to_texture_vertex_indices()]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="d18e504c" class="cell" data-execution_count="117">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>plt.scatter(<span class="op">*</span>mesh.texture_vertices.T, c<span class="op">=</span>scalar_field[mesh.get_vertex_to_texture_vertex_indices()])</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>sk <span class="op">=</span> <span class="dv">25</span></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>plt.quiver(mesh.texture_vertices[::sk, <span class="dv">0</span>], mesh.texture_vertices[::sk, <span class="dv">1</span>],</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>           scalar_gradient_projected[::sk, <span class="dv">0</span>], scalar_gradient_projected[::sk, <span class="dv">1</span>])</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"equal"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="03_differential_geometry_files/figure-html/cell-40-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="projection-onto-surface-normal" class="level2">
+<h2 class="anchored" data-anchor-id="projection-onto-surface-normal">Projection onto surface normal</h2>
+<hr>
+<section id="get_normal_projector" class="level3">
+<h3 class="anchored" data-anchor-id="get_normal_projector">get_normal_projector</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_normal_projector(</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>    vertices:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># vertices. If None, must supply normals</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>    faces:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># Triangular faces. If None, must supply normals</span></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>    normals:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># If None, recompute normals from vertices and faces</span></span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Projector</span></span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Get projection matrix that removes components normal to the surface</em></p>
+<p>Mathematically, 1-n.n^T where n is the unit surface normal. Defined per vertex.</p>
+<hr>
+</section>
+<section id="separate_tangential_normal" class="level3">
+<h3 class="anchored" data-anchor-id="separate_tangential_normal">separate_tangential_normal</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> separate_tangential_normal(</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>    field, <span class="co"># Vector or rank-2 tensor field defined at vertices</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>    vertices:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># vertices. If None, must supply normals</span></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    faces:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># Triangular faces. If None, must supply normals</span></span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>    normals:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># If None, recompute normals from vertices and faces</span></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>): <span class="co"># tangential_component : np.array of shape (#vertices, dim) or (#vertices, dim, dim)</span></span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>normal_component : np.array of shape (<span class="co">#vertices, dim) or (#vertices, dim, dim)</span></span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Separate tangential and normal components of field defined at vertices.</em></p>
+<p>Vector and rank-2 tensor fields are supported. For a rank-2 tensor, normal-tangential cross components are discarded.</p>
+<div id="577371f0" class="cell" data-execution_count="120">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>P <span class="op">=</span> get_normal_projector(mesh.vertices, mesh.tris)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="32105984" class="cell" data-execution_count="121">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>tangential, normal <span class="op">=</span> separate_tangential_normal(vector_field, normals<span class="op">=</span>mesh.normals)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="33e7c4dc" class="cell" data-execution_count="122">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>np.einsum(<span class="st">'vi,vi-&gt;v'</span>, tangential, mesh.normals), np.einsum(<span class="st">'vi,vi-&gt;v'</span>, normal, mesh.normals)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="122">
+<pre><code>(array([ 0., -0., -0., ..., -0., -0.,  0.]),
+ array([-0.09883732, -0.09520339, -0.11231666, ...,  2.11770085,
+         2.12610438,  0.08597019]))</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="div-and-rot" class="level2">
+<h2 class="anchored" data-anchor-id="div-and-rot">div and rot</h2>
+<hr>
+<section id="get_grad_perp" class="level3">
+<h3 class="anchored" data-anchor-id="get_grad_perp">get_grad_perp</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_grad_perp(</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>    field, <span class="co"># Scalar field defined at mesh vertices</span></span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>    vertices, <span class="co"># vertices.</span></span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>    faces, <span class="co"># Triangular faces.</span></span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>    normals:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># If None, recompute normals from vertices and faces.</span></span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>sign of normals determines sense of rotation.</span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a>): <span class="co"># 90-degree rotated gradient of scalar field. </span></span>
+<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Calculate the gradient of a scalar field, rotated by 90 deg around the surface normal.</em></p>
+<p>As occurs e.g.&nbsp;when calculating vector field from stream function.</p>
+<hr>
+</section>
+<section id="get_rot" class="level3">
+<h3 class="anchored" data-anchor-id="get_rot">get_rot</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_rot(</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>    field, <span class="co"># vector field defined at mesh vertices</span></span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>    vertices, <span class="co"># vertices.</span></span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>    faces, <span class="co"># Triangular faces.</span></span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>    normals:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># If None, recompute normals from vertices and faces</span></span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Curl of vector field. </span></span>
+<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Calculate tangent-plane rotation of vector field defined on vertices of triangular mesh.</em></p>
+<p>This result is a scalar, equal to (Nabla x field).normals</p>
+<hr>
+</section>
+<section id="get_div" class="level3">
+<h3 class="anchored" data-anchor-id="get_div">get_div</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_div(</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>    field, <span class="co"># vector field defined at mesh vertices</span></span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>    vertices, <span class="co"># vertices.</span></span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>    faces, <span class="co"># Triangular faces.</span></span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>    normals:NoneType<span class="op">=</span><span class="va">None</span>, <span class="co"># If None, recompute normals from vertices and faces</span></span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>): <span class="co"># Divergence of vector field.</span></span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Calculate tangent-plane divergence of vector field defined on vertices of triangular mesh.</em></p>
+<div id="b6018747" class="cell" data-execution_count="124">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>get_div(vector_field, mesh.vertices, mesh.tris)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="124">
+<pre><code>array([-0.00132528, -0.00133886, -0.00139996, ..., -0.01188986,
+       -0.01150177, -0.00547512])</code></pre>
+</div>
+</div>
+<div id="1f8d8711" class="cell" data-execution_count="125">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>get_rot(vector_field, mesh.vertices, mesh.tris)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="125">
+<pre><code>array([-0.0001931 , -0.00021779, -0.0002104 , ..., -0.00062862,
+       -0.00052683,  0.00221356])</code></pre>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/nikolas-claussen\.github\.io\/blender-tissue-cartography");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/nikolas-claussen/blender-tissue-cartography/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
