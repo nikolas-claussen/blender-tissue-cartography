@@ -1,9 +1,9 @@
-schema_version = "1.0.0"
+schema_version = "2.0.0"
 id = "blender_tissue_cartography"
-version = "1.0.0"
+version = "2.0.0"
 name = "Blender Tissue Cartography"
 tagline = "A tools for analysis of 4D imaging data in Blender"
-maintainer = "Nikolas Claussen <nclaussen@ucsb.edu>"
+maintainer = "Nikolas Claussen <nc1333@princeton.edu>"
 type = "add-on"
 blender_version_min = "4.2.0"
 license = ["SPDX:GPL-3.0-or-later",]
@@ -47,3 +47,11 @@ wheels = [
 #  'LICENSE',
 #  'README.md',
 #]
+
+# exclude test data from build
+paths_exclude_pattern = [
+  "test_data/",
+  "__pycache__/",
+  ".DS_Store",
+  "reload_script.py",
+]
