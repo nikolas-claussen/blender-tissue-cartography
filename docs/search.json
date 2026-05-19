@@ -54,7 +54,7 @@
     "href": "index.html#citation",
     "title": "blender-tissue-cartography",
     "section": "Citation",
-    "text": "Citation\nIf you use blender_tissue_cartography for your work, please cite:\n\nNikolas Claussen, Cécile Regis, Susan Wopat, and Sebastian Streichan: Blender tissue cartography: an intuitive tool for the analysis of dynamic 3D microscopy data. bioRxiv 2025.02.04.636523; doi: https://doi.org/10.1101/2025.02.04.636523\n\n\nAcknowledgements\nThis software is being developed by Nikolas Claussen. We thank Susan Wopat, Matthew Lefebvre (members of Streichan lab at UCSB), Cecile Regis, Noah Mitchell, An Yan, Pieter Derksen, Matthew Lefebvre, Sean Komura, Gary Han, Boris Fosso, and Dillon Cislo for sharing data, advice, and software testing.",
+    "text": "Citation\nIf you use blender_tissue_cartography for your work, please cite:\n\nNikolas Claussen, Cécile Regis, Susan Wopat, and Sebastian Streichan: Blender tissue cartography: an intuitive tool for the analysis of dynamic 3D microscopy data. bioRxiv 2025.02.04.636523; doi: https://doi.org/10.1101/2025.02.04.636523\n\n\nAcknowledgements\nThis software is being developed by Nikolas Claussen. We thank the Streichan lab at UCSB (in particular Susan Wopat and Matthew Lefebvre), Cecile Regis, Noah Mitchell, An Yan, Dillon Cislo, and the Irvine lab at Rutgers for feedback, sharing data, and software testing.",
     "crumbs": [
       "blender-tissue-cartography"
     ]
