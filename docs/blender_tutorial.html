@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -149,26 +184,20 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./methods_paper.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Methods Paper</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./blender_tutorial.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Blender add-on tutorial</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./02_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="./03_btc_addon.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">3. <code>blender_tissue_cartography</code> add-on</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./03_more_on_tissue_cartography.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Tissue cartography with <code>blender_tisssue_cartography</code></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -188,40 +217,28 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tutorials/02_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Tissue cartography with “seams”</span></a>
+  <a href="./tutorials/02_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
   </div>
 </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./tutorials/03_improving_UV_maps.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">6. Iteratively improving cartographic projections</span></a>
-  </div>
-</li>
+ <span class="menu-text">tutorials/03_UV_maps_with_seams.ipynb</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./tutorials/04_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Advanced segmentation and meshing</span></a>
-  </div>
-</li>
+ <span class="menu-text">tutorials/04_improving_UV_maps.ipynb</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./tutorials/05_multiple_recordings_and_reference_meshes.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">8. Consistent cartographic projections across multiple recordings</span></a>
-  </div>
-</li>
+ <span class="menu-text">tutorials/05_advanced_segmentation_and_meshing.ipynb</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./tutorials/06_movies_and_dynamic_surfaces.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">9. Time-lapse imaging and dynamic surfaces</span></a>
-  </div>
-</li>
+ <span class="menu-text">tutorials/06_multiple_recordings_and_reference_meshes.ipynb</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./tutorials/07_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3D Image analysis with cartographic projections</span></a>
-  </div>
-</li>
+ <span class="menu-text">tutorials/07_movies_and_dynamic_surfaces.ipynb</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">tutorials/08_analysis_in_3d.ipynb</span>
+  </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -336,6 +353,7 @@ window.Quarto = {
   <li><a href="#polygonal-meshes" id="toc-polygonal-meshes" class="nav-link" data-scroll-target="#polygonal-meshes">Polygonal meshes</a></li>
   <li><a href="#navigation" id="toc-navigation" class="nav-link" data-scroll-target="#navigation">Navigation</a></li>
   <li><a href="#workspaces" id="toc-workspaces" class="nav-link" data-scroll-target="#workspaces">Workspaces</a></li>
+  <li><a href="#installing-add-ons" id="toc-installing-add-ons" class="nav-link" data-scroll-target="#installing-add-ons">Installing add-ons</a></li>
   </ul></li>
   <li><a href="#add-on-user-interface-data-loading-and-visualization" id="toc-add-on-user-interface-data-loading-and-visualization" class="nav-link" data-scroll-target="#add-on-user-interface-data-loading-and-visualization">Add-on user interface: data loading and visualization</a>
   <ul class="collapse">
@@ -359,6 +377,12 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#visualizing-uv-maps" id="toc-visualizing-uv-maps" class="nav-link" data-scroll-target="#visualizing-uv-maps">Visualizing UV maps</a></li>
   <li><a href="#annotating-data" id="toc-annotating-data" class="nav-link" data-scroll-target="#annotating-data">Annotating data</a></li>
+  </ul></li>
+  <li><a href="#appendix-3d-segmentation-with-ilastik" id="toc-appendix-3d-segmentation-with-ilastik" class="nav-link" data-scroll-target="#appendix-3d-segmentation-with-ilastik">Appendix: 3D segmentation with Ilastik</a>
+  <ul class="collapse">
+  <li><a href="#starting-an-ilastik-project" id="toc-starting-an-ilastik-project" class="nav-link" data-scroll-target="#starting-an-ilastik-project">Starting an Ilastik project</a></li>
+  <li><a href="#training" id="toc-training" class="nav-link" data-scroll-target="#training">Training</a></li>
+  <li><a href="#prediction-export" id="toc-prediction-export" class="nav-link" data-scroll-target="#prediction-export">Prediction Export</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -386,8 +410,8 @@ window.Quarto = {
 
 
 <!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
-<p>You can use the tissue-cartography in this repository in two ways: as Python library, and as an <strong>add-on</strong> for the 3d creation software <a href="https://www.blender.org/">blender</a>. This tutorial covers the add-on, which has an interactive, graphical user interface. Use it to quickly process a new dataset, or if you are not a coding expert.</p>
-<p>Note that dynamic datasets (multiple time points) are covered in the next tutorial.</p>
+<p>You can use the tissue-cartography in this repository in two ways: as Python library, and as an <strong>add-on</strong> for the 3d creation software <a href="https://www.blender.org/">blender</a>. This tutorial covers the add-on, which has an interactive, graphical user interface. Use it to quickly process a new dataset, or if you are not a coding expert. Dynamic datasets (multiple time points, or multiple samples) are covered in the next tutorial.</p>
+<p>The add-on workflow starts with 2 items: a 3D image as a multipage <code>.tiff</code>, and a volumetric segmentation of it into “inside” and “outside” of the object you want to extract. The <strong>surface of interest</strong> onto which the image is projected is the inside-outside boundary. The tutorial appendix “3D segmentation with Ilastik” explains one way to segment your data. Alternatively, you can load the surface directly into Blender. You can also generate the surface from a <strong>point cloud</strong>, for example, if your surface is a thin sheet and not the boundary of a solid object (see this tutorial).</p>
 <section id="installation" class="level3">
 <h3 class="anchored" data-anchor-id="installation">Installation</h3>
 <ol type="1">
@@ -473,10 +497,13 @@ window.Quarto = {
 </ol>
 </section>
 </section>
+<section id="installing-add-ons" class="level3">
+<h3 class="anchored" data-anchor-id="installing-add-ons">Installing add-ons</h3>
+<p>Now we <a href="https://docs.blender.org/manual/en/latest/editors/preferences/addons.html">install the add-on</a>: Click “Edit -&gt; Preferences -&gt; Add-ons -&gt; Add-on Settings -&gt; Install from disk” and select the file you just downloaded. You may need to restart Blender. The add-on can now be found under “Scene -&gt; Tissue Cartography (V2)”.</p>
+</section>
 </section>
 <section id="add-on-user-interface-data-loading-and-visualization" class="level2">
 <h2 class="anchored" data-anchor-id="add-on-user-interface-data-loading-and-visualization">Add-on user interface: data loading and visualization</h2>
-<p>Now we <a href="https://docs.blender.org/manual/en/latest/editors/preferences/addons.html">install the add-on</a>: Click “Edit -&gt; Preferences -&gt; Add-ons -&gt; Add-on Settings -&gt; Install from disk” and select the file you just downloaded. The add-on can now be found under “Scene -&gt; Tissue Cartography (V2)”. You may need to restart Blender.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/screenshot_ux.png" class="img-fluid figure-img"></p>
@@ -489,7 +516,7 @@ window.Quarto = {
 <p>To import a 3D <code>.tiff</code> file, select the “File Path” and click “Load .tiff file”. You need to specify the X/Y/Z resolution of your image in <span class="math inline">\(\mu m\)</span> for the X/Y/Z axes, and the order of the axes in the <code>.tiff file</code> (as a string like <code>xyz</code> or <code>cxyz</code> if you have multiple channels).</p>
 <p><strong>Multi-channel data</strong> The add-on supports both single-channel and multi-channel data (so <code>.tif</code> files with 3 or 4 dimensions). For time-series data, you need to provide one <code>.tif</code> per time point (see section on “Batch Processing” below).</p>
 <p>Let’s load the test dataset <code>Drosophila_CAAX-mCherry.tif</code>, an <em>in toto</em> image of the early <em>Drosophila</em> embryo with a fluorescent marker for cell membranes. The resolution is <span class="math inline">\(1.0 \mu m\)</span> for all axes. You can open it in FIJI:</p>
-<p><img src="../index_files/screenshot_drosophila_fiji.png" width="400"></p>
+<p><img src="images/screenshot_drosophila_fiji.png" width="400"></p>
 <p>To load the dataset into Blender, click on “File Path” to select the <code>.tif</code> file. After import, you should see a <code>BoundingBox</code> mesh that represents the image volume:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -513,7 +540,7 @@ window.Quarto = {
 <p>The <strong>resolution</strong> of the segmentation <code>.tiff</code> can be different from the 3D image (often, you downsize images, so the segmentation software is more rapid). With the <strong>smoothing</strong> parameter, you convert the “pixelated” 3D segmentation into a smooth mesh. You should now see the surface of interest inside the image bounding box:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../index_files/screenshot_segmentation.png" class="img-fluid figure-img"></p>
+<p><img src="images/screenshot_segmentation.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
@@ -590,7 +617,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="the-uv-editing-workspace">The UV Editing workspace</h3>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../index_files/screenshot_UV_editor.png" class="img-fluid figure-img"></p>
+<p><img src="images/screenshot_UV_editor.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
@@ -610,10 +637,20 @@ window.Quarto = {
 <p>On the left, we now see how out mesh was unwrapped into the UV square. Since the surface was originally closed, it must be “cut” into several pieces to be mapped into the UV square. These are called <strong>UV islands</strong>, and the boundaries between them are called <strong>seams</strong>. In this case, the seams were placed automatically, but you can also choose them manually. You can also manually edit the projection created by the algorithm (e.g., move the UV islands).</p>
 <p><strong>Selecting a part of the mesh</strong></p>
 <p>Often, you only want to project a part of the mesh, or define a seam. To do this, use the selection tool: press <code>3</code>, then <code>C</code> and scroll to select the brush size. Only the orange, selected part of the mesh will be projected.</p>
-<p><strong>How to unwrap: recommendations</strong></p>
-<p>The Blender documentation has <a href="https://docs.blender.org/manual/en/latest/modeling/meshes/uv/unwrapping/introduction.html">a great guide</a> on how to unwrap meshes. For meshes that need to be “cut up”, we recommend <a href="https://docs.blender.org/manual/en/latest/modeling/meshes/uv/unwrapping/seams.html">choosing the seams manually</a>. The “minimum stretch” projection algorithm is a great choice since it … minimizes stretch. If your mesh has a simple geometry, you can use a spherical, cylindrical, or axis projection. These algorithms can easily be applied to many meshes (time points, samples) in batch. You generally want a UV map that minimizes distortion (how much the mesh is stretched when unwrapping). Distortion can be visualized in the left panel of the UV editor under “Overlays”.</p>
+<p><strong>Defining seams</strong></p>
+<p>For meshes that need to be “cut up”, we recommend <a href="https://docs.blender.org/manual/en/latest/modeling/meshes/uv/unwrapping/seams.html">choosing the seams manually</a>. Press <code>2</code> to go into edge selection mode, select a loop along which you want to cut, <code>right-click</code>, and select “Mark seam”. Seams should show up in red (from the Blender website):</p>
+<p><img src="images/screenshot_seam.png" width="800"></p>
+<p>Here are two short-cuts, so you don’t have to select all edges by hand:</p>
+<ol type="1">
+<li><p>Select two vertices and find the shortest path between them. Press <code>1</code> for vertex mode, <code>right click</code> on the initial vertex, hold <code>ctrl</code> and <code>left click</code> on the final vertex, then press <code>2</code> to switch back to edge mode.</p></li>
+<li><p>Select a region in face mode (press <code>3</code> and <code>C</code> for the circle select tool), and use “Select -&gt; Select loops -&gt; Select boundary loop”.</p></li>
+</ol>
+<p><strong>Unwrapping algorithm recommendations</strong></p>
+<p>The Blender documentation has <a href="https://docs.blender.org/manual/en/latest/modeling/meshes/uv/unwrapping/introduction.html">a great guide</a> on how to unwrap meshes. The “minimum stretch” projection algorithm is a great choice since it … minimizes stretch. If your mesh has a simple geometry, you can use a spherical, cylindrical, or axis projection. These algorithms can easily be applied to many meshes (time points, samples) in batch. You generally want a UV map that minimizes distortion (how much the mesh is stretched when unwrapping). Distortion can be visualized in the left panel of the UV editor under “Overlays”.</p>
 <p><strong>Self-intersections</strong></p>
 <p>It is important to try to unwrap the mesh while avoiding self-intersection (where the mesh is folded onto itself in 2D). This is bad because the multiple 3D positions are mapped to the same cartographic location. When you project image data, different 3D locations will be written to the same 2D pixel, and it will be a mess. For example, if you use the “project from view” method on the current mesh, the left and right side of the embryo get collapsed.</p>
+<p><strong>Improving UV maps</strong></p>
+<p>The UV mapping process is iterative. Make an initial UV map, look at the projection and UV distortion, and then improve the map. In the left part of the UV editor, you can directly edit the UV map. For example, try moving UV islands around.</p>
 </section>
 </section>
 <section id="exporting-meshes" class="level3">
@@ -726,8 +763,87 @@ window.Quarto = {
 </figure>
 </div>
 <p><strong>Not seeing anything?</strong> Your surface may be flipped “inside out”. Go toEdit Mode &gt; Mesh &gt; Normals &gt; Flip.</p>
+</section>
+</section>
+<section id="appendix-3d-segmentation-with-ilastik" class="level2">
+<h2 class="anchored" data-anchor-id="appendix-3d-segmentation-with-ilastik">Appendix: 3D segmentation with Ilastik</h2>
+<p>Here, we to use <a href="https://www.ilastik.org/">Ilastik</a> to obtain a 3D image segmentation. This is the first step in the tissue cartography pipeline. The surface of interest data is then defined as the segmentation boundary, i.e.&nbsp;between “inside” and “outside”. Many tools are available for segmenting 3D data. The only thing that matters is that it provides you with a 3D mask as a multipage <code>.tiff</code>.</p>
+<p>In our experience, Ilastik is a very robust and versatile segmentation tool, and we use it in most of our tissue cartography pipelines. This is why we recommend it as a starting point. Ilastik uses machine learning algorithms to segment and classify your data. You draw the labels on your data, and the algorithm predicts a segmentation. You correct the errors interactively until you are happy. Once trained, you can reuse Ilastik models for batch prediction.</p>
+<p>Start by <strong>down sampling</strong> the 3D image dataset <code>Drosophila_CAAX-mCherry.tif</code> by 2x along each axis. This reduces the image size by 8x and will greatly speed up segmentation. This lower resolution is still more than sufficient to identify the embryo’s surface, which is relatively smooth. Save the result as a <code>.h5</code> file (this makes Ilastik run faster). You can do this step in FIJI, or using python.</p>
+<section id="fiji-down-sampling" class="level4">
+<h4 class="anchored" data-anchor-id="fiji-down-sampling">FIJI down sampling</h4>
+<ol type="1">
+<li><p>“Image -&gt; Scale” and choose 0.5 along each axis</p></li>
+<li><p>“File -&gt; Save as -&gt; Save to HDF5 (new or replace)”</p></li>
+</ol>
+</section>
+<section id="python-downsampling" class="level4">
+<h4 class="anchored" data-anchor-id="python-downsampling">Python downsampling</h4>
+<div id="06e0cf4c" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load tissue cartography modules</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> blender_tissue_cartography <span class="im">import</span> io <span class="im">as</span> tcio</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> skimage <span class="im">import</span> transform</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># load image</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> tcio.adjust_axis_order(tcio.imread(<span class="st">"Drosophila_CAAX-mCherry.tif"</span>))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>subsampling_factors <span class="op">=</span> [<span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>]  <span class="co"># example subsampling factors for x, y, z axes</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>subsampled_image <span class="op">=</span> transform.rescale(image, subsampling_factors, channel_axis<span class="op">=</span><span class="dv">0</span>, preserve_range<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>tcio.write_h5(<span class="st">"Drosophila_CAAX-mCherry.tif_subsampled.h5"</span>, subsampled_image, axis_order<span class="op">=</span><span class="st">"CZYX"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="starting-an-ilastik-project" class="level3">
+<h3 class="anchored" data-anchor-id="starting-an-ilastik-project">Starting an Ilastik project</h3>
+<p><a href="https://www.ilastik.org/download">Download</a>. We use <a href="https://www.ilastik.org/documentation/pixelclassification/pixelclassification">ilastik binary pixel classification</a>. Start Ilastik, and select binary pixel classification:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/screenshot_ilastik_classify.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Save the project <code>.ilp</code> project. Click “add separate images” and select <code>Drosophila_CAAX-mCherry.tif_subsampled.h5</code> (the image you just created).</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/screenshot_ilastik_data.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>⚠️ <strong>Axis order</strong></p>
+<p>If Ilastik confuses the “channel” axis is the “z” axis, we can fix by right clicking on the dataset and “edit properties”:</p>
+<section id="feature-selection" class="level4">
+<h4 class="anchored" data-anchor-id="feature-selection">Feature selection</h4>
+<p>Click on “Feature selection” on the left toolbar to continue. Ilastik applies a bunch of different image filters (like smoothing, or edge detection) to your data, and using the results as input for a machine-learning model. You now select which filters (“Features”) you want. In general, it is safe to just select everything. If you get an error, it may be the case that the size of the filter is bigger than the smallest axis (e.g.&nbsp;the <span class="math inline">\(z\)</span>-axis) in your image. In this case, click the top bar to make the filter “2d”.</p>
+</section>
+</section>
+<section id="training" class="level3">
+<h3 class="anchored" data-anchor-id="training">Training</h3>
+<p>We now continue to “Training”. Zoom in to one of the cross-sections, and paint the “inside” of the sample in yellow, and the “outside” in blue. You can also add more labels, but here we will just need two. You just need to make a few brush strokes and Ilastik will start making predictions. Click the “Live Update” button:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/screenshot_ilastik_drosophila.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>On the left, you can adjust the lookup table for your data, and decide what features of the prediction you want to see. “Uncertainty” shows you in light blue where the algorithm is still unsure. Now paint more labels until you are happy with the classification. Target the regions of high uncertainty, and look in all three cross-sections. It is important that the classification boundary tightly matches the surface you want to extract!</p>
+</section>
+<section id="prediction-export" class="level3">
+<h3 class="anchored" data-anchor-id="prediction-export">Prediction Export</h3>
+<p>Once you are happy with the results, let’s go to “Prediction Export” on the left toolbar. Use “Source: Probabilities” and click “Export all”. You can adjust the axis order and output format under “Choose Export Image Settings” if you need to.</p>
+<section id="convert-output-to-.tif" class="level4">
+<h4 class="anchored" data-anchor-id="convert-output-to-.tif">Convert output to <code>.tif</code></h4>
+<p>Ilastik saves the output - the segmentation - as <code>.h5</code> file. To load the data into the add-on, you need to convert the <code>.h5</code> to a <code>.tif</code> (directly exporting a <code>.tif</code> is very slow). To do this, you can use a little python script with a graphical user interface on the <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/utils/convert_h5_to_tif.py">GitHub <code>utils</code> folder</a>.</p>
+<ol type="1">
+<li><p>Install Python if you haven’t already. Then, in a command window, install the dependencies: <code>pip install h5py tifffile numpy</code></p></li>
+<li><p>Run the downloaded script: <code>python convert_h5_to_tif.py</code>. It should open a window to convert <code>.h5</code> to <code>.tif</code>.</p></li>
+</ol>
+</section>
+<section id="batch-processing-1" class="level4">
+<h4 class="anchored" data-anchor-id="batch-processing-1">Batch processing</h4>
+<p>You can apply the Ilastik model to multiple datasets, using the “Batch Processing” tab on the left toolbar. In general, I recommend doing this only for datasets that are highly “comparable”, e.g.&nbsp;recorded with the same microscopy settings. Since it’s fairly easy and quick to train a new ilastik model for each dataset, trying to build a model that will work across all your recordings is often not worth it.</p>
+<p><strong>Attention: data normalization</strong></p>
+<p>If you plan on reusing the same model, it is recommended to normalize your data, so that the pixel values are always of the same approximate magnitude. Do this <em>before</em> you save the data as <code>.h5</code>’s, for example using the <a href="https://nikolas-claussen.github.io/blender-tissue-cartography/src/io.html#normalize_quantiles"><code>normalize_quantiles</code>-function</a>.</p>
 
 
+</section>
 </section>
 </section>
 

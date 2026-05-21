@@ -3,7 +3,6 @@ website:
     contents:
       - index.ipynb
       - 01_blender_tutorial.ipynb
-      - 02_segmentation_with_ilastik.ipynb
       - 03_btc_addon.ipynb
       - 03_more_on_tissue_cartography.ipynb
       - section: src
@@ -25,9 +24,10 @@ website:
       - section: tutorials
         contents:
           - tutorials/01_btc_python_library.ipynb
-          - tutorials/02_UV_maps_with_seams.ipynb
+          - tutorials/02_segmentation_with_ilastik.ipynb
           - tutorials/03_improving_UV_maps.ipynb
           - tutorials/04_advanced_segmentation_and_meshing.ipynb
           - tutorials/05_multiple_recordings_and_reference_meshes.ipynb
           - tutorials/06_movies_and_dynamic_surfaces.ipynb
           - tutorials/07_analysis_in_3d.ipynb
+          - tutorials/08_UV_maps_with_seams.ipynb

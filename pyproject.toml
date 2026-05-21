@@ -32,4 +32,4 @@ include = ["blender_tissue_cartography"]
 
 [tool.nbdev]
 custom_sidebar = True
-custom_quarto_yml = true
+custom_quarto_yml = True

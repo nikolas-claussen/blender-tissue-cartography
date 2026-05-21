@@ -2,190 +2,110 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>/src/remeshing.html</loc>
-    <lastmod>2026-05-21T00:23:17.659Z</lastmod>
+    <lastmod>2026-05-21T18:06:18.059Z</lastmod>
   </url>
   <url>
     <loc>/src/wrapping.html</loc>
-    <lastmod>2026-05-21T00:23:18.027Z</lastmod>
+    <lastmod>2026-05-21T18:06:18.435Z</lastmod>
   </url>
   <url>
     <loc>/src/harmonic_wrapping.html</loc>
-    <lastmod>2026-05-21T00:23:18.081Z</lastmod>
+    <lastmod>2026-05-21T18:06:18.505Z</lastmod>
   </url>
   <url>
     <loc>/src/smoothing.html</loc>
-    <lastmod>2026-05-21T00:23:17.931Z</lastmod>
+    <lastmod>2026-05-21T18:06:18.343Z</lastmod>
   </url>
   <url>
     <loc>/src/differential_geometry.html</loc>
-    <lastmod>2026-05-21T00:23:17.923Z</lastmod>
+    <lastmod>2026-05-21T18:06:18.399Z</lastmod>
   </url>
   <url>
     <loc>/src/registration.html</loc>
-    <lastmod>2026-05-21T00:23:19.346Z</lastmod>
+    <lastmod>2026-05-21T18:06:19.022Z</lastmod>
   </url>
   <url>
     <loc>/src/mesh.html</loc>
-    <lastmod>2026-05-21T00:23:16.699Z</lastmod>
+    <lastmod>2026-05-21T18:06:17.642Z</lastmod>
   </url>
   <url>
     <loc>/index.html</loc>
-    <lastmod>2026-05-21T16:48:53.125Z</lastmod>
+    <lastmod>2026-05-21T18:06:17.458Z</lastmod>
+  </url>
+  <url>
+    <loc>/tutorials/08_UV_maps_with_seams.html</loc>
+    <lastmod>2026-05-21T18:06:17.878Z</lastmod>
   </url>
   <url>
     <loc>/tutorials/07_analysis_in_3d.html</loc>
-    <lastmod>2026-05-21T02:55:12.398Z</lastmod>
+    <lastmod>2026-05-21T18:06:17.807Z</lastmod>
   </url>
   <url>
     <loc>/tutorials/05_multiple_recordings_and_reference_meshes.html</loc>
-    <lastmod>2026-05-21T00:23:16.840Z</lastmod>
+    <lastmod>2026-05-21T18:06:17.781Z</lastmod>
   </url>
   <url>
     <loc>/tutorials/06_movies_and_dynamic_surfaces.html</loc>
-    <lastmod>2026-05-21T00:23:16.867Z</lastmod>
+    <lastmod>2026-05-21T18:06:17.805Z</lastmod>
   </url>
   <url>
-    <loc>/tutorials/02_UV_maps_with_seams.html</loc>
-    <lastmod>2026-05-21T02:55:12.423Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Libary Tutorials/04_btc_python_library.html</loc>
-    <lastmod>2026-05-19T14:44:44.917Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Libary Tutorials/06_improving_UV_maps.html</loc>
-    <lastmod>2026-05-19T14:44:44.923Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Libary Tutorials/08_multiple_recordings_and_reference_meshes.html</loc>
-    <lastmod>2026-05-19T14:44:44.923Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Libary Tutorials/07_advanced_segmentation_and_meshing.html</loc>
-    <lastmod>2026-05-19T14:44:44.908Z</lastmod>
+    <loc>/methods_paper.html</loc>
+    <lastmod>2026-05-21T18:01:06.950Z</lastmod>
   </url>
   <url>
     <loc>/03_more_on_tissue_cartography.html</loc>
-    <lastmod>2026-05-19T14:44:44.908Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/remeshing_pymeshlab.html</loc>
-    <lastmod>2026-05-19T14:44:46.111Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/01e_morphsnakes.html</loc>
-    <lastmod>2026-05-19T14:44:45.135Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/01c_interface_pymeshlab.html</loc>
-    <lastmod>2026-05-19T14:44:45.824Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/registration_rotation.html</loc>
-    <lastmod>2026-05-19T14:44:46.423Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/01d_interface_trimesh.html</loc>
-    <lastmod>2026-05-19T14:44:45.585Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/io.html</loc>
-    <lastmod>2026-05-19T14:44:45.442Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/02_cartographic_interpolation.html</loc>
-    <lastmod>2026-05-19T14:44:46.447Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/01b_mesh.html</loc>
-    <lastmod>2026-05-19T14:44:45.153Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/registration.html</loc>
-    <lastmod>2026-05-19T14:44:46.572Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/differential_geometry.html</loc>
-    <lastmod>2026-05-19T14:44:45.882Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/04c_smoothing.html</loc>
-    <lastmod>2026-05-19T14:44:45.796Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/06_harmonic_wrapping.html</loc>
-    <lastmod>2026-05-19T14:44:45.905Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/05c_wrapping.html</loc>
-    <lastmod>2026-05-19T14:44:45.850Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Library Source/remeshing.html</loc>
-    <lastmod>2026-05-19T14:44:45.362Z</lastmod>
+    <lastmod>2026-05-21T18:06:17.452Z</lastmod>
   </url>
   <url>
     <loc>/03_btc_addon.html</loc>
-    <lastmod>2026-05-21T16:48:53.148Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Libary Tutorials/09_movies_and_dynamic_surfaces.html</loc>
-    <lastmod>2026-05-19T14:44:44.945Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Libary Tutorials/10_analysis_in_3d.html</loc>
-    <lastmod>2026-05-19T14:44:44.950Z</lastmod>
-  </url>
-  <url>
-    <loc>/Python Libary Tutorials/05_UV_maps_with_seams.html</loc>
-    <lastmod>2026-05-19T14:44:44.920Z</lastmod>
-  </url>
-  <url>
-    <loc>/02_segmentation_with_ilastik.html</loc>
-    <lastmod>2026-05-21T16:48:53.107Z</lastmod>
+    <lastmod>2026-05-21T18:06:17.488Z</lastmod>
   </url>
   <url>
     <loc>/tutorials/03_improving_UV_maps.html</loc>
-    <lastmod>2026-05-21T00:23:16.801Z</lastmod>
+    <lastmod>2026-05-21T18:06:17.751Z</lastmod>
   </url>
   <url>
     <loc>/tutorials/04_advanced_segmentation_and_meshing.html</loc>
-    <lastmod>2026-05-21T02:55:12.400Z</lastmod>
+    <lastmod>2026-05-21T18:06:17.746Z</lastmod>
   </url>
   <url>
     <loc>/tutorials/01_btc_python_library.html</loc>
-    <lastmod>2026-05-21T02:55:12.413Z</lastmod>
+    <lastmod>2026-05-21T18:06:17.699Z</lastmod>
+  </url>
+  <url>
+    <loc>/tutorials/02_segmentation_with_ilastik.html</loc>
+    <lastmod>2026-05-21T18:06:17.712Z</lastmod>
   </url>
   <url>
     <loc>/blender_tutorial.html</loc>
-    <lastmod>2026-05-21T16:48:53.114Z</lastmod>
+    <lastmod>2026-05-21T18:06:17.447Z</lastmod>
   </url>
   <url>
     <loc>/src/cartographic_interpolation.html</loc>
-    <lastmod>2026-05-21T00:23:19.389Z</lastmod>
+    <lastmod>2026-05-21T18:06:18.942Z</lastmod>
   </url>
   <url>
     <loc>/src/io.html</loc>
-    <lastmod>2026-05-21T00:23:17.691Z</lastmod>
+    <lastmod>2026-05-21T18:06:18.087Z</lastmod>
   </url>
   <url>
     <loc>/src/interface_trimesh.html</loc>
-    <lastmod>2026-05-21T00:23:17.658Z</lastmod>
+    <lastmod>2026-05-21T18:06:18.178Z</lastmod>
   </url>
   <url>
     <loc>/src/registration_rotation.html</loc>
-    <lastmod>2026-05-21T00:23:19.270Z</lastmod>
+    <lastmod>2026-05-21T18:06:19.017Z</lastmod>
   </url>
   <url>
     <loc>/src/01c_interface_pymeshlab.html</loc>
-    <lastmod>2026-05-21T00:23:19.348Z</lastmod>
+    <lastmod>2026-05-21T18:06:18.901Z</lastmod>
   </url>
   <url>
     <loc>/src/morphsnakes.html</loc>
-    <lastmod>2026-05-21T00:23:16.711Z</lastmod>
+    <lastmod>2026-05-21T18:06:17.685Z</lastmod>
   </url>
   <url>
     <loc>/src/remeshing_pymeshlab.html</loc>
-    <lastmod>2026-05-21T00:23:19.352Z</lastmod>
+    <lastmod>2026-05-21T18:06:18.904Z</lastmod>
   </url>
 </urlset>

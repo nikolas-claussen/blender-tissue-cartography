@@ -1,0 +1,5 @@
+---
+title: "Methods Paper"
+---
+
+<iframe src="methods_paper.pdf" width="100%" height="900px"></iframe>
