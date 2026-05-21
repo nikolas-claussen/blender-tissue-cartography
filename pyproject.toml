@@ -31,3 +31,5 @@ version = {attr = "blender_tissue_cartography.__version__"}
 include = ["blender_tissue_cartography"]
 
 [tool.nbdev]
+custom_sidebar = True
+custom_quarto_yml = true

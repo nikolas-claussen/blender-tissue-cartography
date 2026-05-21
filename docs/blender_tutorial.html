@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>1. Blender add-on tutorial</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-f245066ca199b7326ac6b360085ddf3a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="1. Blender add-on tutorial">
+<meta property="og:description" content="">
+<meta property="og:image" content="/01_blender_tutorial_files/figure-html/562ff3e1-1-image.png">
+<meta property="og:image:height" content="1080">
+<meta property="og:image:width" content="1920">
+<meta name="twitter:title" content="1. Blender add-on tutorial">
+<meta name="twitter:description" content="">
+<meta name="twitter:image" content="/01_blender_tutorial_files/figure-html/562ff3e1-1-image.png">
+<meta name="twitter:image-height" content="1080">
+<meta name="twitter:image-width" content="1920">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./blender_tutorial.html">1. Blender add-on tutorial</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">blender-tissue-cartography</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./blender_tutorial.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">1. Blender add-on tutorial</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03_btc_addon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3. <code>blender_tissue_cartography</code> add-on</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03_more_on_tissue_cartography.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tissue cartography with <code>blender_tisssue_cartography</code></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Tutorials (Python)</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/01_btc_python_library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">4. <code>blender_tissue_cartography</code> Python library</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/02_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5. Tissue cartography with “seams”</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/03_improving_UV_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">6. Iteratively improving cartographic projections</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/04_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">7. Advanced segmentation and meshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/05_multiple_recordings_and_reference_meshes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">8. Consistent cartographic projections across multiple recordings</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/06_movies_and_dynamic_surfaces.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">9. Time-lapse imaging and dynamic surfaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/07_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">10. 3D Image analysis with cartographic projections</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Library API reference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/io.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>io</code> - Image I/O</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/mesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>mesh</code> - Mesh data structure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/01c_interface_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>interface_pymeshlab</code> - interface with MeshLab</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/interface_trimesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>interface_trimesh</code> - interface with <code>trimesh</code></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/morphsnakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>morphsnakes</code> - Morphsnakes segmentation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/cartographic_interpolation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>interpolation</code> - Cartographic interpolation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/differential_geometry.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>diffgeo</code> - Surface differential geometry</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/remeshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>remesh</code> - Mesh creation and remeshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/remeshing_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>remesh_pymeshlab</code> - Mesh creation and remeshing with MeshLab</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/smoothing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>smoothing</code> - Mesh smoothing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/registration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>registration</code> - Rigid-body registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/registration_rotation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>rotation</code> -</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>wrapping</code> - Shrink-wrapping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/harmonic_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>harmonic</code> - Harmonic mapping</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#polygonal-meshes" id="toc-polygonal-meshes" class="nav-link active" data-scroll-target="#polygonal-meshes">Polygonal meshes</a></li>
+  <li><a href="#navigation" id="toc-navigation" class="nav-link" data-scroll-target="#navigation">Navigation</a></li>
+  <li><a href="#workspaces" id="toc-workspaces" class="nav-link" data-scroll-target="#workspaces">Workspaces</a></li>
+  <li><a href="#add-on-user-interface-data-loading-and-visualization" id="toc-add-on-user-interface-data-loading-and-visualization" class="nav-link" data-scroll-target="#add-on-user-interface-data-loading-and-visualization">Add-on user interface: data loading and visualization</a>
+  <ul class="collapse">
+  <li><a href="#data-loading" id="toc-data-loading" class="nav-link" data-scroll-target="#data-loading">Data loading</a></li>
+  <li><a href="#selected-datasets" id="toc-selected-datasets" class="nav-link" data-scroll-target="#selected-datasets">Selected datasets</a></li>
+  <li><a href="#data-visualization" id="toc-data-visualization" class="nav-link" data-scroll-target="#data-visualization">Data visualization</a></li>
+  <li><a href="#volumetric-image---surface-alignment" id="toc-volumetric-image---surface-alignment" class="nav-link" data-scroll-target="#volumetric-image---surface-alignment">Volumetric Image - Surface alignment</a></li>
+  </ul></li>
+  <li><a href="#cartographic-projection-with-the-uv-editor" id="toc-cartographic-projection-with-the-uv-editor" class="nav-link" data-scroll-target="#cartographic-projection-with-the-uv-editor">Cartographic projection with the UV editor</a>
+  <ul class="collapse">
+  <li><a href="#the-uv-editing-workspace" id="toc-the-uv-editing-workspace" class="nav-link" data-scroll-target="#the-uv-editing-workspace">The UV Editing workspace</a></li>
+  </ul></li>
+  <li><a href="#add-on-user-interface-making-projections" id="toc-add-on-user-interface-making-projections" class="nav-link" data-scroll-target="#add-on-user-interface-making-projections">Add-on user interface: making projections</a>
+  <ul class="collapse">
+  <li><a href="#projections" id="toc-projections" class="nav-link" data-scroll-target="#projections">Projections</a></li>
+  <li><a href="#batch-processing" id="toc-batch-processing" class="nav-link" data-scroll-target="#batch-processing">Batch processing</a></li>
+  </ul></li>
+  <li><a href="#old-stuff" id="toc-old-stuff" class="nav-link" data-scroll-target="#old-stuff">Old stuff</a>
+  <ul class="collapse">
+  <li><a href="#uv-editor" id="toc-uv-editor" class="nav-link" data-scroll-target="#uv-editor">UV editor</a></li>
+  <li><a href="#shading" id="toc-shading" class="nav-link" data-scroll-target="#shading">Shading</a></li>
+  <li><a href="#exporting-meshes" id="toc-exporting-meshes" class="nav-link" data-scroll-target="#exporting-meshes">Exporting meshes</a></li>
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps">Next steps</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">1. Blender add-on tutorial</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>Your blender interface has three main parts: - Top bar with the “File” menu for opening, saving, and exporting models, and the choice of the different “Workspaces” - “Areas” in the middle, your workspace - “Status Bar” at the bottom, shows relevant shortcuts and messages</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_blender_tutorial_files/figure-html/562ff3e1-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<section id="polygonal-meshes" class="level3">
+<h3 class="anchored" data-anchor-id="polygonal-meshes">Polygonal meshes</h3>
+<p>Blender represents surfaces in 3D as polygonal meshes: collections of points (vertices), edges, and faces. You can see the vertices and faces by selecting the “Wireframe” display option:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_wireframe.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<section id="import-a-mesh" class="level4">
+<h4 class="anchored" data-anchor-id="import-a-mesh">Import a mesh</h4>
+<p>Meshes can be saved and loaded in the <code>.obj</code> format, and you can use external tools to create and edit meshes. Try importing a mesh, like (<code>Drosophila_reference.obj</code>) from the test dataset. You can either drag and drop it into blender, or click “File -&gt; Import” on the top left.</p>
+<p><strong>Important: axis order</strong> When importing a mesh into Blender, you have to choose how Blender interprets the <span class="math inline">\(x,y,z\)</span> axes. It is important to keep this choice consistent - “Forward axis: Y” and “Up axis: Z”</p>
+</section>
+</section>
+<section id="navigation" class="level3">
+<h3 class="anchored" data-anchor-id="navigation">Navigation</h3>
+<p>Use the scroll wheel to zoom in/out, click on an object to select it (it should be highlighted in orange), and use the Navigate gizmo to rotate the axes. Click the “hands” button to move your view.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_navigation.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+</section>
+<section id="workspaces" class="level3">
+<h3 class="anchored" data-anchor-id="workspaces">Workspaces</h3>
+<p>Blender has different “workspaces” for different 3d tasks, selected using the top bar. Right now, we are in “Layout”, a general-purpose workspace for viewing your blender scene. It has three main parts:</p>
+<ol type="1">
+<li><p>“3d viewport” (center).</p></li>
+<li><p>“Outliner” (top right). Controls what is in your scene and how it is shown. You can toggle mesh visibility, rename, or delete them.</p></li>
+<li><p>“Properties” (bottom right). This section contains several tabs. The most important ones for us are:</p>
+<ul>
+<li>“Scene”: This is where the add-on lives</li>
+<li>“Object”: set position, scale, visibility, of your meshes. Lock the mesh positions to avoid moving the accidentally</li>
+<li>“Modifier”: apply filters/transformations to your mesh, for example smoothing or remeshin</li>
+</ul></li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_blender_tutorial_files/figure-html/d5013c1c-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<section id="important-workspaces" class="level4">
+<h4 class="anchored" data-anchor-id="important-workspaces">Important workspaces</h4>
+<p>On the top bar, you select the workspace. We will mainly use the following:</p>
+<ol type="1">
+<li><p>“Layout”: Loading and inspecting data, operating the add-on</p></li>
+<li><p>“UV editing”: “unwrap”/project meshes into the 2D plane.</p></li>
+<li><p>“Shading”: Visualization</p></li>
+</ol>
+</section>
+</section>
+<section id="add-on-user-interface-data-loading-and-visualization" class="level2">
+<h2 class="anchored" data-anchor-id="add-on-user-interface-data-loading-and-visualization">Add-on user interface: data loading and visualization</h2>
+<p>Now we <a href="https://docs.blender.org/manual/en/latest/editors/preferences/addons.html">install the add-on</a>: Click “Edit -&gt; Preferences -&gt; Add-ons -&gt; Add-on Settings -&gt; Install from disk” and select the file you just downloaded. The add-on can now be found under “Scene -&gt; Tissue Cartography (V2)”. You may need to restart Blender.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_ux.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>We will now go through the add-on user interface step by step.</p>
+<section id="data-loading" class="level3">
+<h3 class="anchored" data-anchor-id="data-loading">Data loading</h3>
+<p>To import a 3D <code>.tiff</code> file, select the “File Path” and click “Load .tiff file”. You need to specify the X/Y/Z resolution of your image (in microns), and the order of the axes in the <code>.tiff file</code> (as a string like <code>xyz</code> or <code>cxyz</code> if you have multiple channels). Let’s load the test dataset <code>Drosophila_CAAX-mCherry.tif</code>, an <em>in toto</em> image of the early <em>Drosophila</em> embryo with a fluorescent marker for cell membranes.</p>
+<p>After import, you should see a <code>BoundingBox</code> mesh that represents the image volume:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_loading.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>In the add-on, each 3D image is associated to a <code>BoundingBox</code>. The 3D images are not saved to disk - you need to reload the image data if you restart Blender. The currently loaded datasets can be seen in the dropdown menu. You can unload datasets you don’t need anymore, especially if your computer runs out of memory. <code>BoundingBox</code> meshes stay in the Blender file even if you deleted the 3D image data.</p>
+<p>⚠️ <strong>Axis order problems</strong></p>
+<p>Check the “shape” of 3D data loaded into the add-on (image bounding box). If it looks off, adjust the axis order and/or spatial resolution. For instance, if the Z-axis of a confocal image stack is not correctly recognized, the image will look “squashed”.</p>
+<section id="loading-a-segmentation" class="level4">
+<h4 class="anchored" data-anchor-id="loading-a-segmentation">Loading a segmentation</h4>
+<p>Next, we need to load the “surface of interest” (SOI) we want to extract from the 3D data and project to 2D. You can do this in two ways:</p>
+<ol type="1">
+<li><p>Import a surface mesh created with external tools.</p></li>
+<li><p>Load a 3D segmentation.</p></li>
+</ol>
+<p>Let’s load the example segmentation <code>Drosophila_CAAX-mCherry_subsampled-image_Probabilities</code>. It is a 3D <code>.tiff</code> with black and white values, indicating the “outside” and “inside” of the embryo. The <strong>resolution</strong> of the segmentation <code>.tiff</code> can be different from the 3D image (often, you downsize images, so the segmentation software is more rapid). With the <strong>smoothing</strong> parameter, you convert the “pixelated” 3D segmentation into a smooth mesh. You should now see the surface of interest inside the image bounding box:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_segmentation.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>⚠️ <strong>Volume segmentation</strong></p>
+<p>The add-on expects a segmentation of a <em>3D volume</em> of which the surface is the boundary (e.g., the sphere is the boundary of a solid ball).</p>
+<p><strong>More on segmentation and surface extraction</strong></p>
+<p>This repo does not contain any image segmentation tools as excellent software is already available. See tutorial XXX for how to use <a href="https://www.ilastik.org/">Ilastik</a> to segment out your SOI. We will also cover <strong>remeshing</strong>: operations that improve the quality of your mesh and can make tissue cartography run much faster.</p>
+</section>
+</section>
+<section id="selected-datasets" class="level3">
+<h3 class="anchored" data-anchor-id="selected-datasets">Selected datasets</h3>
+<p>You can load multiple surfaces and 3D images into Blender at once. The “Selected datasets” panel determines which one is currently active. The add-on operations are applied to the currently active dataset. Select the <code>BoundingBox</code> as active 3D dataset, and the embryo surface as active mesh.</p>
+</section>
+<section id="data-visualization" class="level3">
+<h3 class="anchored" data-anchor-id="data-visualization">Data visualization</h3>
+<p>Before we carry out cartographic projection, we can visualize the 3D data in Blender. This is also a good check whether data loading and surface import have worked correctly.</p>
+<section id="orthogonal-slices" class="level4">
+<h4 class="anchored" data-anchor-id="orthogonal-slices">Orthogonal slices</h4>
+<p>The first option is to show slices of the data along the X/Y/X axes. Use the slider to select the position of the slice and click “Create slice plane”. To preview the image data, select “Material preview” in the top right corner. Let’s toggle the visibility of the mesh off so we can see the slice:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_slice.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+</section>
+<section id="vertex-shading" class="level4">
+<h4 class="anchored" data-anchor-id="vertex-shading">Vertex shading</h4>
+<p>The second option is to project the image onto the vertices of the mesh. The mesh is usually not as “highly resolved” as the full data (i.e., it has a smaller number of vertices than the number of pixels along each axis). This good since it makes everything run faster, but it means that vertex shading will be blurry. Fortunately, it is only a “preview” of the high-quality projections we will create below.</p>
+<p>The <strong>Normal Offset</strong> controls which part of the image is projected to the mesh. For example, a value of “4” means that we show the intensity 4 microns inside the surface along the surface normal. This option allows visualizing different layers of the data, like peeling off “onion layers”.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_vertex.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="volumetric-image---surface-alignment" class="level3">
+<h3 class="anchored" data-anchor-id="volumetric-image---surface-alignment">Volumetric Image - Surface alignment</h3>
+<p>To project image intensity onto the surface, the add-on needs to know “where” in the image volume each surface point lies. It is essential that your image and your surface are correctly <strong>aligned</strong>. Move the surface mesh relative to the bounding box (press <code>G</code>) , refresh the vertex shading, and see what happens:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_alignment.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>The surface is no longer correctly aligned with the image data, and so the “wrong” intensities get projected on the mesh. The part outside the image becomes black (missing data). If you move the <code>BoundingBox</code> and the surface together, they stay aligned. Incorrect alignment is a common source of problems.</p>
+<p>Press <code>Ctrl + Z</code> to undo.</p>
+</section>
+</section>
+<section id="cartographic-projection-with-the-uv-editor" class="level2">
+<h2 class="anchored" data-anchor-id="cartographic-projection-with-the-uv-editor">Cartographic projection with the UV editor</h2>
+<p>Now we get to the heart of tissue cartography. We will create a projection that “unwraps” the surface of interest into a 2D plane, much like a map of the globe. This process is called <strong>UV mapping</strong> in computer graphics (the cartographic axes are called <span class="math inline">\(u, v\)</span> to distinguish them from the 3d <span class="math inline">\(x,y,z\)</span> axes - hence the name).</p>
+<section id="the-uv-editing-workspace" class="level3">
+<h3 class="anchored" data-anchor-id="the-uv-editing-workspace">The UV Editing workspace</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_UV_editor.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Switch over to the UV Editing workspace. On the right, you see your selected mesh, on the left its projection into the 2D <strong>UV square</strong>. At the moment, it is empty. Notice also that we are now in “Edit Mode” since we will edit a property of our mesh, the UV map.</p>
+<p>The currently <strong>selected part of the mesh</strong> will be shown in orange. Note: for UV mapping, press <code>3</code> to go into “face select” mode. <code>1</code> selects mesh vertices, and <code>2</code> edges. To see the selected region clearly, we deactivate the material preview.</p>
+<section id="uv-mapping-101" class="level4">
+<h4 class="anchored" data-anchor-id="uv-mapping-101">UV mapping 101</h4>
+<p>To unwrap the mesh, several algorithms can be used, for example a classic “Cylinder Projection. They are available under”UV-&gt; Unwrap”. Some algorithms have parameters you can tune in a box that will appear in the bottom right corner.</p>
+<p>Let’s press “3” and “A” to select all faces of a mesh, and use the fully automatic “Smart UV project”:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_project.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>On the left, we now see how out mesh was unwrapped into the UV square. Since the surface was originally closed, it must be “cut” into several pieces to be mapped into the UV square. These are called <strong>UV islands</strong>, and the boundaries between them are called <strong>seams</strong>. In this case, the seams were placed automatically, but you can also choose them manually.</p>
+<p>We discuss UV mapping in more detail below. For more info, also take a look at the <a href="https://docs.blender.org/manual/en/latest/editors/uv/introduction.html">blender manual</a>.</p>
+</section>
+</section>
+</section>
+<section id="add-on-user-interface-making-projections" class="level2">
+<h2 class="anchored" data-anchor-id="add-on-user-interface-making-projections">Add-on user interface: making projections</h2>
+<section id="projections" class="level3">
+<h3 class="anchored" data-anchor-id="projections">Projections</h3>
+<p>Now that the surface has UV map that defines how it is unwrapped, we can project the image intensity into the plane. Without a UV map, this process will throw an error.</p>
+<p>First, select the <strong>normal offset(s)</strong>. The add-on can create multi-layer projections, analogous to peeling off the layers of an onion. Each layer is offset inwards/outwards from the surface along the normal direction. Negative resp. positive offsets move inwards resp. outwards. To create a multilayer projection, enter multiple offsets separated by a <code>,</code>, for example <code>2,4,6</code>. This will result in a “z-stack” with a 2-micron spacing that follows your surface.</p>
+<p>Next, select the pixel resolution. The output will always be a square image, in this case, 1024 * 1024 pixels. Make sure you have selected the correct mesh and 3D dataset, and click “Create Projection”. The computation can take a few seconds:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_projection.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>You should see the blurry vertex shading replaced by a high-resolution projection.</p>
+<p>The projected data will remain associated to the mesh even if you close blender. However, running a new projection will overwrite it (you can make a copy of the mesh instead).</p>
+<section id="saving-projections" class="level4">
+<h4 class="anchored" data-anchor-id="saving-projections">Saving projections</h4>
+<p>Use the “Save Projection” button to save the projections to disk as a multipage <code>.tif</code>. Saving creates a folder, which we will call <code>test_projection</code>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_save.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Let’s open FIJI and our file browser to inspect the files that were saved:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_files.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>On the left, <code>test_projection_ProjectedImageData.tif</code> is a z-stack showing the projected image data at 2, 4, and 6, microns inwards from the surface defined by our mesh. To enable quantitative analysis, the add-on saves 3 <code>.tif</code> files with geometric information:</p>
+<ol type="1">
+<li><p><code>test_projection_ProjectedPositions.tif</code>: the 3D X/Y/Z position of the surface in microns, for each pixel of the projected image data.</p></li>
+<li><p><code>test_projection_ProjectedNormals.tif</code>: the X/Y/Z components of the unit normal vector to the surface, for each pixel of the projected image data.</p></li>
+<li><p><code>test_projection_LocalResolution</code>: the “local resolution” in microns/pixel at each pixel.</p></li>
+</ol>
+<p>Images 1 and 2 have 3 channels, for X/Y/Z, yielding an RGB image in FIJI. Using the geometry information, you can map positions in the projection back into 3D. For example, you may segment cells in the 2D projection, and then locate them back in 3D space. Using the local resolution, you can correctly compute the cell area from the 2D segmentation (multiply 2D cell area by the local resolution). For more detail, see the <a href="https://www.biorxiv.org/content/10.1101/2025.02.04.636523v2">methods paper</a>.</p>
+<p>Importantly, the projection is different from a usual microscopy image: because it is cartographic projection it can be <strong>distorted</strong>, like Alaska in a Mercator projection:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/Mercator_with_Tissot's_Indicatrices_of_Distortion.svg.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>The circles on this map <a href="https://en.wikipedia.org/wiki/Mercator_projection#/media/File:Mercator_with_Tissot's_Indicatrices_of_Distortion.svg">from Wikipedia</a> indicate the “local resolution” of the map: where the circle is bigger.</p>
+<p>⚠️ <strong>Stretch distortion</strong></p>
+<p>In addition to local scale change (area distortion), cartographic projections can also induce stretch distortion, characterized by a stretch axis and strength. This information is not saved to disk. Stretch distortion can be computed and compensated for using the <code>diffgeo</code> module from the Python library. We recommend using UV map that minimize stretch distortion (“conformal” maps), see section below on advanced UV mapping.</p>
+</section>
+</section>
+<section id="batch-processing" class="level3">
+<h3 class="anchored" data-anchor-id="batch-processing">Batch processing</h3>
+<p>To process multiple datasets (for example, different frames of a movie), use the batch processing tool. It is best to test with a single mesh projection before running batch mode. Batch processing directly saves results to disk, in the selected “Batch Output” folder.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../index_files/screenshot_batch.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>The surface meshes for all datasets need to be loaded into blender. The 3D images will be read in from the selected “Batch Input” folder one by one. All image datasets must have the same resolution and axis order.</p>
+<p>The batch processing tool has two modes. Single-mesh mode (“One mesh, many images”): uses the active mesh for every file in the input directory. This is useful when the same surface is used across many image datasets.</p>
+<p>If you do not check this option, you must Blender-select as many meshes as there are 3D images in the “Batch Input” folder. Blender-selected meshes will show up as orange in the viewport and outliner (top right corner). Meshes and TIFF files are matched by alphanumeric sort order: the first mesh (A→Z by name) is paired with the first file (A→Z by stem), and so on. The number of selected meshes must equal the number of TIFF files in the input directory.</p>
+<p>One of the image datasets needs to be loaded into Blender as a <code>BoundingBox</code> and needs to be selected under “Selected Datasets” in the add-on. The Active 3D Dataset (Selected Datasets section) provides the spatial reference (position/orientation) and resolution. Axis order is taken from the Data Loading section.</p>
+</section>
+</section>
+<section id="old-stuff" class="level2">
+<h2 class="anchored" data-anchor-id="old-stuff">Old stuff</h2>
+<section id="uv-editor" class="level3">
+<h3 class="anchored" data-anchor-id="uv-editor">UV editor</h3>
+<p>In the UV editor, we “unwrap” our mesh into a 2d square. The axes in the square are called <span class="math inline">\(u, v\)</span> to distinguish them from the 3d <span class="math inline">\(x,y,z\)</span> axes - hence the name “UV mapping”. Go to the “UV editing” workspace now. You can see two main areas: the mesh in 3d on the right, and the UV square on the left. It is empty since we haven’t unwrapped our mesh yet. Notice also that we are now in “Edit Mode” since we will edit a property of our mesh, the UV map:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_blender_tutorial_files/figure-html/8cd17cc5-1-image-3.png" class="img-fluid figure-img"></p>
+<figcaption>image-3.png</figcaption>
+</figure>
+</div>
+<p>To unwrap the mesh, several algorithms can be used. Take a look at the <a href="https://docs.blender.org/manual/en/latest/editors/uv/introduction.html">blender manual</a>. In this example, our job is very simple, since the mesh is already basically flat.</p>
+<p>We first select the part of the mesh we want to unwrap, in this case, the whole thing. Press “3” and “A” to select all faces of a mesh. Aside: a mesh is made out of vertices, edges, and faces. You can go into vertex, edge, and face select mode by pressing “1”, “2”, and “3”. The mesh should light up orange. Now press “UV-&gt; Unwrap”:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_blender_tutorial_files/figure-html/8cd17cc5-2-image-4.png" class="img-fluid figure-img"></p>
+<figcaption>image-4.png</figcaption>
+</figure>
+</div>
+<p>Congratulations - you have mapped your surface to the plane. You can now see it on the left, in the UV square:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_blender_tutorial_files/figure-html/534d223c-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>The UV editor has a lot of tools for post-processing UV maps created by an unwrapping algorithm, for example, the “Grab” brush. Try it:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_blender_tutorial_files/figure-html/94314fc7-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>The “relax” brush is also very useful to reduce distortion.</p>
+</section>
+<section id="shading" class="level3">
+<h3 class="anchored" data-anchor-id="shading">Shading</h3>
+<p>To visualize textures on the mesh, use the top bar to switch to the “Shading” workspace:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_blender_tutorial_files/figure-html/f6dc3e6d-1-image-2.png" class="img-fluid figure-img"></p>
+<figcaption>image-2.png</figcaption>
+</figure>
+</div>
+<p>We will eventually use this to visualize the projected data extracted from our 3d <code>.tif</code> stack. But right now, let’s just look at how shading works. Add a new material using the central button on the bottom area.</p>
+<p>Materials define what the surface of a mesh looks like. Thanks to our UV map, we can take any square picture, and project it onto the 3d mesh. Let’s go to our new material and add an empty image. Press “Shift-A” and search for “Image Texture”. Click “New” - we will generate an image since we don’t have any data yet. Select “Generated Type -&gt; UV grid” to make a checkerboard pattern. This checkerboard pattern is very helpful to visualize the distortion of your UV map!</p>
+<p>The result should look like this: <img src="01_blender_tutorial_files/figure-html/5292f1bb-2-image.png" class="img-fluid" alt="image.png"></p>
+<p>As you can see, the “Material” contains a bunch of different blocks connected by wires. This is Blender’s graphical programming language for defining materials. In our example, we have an input image, whose “color” output node is connected to the “base color” input node of a shader (Principled BSDF, which simulates how light reflects from our mesh). The shader output is connected to the material surface. You can edit and reconnect the wiring using your mouse. Try to see what happens if you connect the image output directly to the “Surface” input node:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_blender_tutorial_files/figure-html/5292f1bb-1-image-2.png" class="img-fluid figure-img"></p>
+<figcaption>image-2.png</figcaption>
+</figure>
+</div>
+</section>
+<section id="exporting-meshes" class="level3">
+<h3 class="anchored" data-anchor-id="exporting-meshes">Exporting meshes</h3>
+<p>We can now export our mesh together with its UV map. The exported mesh is the basis for the algorithm that carries out the cartographic projection of the 3d data, which you will see in the next tutorial notebook.</p>
+<p>Click on “File -&gt; Export” and export as <code>.obj</code>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_blender_tutorial_files/figure-html/263126f2-1-image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p><strong>Important: export settings</strong></p>
+<ul>
+<li>Always export as <code>.obj</code></li>
+<li>Choose “Forwad axis: Y” and “Up axis: Z”</li>
+<li>Tick the box that says “Include Selection only” - otherwise you might export multiple meshes, and the subsequent algorithm does not know which one to use</li>
+<li>Include “UV coordinates” and “Normals” - this data will be important in the following</li>
+<li>Select <strong>Triangulated Mesh</strong> - the algorithms in this software package are designed to work with triangular meshes.</li>
+<li>Use a sensible name. You will need the filename in what comes next. I recommend using the name of the <code>.tif</code> image the mesh belongs to, plus some suffixes, like <code>_mesh_with_UV.obj</code>.</li>
+</ul>
+<p>Save the blender file as a <code>.blend</code> project for further use, and close Blender.</p>
+</section>
+<section id="next-steps" class="level3">
+<h3 class="anchored" data-anchor-id="next-steps">Next steps</h3>
+<p>That’s it! You now know the minimal amount of blender necessary to use <code>blender_tissue_cartography</code>. Move on to <code>- Tutorial 3 to learn how to use the</code>blender_tissue_cartography` add-on for tissue cartography fully within the Blender GUI</p>
+<ul>
+<li>Tutorial 4 to learn how to use the <code>blender_tissue_cartography</code> Python library for custom or automated pipelines.</li>
+</ul>
+<p><strong>Keep in mind</strong>: blender is a powerful tool, in particular its UV Editor. We have barely scratched the surface of what it can do. Look at tutorials and the blender manual to see its full capabilities. Think twice before implementing UV mapping algorithms yourself in Python/MATLAB/… . Blender probably has a better implementation, a graphical user interface, and can be scripted in Python, as we will see in a later tutorial.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

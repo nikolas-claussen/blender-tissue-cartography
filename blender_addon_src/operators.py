@@ -603,6 +603,7 @@ class VertexShaderOperator(Operator):
 
         #qmins = np.array([np.quantile(data[ic, ::4, ::4, ::4], 0.05) for ic in channels_rgb])
         #qmaxs = np.array([np.quantile(data[ic, ::4, ::4, ::4], 0.99) for ic in channels_rgb])
+        intensities = np.nan_to_num(intensities)
         qmins, qmaxs = np.percentile(intensities, (1, 99), axis=0)
         denom = qmaxs - qmins
         denom[denom == 0] = 1.0

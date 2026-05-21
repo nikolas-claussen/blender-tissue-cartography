@@ -38,3 +38,10 @@ To re-download the wheels, run this command [to do]:
 ```
 
 - To test the add-on interactively, I sym-linked the `blender_addon` folder to `~/Library/Application Support/Blender/4.5/extensions/user_default/tissue_cartography`. To install the add-on in Blender, go to Edit > Preferences > Add-ons > Install. To refresh the add-on, run the `blender_addon/reload_script.py` script.
+
+## Documentation webpage creation
+
+- The documentation webpage is generated from the notebooks in `nbs/` using nbdev's `nbdev_docs` command. To update the webpage, delete the old `docs` folder, run the nbdev commands, then move `_docs` to `docs`. The webpage is hosted on GitHub Pages.
+
+- We created a custom sidebar by setting `custom_quarto_yml = true` in `pyproject.toml`, and adding `nbs/custom_sidebar.yml` to the `metadata-files` list in `nbs/_quarto.yml`. To update the sidebar, edit `nbs/custom_sidebar.yml`. If you add new notebooks, make sure to add them to the sidebar 
+or they won't be visible on the webpage.
