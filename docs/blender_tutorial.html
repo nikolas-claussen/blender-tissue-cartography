@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>1. Blender add-on tutorial</title>
+<title>Blender add-on tutorial</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -100,12 +100,12 @@ window.Quarto = {
 </script>
 
 <link rel="stylesheet" href="styles.css">
-<meta property="og:title" content="1. Blender add-on tutorial">
+<meta property="og:title" content="Blender add-on tutorial">
 <meta property="og:description" content="">
 <meta property="og:image" content="/01_blender_tutorial_files/figure-html/562ff3e1-1-image.png">
 <meta property="og:image:height" content="1080">
 <meta property="og:image:width" content="1920">
-<meta name="twitter:title" content="1. Blender add-on tutorial">
+<meta name="twitter:title" content="Blender add-on tutorial">
 <meta name="twitter:description" content="">
 <meta name="twitter:image" content="/01_blender_tutorial_files/figure-html/562ff3e1-1-image.png">
 <meta name="twitter:image-height" content="1080">
@@ -129,7 +129,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./blender_tutorial.html">1. Blender add-on tutorial</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./blender_tutorial.html">Blender add-on tutorial</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -150,7 +150,7 @@ window.Quarto = {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./blender_tutorial.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">1. Blender add-on tutorial</span></a>
+ <span class="menu-text">Blender add-on tutorial</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -183,13 +183,13 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./tutorials/01_btc_python_library.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">4. <code>blender_tissue_cartography</code> Python library</span></a>
+ <span class="menu-text"><code>blender_tissue_cartography</code> Python library</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./tutorials/02_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">5. Tissue cartography with “seams”</span></a>
+ <span class="menu-text">Tissue cartography with “seams”</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -201,7 +201,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./tutorials/04_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">7. Advanced segmentation and meshing</span></a>
+ <span class="menu-text">Advanced segmentation and meshing</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -219,7 +219,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./tutorials/07_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">10. 3D Image analysis with cartographic projections</span></a>
+ <span class="menu-text">3D Image analysis with cartographic projections</span></a>
   </div>
 </li>
       </ul>
@@ -339,21 +339,21 @@ window.Quarto = {
   <li><a href="#data-visualization" id="toc-data-visualization" class="nav-link" data-scroll-target="#data-visualization">Data visualization</a></li>
   <li><a href="#volumetric-image---surface-alignment" id="toc-volumetric-image---surface-alignment" class="nav-link" data-scroll-target="#volumetric-image---surface-alignment">Volumetric Image - Surface alignment</a></li>
   </ul></li>
+  <li><a href="#fixing-surfaces-remeshing-and-modelling" id="toc-fixing-surfaces-remeshing-and-modelling" class="nav-link" data-scroll-target="#fixing-surfaces-remeshing-and-modelling">Fixing surfaces: remeshing and modelling</a></li>
   <li><a href="#cartographic-projection-with-the-uv-editor" id="toc-cartographic-projection-with-the-uv-editor" class="nav-link" data-scroll-target="#cartographic-projection-with-the-uv-editor">Cartographic projection with the UV editor</a>
   <ul class="collapse">
   <li><a href="#the-uv-editing-workspace" id="toc-the-uv-editing-workspace" class="nav-link" data-scroll-target="#the-uv-editing-workspace">The UV Editing workspace</a></li>
+  <li><a href="#exporting-meshes" id="toc-exporting-meshes" class="nav-link" data-scroll-target="#exporting-meshes">Exporting meshes</a></li>
   </ul></li>
   <li><a href="#add-on-user-interface-making-projections" id="toc-add-on-user-interface-making-projections" class="nav-link" data-scroll-target="#add-on-user-interface-making-projections">Add-on user interface: making projections</a>
   <ul class="collapse">
   <li><a href="#projections" id="toc-projections" class="nav-link" data-scroll-target="#projections">Projections</a></li>
   <li><a href="#batch-processing" id="toc-batch-processing" class="nav-link" data-scroll-target="#batch-processing">Batch processing</a></li>
   </ul></li>
-  <li><a href="#old-stuff" id="toc-old-stuff" class="nav-link" data-scroll-target="#old-stuff">Old stuff</a>
+  <li><a href="#visualizations-with-the-shading-editor" id="toc-visualizations-with-the-shading-editor" class="nav-link" data-scroll-target="#visualizations-with-the-shading-editor">Visualizations with the Shading editor</a>
   <ul class="collapse">
-  <li><a href="#uv-editor" id="toc-uv-editor" class="nav-link" data-scroll-target="#uv-editor">UV editor</a></li>
-  <li><a href="#shading" id="toc-shading" class="nav-link" data-scroll-target="#shading">Shading</a></li>
-  <li><a href="#exporting-meshes" id="toc-exporting-meshes" class="nav-link" data-scroll-target="#exporting-meshes">Exporting meshes</a></li>
-  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps">Next steps</a></li>
+  <li><a href="#visualizing-uv-maps" id="toc-visualizing-uv-maps" class="nav-link" data-scroll-target="#visualizing-uv-maps">Visualizing UV maps</a></li>
+  <li><a href="#annotating-data" id="toc-annotating-data" class="nav-link" data-scroll-target="#annotating-data">Annotating data</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -363,7 +363,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">1. Blender add-on tutorial</h1>
+<h1 class="title">Blender add-on tutorial</h1>
 </div>
 
 
@@ -454,15 +454,19 @@ window.Quarto = {
 <p>We will now go through the add-on user interface step by step.</p>
 <section id="data-loading" class="level3">
 <h3 class="anchored" data-anchor-id="data-loading">Data loading</h3>
-<p>To import a 3D <code>.tiff</code> file, select the “File Path” and click “Load .tiff file”. You need to specify the X/Y/Z resolution of your image (in microns), and the order of the axes in the <code>.tiff file</code> (as a string like <code>xyz</code> or <code>cxyz</code> if you have multiple channels). Let’s load the test dataset <code>Drosophila_CAAX-mCherry.tif</code>, an <em>in toto</em> image of the early <em>Drosophila</em> embryo with a fluorescent marker for cell membranes.</p>
-<p>After import, you should see a <code>BoundingBox</code> mesh that represents the image volume:</p>
+<p>To import a 3D <code>.tiff</code> file, select the “File Path” and click “Load .tiff file”. You need to specify the X/Y/Z resolution of your image in <span class="math inline">\(\mu m\)</span> for the X/Y/Z axes, and the order of the axes in the <code>.tiff file</code> (as a string like <code>xyz</code> or <code>cxyz</code> if you have multiple channels).</p>
+<p><strong>Multi-channel data</strong> The add-on supports both single-channel and multi-channel data (so <code>.tif</code> files with 3 or 4 dimensions). For time-series data, you need to provide one <code>.tif</code> per time point (see section on “Batch Processing” below).</p>
+<p>Let’s load the test dataset <code>Drosophila_CAAX-mCherry.tif</code>, an <em>in toto</em> image of the early <em>Drosophila</em> embryo with a fluorescent marker for cell membranes. The resolution is <span class="math inline">\(1.0 \mu m\)</span> for all axes. You can open it in FIJI:</p>
+<p><img src="../index_files/screenshot_drosophila_fiji.png" width="400"></p>
+<p>To load the dataset into Blender, click on “File Path” to select the <code>.tif</code> file. After import, you should see a <code>BoundingBox</code> mesh that represents the image volume:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../index_files/screenshot_loading.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
-<p>In the add-on, each 3D image is associated to a <code>BoundingBox</code>. The 3D images are not saved to disk - you need to reload the image data if you restart Blender. The currently loaded datasets can be seen in the dropdown menu. You can unload datasets you don’t need anymore, especially if your computer runs out of memory. <code>BoundingBox</code> meshes stay in the Blender file even if you deleted the 3D image data.</p>
+<p><strong>Unloading data</strong></p>
+<p>In the add-on, each 3D image is associated to a <code>BoundingBox</code>. The <em>3D images are not saved to disk</em> - you need to reload the image data if you restart Blender. The currently loaded datasets can be seen in the dropdown menu. You can unload datasets you don’t need anymore, especially if your computer runs out of memory. <code>BoundingBox</code> meshes stay in the Blender file even if you deleted the 3D image data.</p>
 <p>⚠️ <strong>Axis order problems</strong></p>
 <p>Check the “shape” of 3D data loaded into the add-on (image bounding box). If it looks off, adjust the axis order and/or spatial resolution. For instance, if the Z-axis of a confocal image stack is not correctly recognized, the image will look “squashed”.</p>
 <section id="loading-a-segmentation" class="level4">
@@ -472,7 +476,9 @@ window.Quarto = {
 <li><p>Import a surface mesh created with external tools.</p></li>
 <li><p>Load a 3D segmentation.</p></li>
 </ol>
-<p>Let’s load the example segmentation <code>Drosophila_CAAX-mCherry_subsampled-image_Probabilities</code>. It is a 3D <code>.tiff</code> with black and white values, indicating the “outside” and “inside” of the embryo. The <strong>resolution</strong> of the segmentation <code>.tiff</code> can be different from the 3D image (often, you downsize images, so the segmentation software is more rapid). With the <strong>smoothing</strong> parameter, you convert the “pixelated” 3D segmentation into a smooth mesh. You should now see the surface of interest inside the image bounding box:</p>
+<p>Let’s load the example segmentation <code>Drosophila_CAAX-mCherry_subsampled-image_Probabilities</code>. It is a 3D <code>.tiff</code> with black and white values, indicating the “outside” and “inside” of the embryo:</p>
+<p><img src="../index_files/screenshot_segmentation_fiji.png" width="400"></p>
+<p>The <strong>resolution</strong> of the segmentation <code>.tiff</code> can be different from the 3D image (often, you downsize images, so the segmentation software is more rapid). With the <strong>smoothing</strong> parameter, you convert the “pixelated” 3D segmentation into a smooth mesh. You should now see the surface of interest inside the image bounding box:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../index_files/screenshot_segmentation.png" class="img-fluid figure-img"></p>
@@ -483,6 +489,18 @@ window.Quarto = {
 <p>The add-on expects a segmentation of a <em>3D volume</em> of which the surface is the boundary (e.g., the sphere is the boundary of a solid ball).</p>
 <p><strong>More on segmentation and surface extraction</strong></p>
 <p>This repo does not contain any image segmentation tools as excellent software is already available. See tutorial XXX for how to use <a href="https://www.ilastik.org/">Ilastik</a> to segment out your SOI. We will also cover <strong>remeshing</strong>: operations that improve the quality of your mesh and can make tissue cartography run much faster.</p>
+</section>
+<section id="loading-a-pre-computed-mesh" class="level4">
+<h4 class="anchored" data-anchor-id="loading-a-pre-computed-mesh">Loading a pre-computed mesh</h4>
+<p>If you already have a mesh, you can load it into Blender via drag-and-drop. Try it with <code>Drosophila_CAAX-mCherry_mesh_remeshed.obj</code>. If you create your mesh with an external tool, keep in mind:</p>
+<ul>
+<li><p><strong>Mesh units</strong> Importantly, the units of your mesh coordinates need to be in physical units, i.e.&nbsp;microns (and not pixels)!</p></li>
+<li><p><strong>Mesh axis order</strong> When importing a mesh into Blender, you have to choose how Blender interprets the <span class="math inline">\(x,y,z\)</span> axes. It is important to keep this choice consistent - select “Forward axis: Y” and “Up axis: Z”</p></li>
+</ul>
+</section>
+<section id="big-datasets-and-downsampling" class="level4">
+<h4 class="anchored" data-anchor-id="big-datasets-and-downsampling">Big datasets and downsampling</h4>
+<p>For big volumetric datasets (&gt;500MB or bigger), we recommend creating a downsampled version (reducing the reolution by 2x along each axis creates an 8x smaller dataset). Use the downsampled version to (a) segment out the object of interest (see tutorial below) and (b) quickly test the tissue cartography process. Once you are happy, load the full size data (don’t forget to change the resolution). Downsampling can be done in Fiji.</p>
 </section>
 </section>
 <section id="selected-datasets" class="level3">
@@ -504,7 +522,7 @@ window.Quarto = {
 </section>
 <section id="vertex-shading" class="level4">
 <h4 class="anchored" data-anchor-id="vertex-shading">Vertex shading</h4>
-<p>The second option is to project the image onto the vertices of the mesh. The mesh is usually not as “highly resolved” as the full data (i.e., it has a smaller number of vertices than the number of pixels along each axis). This good since it makes everything run faster, but it means that vertex shading will be blurry. Fortunately, it is only a “preview” of the high-quality projections we will create below.</p>
+<p>The second option is to project the image onto the vertices of the mesh to generate a <strong>preview</strong> of good since it makes everything run faster, but it means that vertex shading will be blurry. Fortunately, it is only a <strong>preview</strong> of the high-quality projections we will create below. The mesh is usually not as “highly resolved” as the full data (i.e., it has a smaller number of vertices than the number of pixels along each axis). This is good since it makes everything run faster, but it means that vertex shading will be blurry.</p>
 <p>The <strong>Normal Offset</strong> controls which part of the image is projected to the mesh. For example, a value of “4” means that we show the intensity 4 microns inside the surface along the surface normal. This option allows visualizing different layers of the data, like peeling off “onion layers”.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -527,9 +545,15 @@ window.Quarto = {
 <p>Press <code>Ctrl + Z</code> to undo.</p>
 </section>
 </section>
+<section id="fixing-surfaces-remeshing-and-modelling" class="level2">
+<h2 class="anchored" data-anchor-id="fixing-surfaces-remeshing-and-modelling">Fixing surfaces: remeshing and modelling</h2>
+</section>
 <section id="cartographic-projection-with-the-uv-editor" class="level2">
 <h2 class="anchored" data-anchor-id="cartographic-projection-with-the-uv-editor">Cartographic projection with the UV editor</h2>
-<p>Now we get to the heart of tissue cartography. We will create a projection that “unwraps” the surface of interest into a 2D plane, much like a map of the globe. This process is called <strong>UV mapping</strong> in computer graphics (the cartographic axes are called <span class="math inline">\(u, v\)</span> to distinguish them from the 3d <span class="math inline">\(x,y,z\)</span> axes - hence the name).</p>
+<p>Now we get to the heart of tissue cartography. We will create a projection that “unwraps” the surface of interest into a 2D plane, much like a map of the globe. This process is called <strong>UV mapping</strong> in computer graphics. For details, please take a look at <a href="https://docs.blender.org/manual/en/latest/modeling/meshes/uv/index.html">the introduction to the UVs</a> and to the <a href="https://docs.blender.org/manual/en/latest/editors/uv/introduction.html">UV editor</a> on the Blender website. You should start UV mapping only once you are happy with the surface mesh and its alignment. Editing a mesh usually corrupts the UV map.</p>
+<p>The UV map defines how your 3D mesh (coordinates X/Y/Z) is mapped to 2D (coordinates U/V, hence the name). Here is an example from the Blender website:</p>
+<p><img src="../index_files/screenshot_website_uv.png" width="800"></p>
+<p>In computer graphics, it is used to map images from 2D to a mesh (which allows painting on 3D models in video games). Here, we use it for the opposite purpose: projecting 3D volumetric images to 2D.</p>
 <section id="the-uv-editing-workspace" class="level3">
 <h3 class="anchored" data-anchor-id="the-uv-editing-workspace">The UV Editing workspace</h3>
 <div class="quarto-figure quarto-figure-center">
@@ -542,7 +566,8 @@ window.Quarto = {
 <p>The currently <strong>selected part of the mesh</strong> will be shown in orange. Note: for UV mapping, press <code>3</code> to go into “face select” mode. <code>1</code> selects mesh vertices, and <code>2</code> edges. To see the selected region clearly, we deactivate the material preview.</p>
 <section id="uv-mapping-101" class="level4">
 <h4 class="anchored" data-anchor-id="uv-mapping-101">UV mapping 101</h4>
-<p>To unwrap the mesh, several algorithms can be used, for example a classic “Cylinder Projection. They are available under”UV-&gt; Unwrap”. Some algorithms have parameters you can tune in a box that will appear in the bottom right corner.</p>
+<p>Blender has many methods for creating cartographic projections, from cylindrical and spherical projections to more sophisticated algorithms that minimize distortion. A good cartographic projection that is adapted to your mesh geometry will make visualization and image analysis much simpler.</p>
+<p>The algorithms are available under “UV-&gt; Unwrap”. Some algorithms have parameters you can tune in a box that will appear in the bottom right corner.</p>
 <p>Let’s press “3” and “A” to select all faces of a mesh, and use the fully automatic “Smart UV project”:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -550,9 +575,27 @@ window.Quarto = {
 <figcaption>image.png</figcaption>
 </figure>
 </div>
-<p>On the left, we now see how out mesh was unwrapped into the UV square. Since the surface was originally closed, it must be “cut” into several pieces to be mapped into the UV square. These are called <strong>UV islands</strong>, and the boundaries between them are called <strong>seams</strong>. In this case, the seams were placed automatically, but you can also choose them manually.</p>
-<p>We discuss UV mapping in more detail below. For more info, also take a look at the <a href="https://docs.blender.org/manual/en/latest/editors/uv/introduction.html">blender manual</a>.</p>
+<p>On the left, we now see how out mesh was unwrapped into the UV square. Since the surface was originally closed, it must be “cut” into several pieces to be mapped into the UV square. These are called <strong>UV islands</strong>, and the boundaries between them are called <strong>seams</strong>. In this case, the seams were placed automatically, but you can also choose them manually. You can also manually edit the projection created by the algorithm (e.g., move the UV islands).</p>
+<p><strong>Selecting a part of the mesh</strong></p>
+<p>Often, you only want to project a part of the mesh, or define a seam. To do this, use the selection tool: press <code>3</code>, then <code>C</code> and scroll to select the brush size. Only the orange, selected part of the mesh will be projected.</p>
+<p><strong>How to unwrap: recommendations</strong></p>
+<p>The Blender documentation has <a href="https://docs.blender.org/manual/en/latest/modeling/meshes/uv/unwrapping/introduction.html">a great guide</a> on how to unwrap meshes. For meshes that need to be “cut up”, we recommend <a href="https://docs.blender.org/manual/en/latest/modeling/meshes/uv/unwrapping/seams.html">choosing the seams manually</a>. The “minimum stretch” projection algorithm is a great choice since it … minimizes stretch. If your mesh has a simple geometry, you can use a spherical, cylindrical, or axis projection. These algorithms can easily be applied to many meshes (time points, samples) in batch. You generally want a UV map that minimizes distortion (how much the mesh is stretched when unwrapping). Distortion can be visualized in the left panel of the UV editor under “Overlays”.</p>
+<p><strong>Self-intersections</strong></p>
+<p>It is important to try to unwrap the mesh while avoiding self-intersection (where the mesh is folded onto itself in 2D). This is bad because the multiple 3D positions are mapped to the same cartographic location. When you project image data, different 3D locations will be written to the same 2D pixel, and it will be a mess. For example, if you use the “project from view” method on the current mesh, the left and right side of the embryo get collapsed.</p>
 </section>
+</section>
+<section id="exporting-meshes" class="level3">
+<h3 class="anchored" data-anchor-id="exporting-meshes">Exporting meshes</h3>
+<p>If you wish, you can export the surface mesh with its UV map, for example to load it into a Python pipeline created using the tissue cartography python library.</p>
+<p>Click on “File -&gt; Export” and export as <code>.obj</code>:</p>
+<p><strong>Important: export settings</strong></p>
+<ul>
+<li>Always export as <code>.obj</code></li>
+<li>Choose “Forward axis: Y” and “Up axis: Z” - this keeps the axis order consistent.</li>
+<li>Tick the box that says “Include Selection only” - otherwise you might export multiple meshes</li>
+<li>Include “UV coordinates” and “Normals” - this data will be important in the following</li>
+<li>Select <strong>Triangulated Mesh</strong> - the algorithms in this software package are designed to work with triangular meshes.</li>
+</ul>
 </section>
 </section>
 <section id="add-on-user-interface-making-projections" class="level2">
@@ -594,12 +637,7 @@ window.Quarto = {
 </ol>
 <p>Images 1 and 2 have 3 channels, for X/Y/Z, yielding an RGB image in FIJI. Using the geometry information, you can map positions in the projection back into 3D. For example, you may segment cells in the 2D projection, and then locate them back in 3D space. Using the local resolution, you can correctly compute the cell area from the 2D segmentation (multiply 2D cell area by the local resolution). For more detail, see the <a href="https://www.biorxiv.org/content/10.1101/2025.02.04.636523v2">methods paper</a>.</p>
 <p>Importantly, the projection is different from a usual microscopy image: because it is cartographic projection it can be <strong>distorted</strong>, like Alaska in a Mercator projection:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="../index_files/Mercator_with_Tissot's_Indicatrices_of_Distortion.svg.png" class="img-fluid figure-img"></p>
-<figcaption>image.png</figcaption>
-</figure>
-</div>
+<p><img src="../index_files/Mercator_with_Tissot's_Indicatrices_of_Distortion.svg.png" width="400"></p>
 <p>The circles on this map <a href="https://en.wikipedia.org/wiki/Mercator_projection#/media/File:Mercator_with_Tissot's_Indicatrices_of_Distortion.svg">from Wikipedia</a> indicate the “local resolution” of the map: where the circle is bigger.</p>
 <p>⚠️ <strong>Stretch distortion</strong></p>
 <p>In addition to local scale change (area distortion), cartographic projections can also induce stretch distortion, characterized by a stretch axis and strength. This information is not saved to disk. Stretch distortion can be computed and compensated for using the <code>diffgeo</code> module from the Python library. We recommend using UV map that minimize stretch distortion (“conformal” maps), see section below on advanced UV mapping.</p>
@@ -607,102 +645,55 @@ window.Quarto = {
 </section>
 <section id="batch-processing" class="level3">
 <h3 class="anchored" data-anchor-id="batch-processing">Batch processing</h3>
-<p>To process multiple datasets (for example, different frames of a movie), use the batch processing tool. It is best to test with a single mesh projection before running batch mode. Batch processing directly saves results to disk, in the selected “Batch Output” folder.</p>
+<p>To process multiple datasets (for example, different frames of a movie), use the batch processing tool. It is best to test with a single mesh projection before running batch mode.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../index_files/screenshot_batch.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
-<p>The surface meshes for all datasets need to be loaded into blender. The 3D images will be read in from the selected “Batch Input” folder one by one. All image datasets must have the same resolution and axis order.</p>
-<p>The batch processing tool has two modes. Single-mesh mode (“One mesh, many images”): uses the active mesh for every file in the input directory. This is useful when the same surface is used across many image datasets.</p>
-<p>If you do not check this option, you must Blender-select as many meshes as there are 3D images in the “Batch Input” folder. Blender-selected meshes will show up as orange in the viewport and outliner (top right corner). Meshes and TIFF files are matched by alphanumeric sort order: the first mesh (A→Z by name) is paired with the first file (A→Z by stem), and so on. The number of selected meshes must equal the number of TIFF files in the input directory.</p>
-<p>One of the image datasets needs to be loaded into Blender as a <code>BoundingBox</code> and needs to be selected under “Selected Datasets” in the add-on. The Active 3D Dataset (Selected Datasets section) provides the spatial reference (position/orientation) and resolution. Axis order is taken from the Data Loading section.</p>
+<p>The tool works as follows</p>
+<ol type="1">
+<li><p>Load the surface meshes for all datasets into blender. All meshes need to have a UV map (see below on how to create UV maps for multiple meshes, like frames from a movie)</p></li>
+<li><p>The 3D images will be read in from the selected “Batch Input” folder one by one. All image datasets must have the same resolution and axis order.</p></li>
+<li><p>Load at least one of the image datasets into Blender as a <code>BoundingBox</code>, and select it under “Selected Datasets” in the add-on. The Active 3D Dataset provides the spatial reference (position/orientation) and resolution. Axis order is taken from the Data Loading section.</p></li>
+<li><p>The batch processing tool has two modes. Single-mesh mode (“One mesh, many images”): uses the active mesh for every file in the input directory. This is useful when the same surface is used across many image datasets.</p></li>
+<li><p>If you do not check this option, you must Blender-select as many meshes as there are 3D images in the “Batch Input” folder. Blender-selected meshes will show up as orange in the viewport and outliner (top right corner). Meshes and TIFF files are matched by alphanumeric sort order: the first mesh (A→Z by name) is paired with the first file (A→Z by stem), and so on. The number of selected meshes must equal the number of TIFF files in the input directory.</p></li>
+<li><p>Batch processing directly saves results to disk, in the selected “Batch Output” folder. Click “Batch process and save” to start the process. Note that this can take a moment and Blender will be unresponsive while the add-on is processing.</p></li>
+</ol>
 </section>
 </section>
-<section id="old-stuff" class="level2">
-<h2 class="anchored" data-anchor-id="old-stuff">Old stuff</h2>
-<section id="uv-editor" class="level3">
-<h3 class="anchored" data-anchor-id="uv-editor">UV editor</h3>
-<p>In the UV editor, we “unwrap” our mesh into a 2d square. The axes in the square are called <span class="math inline">\(u, v\)</span> to distinguish them from the 3d <span class="math inline">\(x,y,z\)</span> axes - hence the name “UV mapping”. Go to the “UV editing” workspace now. You can see two main areas: the mesh in 3d on the right, and the UV square on the left. It is empty since we haven’t unwrapped our mesh yet. Notice also that we are now in “Edit Mode” since we will edit a property of our mesh, the UV map:</p>
+<section id="visualizations-with-the-shading-editor" class="level2">
+<h2 class="anchored" data-anchor-id="visualizations-with-the-shading-editor">Visualizations with the Shading editor</h2>
+<p>Blender uses <strong>Materials</strong> to determine what surfaces in the viewport look like. These can be found in the “Shading” workspace. You can also use <strong>rendering</strong> to generate high-quality images (or movies!) or your data. This is beyond the scope of the tutorial.</p>
+<p>When you make a projection or use vertex shading, the add-on generates a material that shows the image intensity on the mesh. Thanks to our UV map, we can take any square picture, and project it onto the 3d mesh. You can fine-tune the materials in the “Shading” workspace. For example, you can adjust brightness and contrast, or mix together different channels. Let’s take a look:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="01_blender_tutorial_files/figure-html/8cd17cc5-1-image-3.png" class="img-fluid figure-img"></p>
-<figcaption>image-3.png</figcaption>
-</figure>
-</div>
-<p>To unwrap the mesh, several algorithms can be used. Take a look at the <a href="https://docs.blender.org/manual/en/latest/editors/uv/introduction.html">blender manual</a>. In this example, our job is very simple, since the mesh is already basically flat.</p>
-<p>We first select the part of the mesh we want to unwrap, in this case, the whole thing. Press “3” and “A” to select all faces of a mesh. Aside: a mesh is made out of vertices, edges, and faces. You can go into vertex, edge, and face select mode by pressing “1”, “2”, and “3”. The mesh should light up orange. Now press “UV-&gt; Unwrap”:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="01_blender_tutorial_files/figure-html/8cd17cc5-2-image-4.png" class="img-fluid figure-img"></p>
-<figcaption>image-4.png</figcaption>
-</figure>
-</div>
-<p>Congratulations - you have mapped your surface to the plane. You can now see it on the left, in the UV square:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="01_blender_tutorial_files/figure-html/534d223c-1-image.png" class="img-fluid figure-img"></p>
+<p><img src="../index_files/screenshot_batch.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
-<p>The UV editor has a lot of tools for post-processing UV maps created by an unwrapping algorithm, for example, the “Grab” brush. Try it:</p>
+<p>In the viewport you see the mesh and its texture. On the right, you see the projected image (the same we inspected in FIJI, but now internally in Blender). At the bottom is the <strong>Shading editor</strong>, which uses a combination of nodes to map the projected image onto the surface of the mesh. The different layers of our multilayer projection are available as inputs, are routed through the <strong>Principled BSDF</strong> node (which simulates how light reflects from our mesh), into the material output. You can edit and reconnect the wiring using your mouse. Via <code>Shift+A</code>, you can add new nodes, like a mixing node to combine different images, or a brightness adjustment node. The possibilities are vast and <a href="https://docs.blender.org/manual/en/latest/render/materials/introduction.html">explained in the blender documentation</a>.</p>
+<section id="visualizing-uv-maps" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-uv-maps">Visualizing UV maps</h3>
+<p>To visualize a UV map (what gets mapped where?) and its distortion, create an image (<code>Shift+A</code>, then type “Image texture”) input, select “New +”, and select “Generated Type” as “Color grid”. You can hook up this image to the shader, and the grid will be projected to 3D. This tells you which region goes where, and how distorted it is:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="01_blender_tutorial_files/figure-html/94314fc7-1-image.png" class="img-fluid figure-img"></p>
+<p><img src="../index_files/screenshot_uv_grid.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
-<p>The “relax” brush is also very useful to reduce distortion.</p>
 </section>
-<section id="shading" class="level3">
-<h3 class="anchored" data-anchor-id="shading">Shading</h3>
-<p>To visualize textures on the mesh, use the top bar to switch to the “Shading” workspace:</p>
+<section id="annotating-data" class="level3">
+<h3 class="anchored" data-anchor-id="annotating-data">Annotating data</h3>
+<p>You can annotate the projected data in Blender using the “Texture Paint” workspace. This allows you to paint on the 3D surface (for example, highlighting some cells you are interested in), and have the data saved to 2D on top of the projected image data. You can save the results to disk using the “Image” button. Here is a simple example:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="01_blender_tutorial_files/figure-html/f6dc3e6d-1-image-2.png" class="img-fluid figure-img"></p>
-<figcaption>image-2.png</figcaption>
-</figure>
-</div>
-<p>We will eventually use this to visualize the projected data extracted from our 3d <code>.tif</code> stack. But right now, let’s just look at how shading works. Add a new material using the central button on the bottom area.</p>
-<p>Materials define what the surface of a mesh looks like. Thanks to our UV map, we can take any square picture, and project it onto the 3d mesh. Let’s go to our new material and add an empty image. Press “Shift-A” and search for “Image Texture”. Click “New” - we will generate an image since we don’t have any data yet. Select “Generated Type -&gt; UV grid” to make a checkerboard pattern. This checkerboard pattern is very helpful to visualize the distortion of your UV map!</p>
-<p>The result should look like this: <img src="01_blender_tutorial_files/figure-html/5292f1bb-2-image.png" class="img-fluid" alt="image.png"></p>
-<p>As you can see, the “Material” contains a bunch of different blocks connected by wires. This is Blender’s graphical programming language for defining materials. In our example, we have an input image, whose “color” output node is connected to the “base color” input node of a shader (Principled BSDF, which simulates how light reflects from our mesh). The shader output is connected to the material surface. You can edit and reconnect the wiring using your mouse. Try to see what happens if you connect the image output directly to the “Surface” input node:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="01_blender_tutorial_files/figure-html/5292f1bb-1-image-2.png" class="img-fluid figure-img"></p>
-<figcaption>image-2.png</figcaption>
-</figure>
-</div>
-</section>
-<section id="exporting-meshes" class="level3">
-<h3 class="anchored" data-anchor-id="exporting-meshes">Exporting meshes</h3>
-<p>We can now export our mesh together with its UV map. The exported mesh is the basis for the algorithm that carries out the cartographic projection of the 3d data, which you will see in the next tutorial notebook.</p>
-<p>Click on “File -&gt; Export” and export as <code>.obj</code>:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="01_blender_tutorial_files/figure-html/263126f2-1-image.png" class="img-fluid figure-img"></p>
+<p><img src="../index_files/screenshot_paint.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
-<p><strong>Important: export settings</strong></p>
-<ul>
-<li>Always export as <code>.obj</code></li>
-<li>Choose “Forwad axis: Y” and “Up axis: Z”</li>
-<li>Tick the box that says “Include Selection only” - otherwise you might export multiple meshes, and the subsequent algorithm does not know which one to use</li>
-<li>Include “UV coordinates” and “Normals” - this data will be important in the following</li>
-<li>Select <strong>Triangulated Mesh</strong> - the algorithms in this software package are designed to work with triangular meshes.</li>
-<li>Use a sensible name. You will need the filename in what comes next. I recommend using the name of the <code>.tif</code> image the mesh belongs to, plus some suffixes, like <code>_mesh_with_UV.obj</code>.</li>
-</ul>
-<p>Save the blender file as a <code>.blend</code> project for further use, and close Blender.</p>
-</section>
-<section id="next-steps" class="level3">
-<h3 class="anchored" data-anchor-id="next-steps">Next steps</h3>
-<p>That’s it! You now know the minimal amount of blender necessary to use <code>blender_tissue_cartography</code>. Move on to <code>- Tutorial 3 to learn how to use the</code>blender_tissue_cartography` add-on for tissue cartography fully within the Blender GUI</p>
-<ul>
-<li>Tutorial 4 to learn how to use the <code>blender_tissue_cartography</code> Python library for custom or automated pipelines.</li>
-</ul>
-<p><strong>Keep in mind</strong>: blender is a powerful tool, in particular its UV Editor. We have barely scratched the surface of what it can do. Look at tutorials and the blender manual to see its full capabilities. Think twice before implementing UV mapping algorithms yourself in Python/MATLAB/… . Blender probably has a better implementation, a graphical user interface, and can be scripted in Python, as we will see in a later tutorial.</p>
+<p><strong>Not seeing anything?</strong> Your surface may be flipped “inside out”. Go toEdit Mode &gt; Mesh &gt; Normals &gt; Flip.</p>
 
 
 </section>

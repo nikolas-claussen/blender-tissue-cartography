@@ -12,7 +12,7 @@ Standalone Blender 4.2+ extension exposing five PyMeshLab mesh processing operat
 | Alpha Wrap | `generate_alpha_wrap` | Watertight hull of non-manifold mesh |
 | Mesh Cleanup | multiple | Remove degenerate elements |
 
-All operations work **in-memory** — no temporary OBJ files.
+All operations work **in-memory** (see below).
 
 ## Files
 
@@ -43,7 +43,7 @@ From the `pymeshlab_remesh_addon/` directory:
     --split-platforms
 ```
 
-## In-memory conversion
+## In-memory mesh conversion
 
 `mesh_utils.py` mirrors `blender_tissue_cartography/interface_pymeshlab.py`:
 
