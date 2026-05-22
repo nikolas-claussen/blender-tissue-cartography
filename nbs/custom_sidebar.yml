@@ -1,16 +1,17 @@
 website:
   sidebar:
+    collapse-level: 1
     contents:
       - index.ipynb
       - methods_paper.qmd
       - 01_blender_tutorial.ipynb
-      - 03_btc_addon.ipynb
-      - section: Tutorials (Python)
+      - 02_dynamic_datasets.ipynb
+      - section: Tutorials (Python Library)
         contents:
           - tutorials/01_btc_python_library.ipynb
           - tutorials/02_segmentation_with_ilastik.ipynb
-          - tutorials/03_UV_maps_with_seams.ipynb
-          - tutorials/04_improving_UV_maps.ipynb
+          - tutorials/03_improving_UV_maps.ipynb
+          - tutorials/04_UV_maps_with_seams.ipynb
           - tutorials/05_advanced_segmentation_and_meshing.ipynb
           - tutorials/06_multiple_recordings_and_reference_meshes.ipynb
           - tutorials/07_movies_and_dynamic_surfaces.ipynb

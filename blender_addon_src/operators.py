@@ -656,7 +656,8 @@ class AlignOperator(Operator):
         elif context.scene.tissue_cartography_align_type == "active":
             # For each selected mesh, create an aligned copy of the reference.
             for target_mesh in others:
-                self.report({'INFO'}, f"Aligning copy of {reference_mesh.name} to {target_mesh.name}")
+                target_name = target_mesh.name  # capture before copy may trigger Blender renaming
+                self.report({'INFO'}, f"Aligning copy of {reference_mesh.name} to {target_name}")
                 bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
                 target = np.array([target_mesh.matrix_world @ v.co
                                    for v in target_mesh.data.vertices])
@@ -669,8 +670,8 @@ class AlignOperator(Operator):
                 )
                 ref_copied = reference_mesh.copy()
                 ref_copied.data = reference_mesh.data.copy()
+                ref_copied.name = f"{target_name}_aligned"  # set before linking to prevent naming cascade
                 bpy.context.collection.objects.link(ref_copied)
-                ref_copied.name = f"{target_mesh.name}_aligned"
                 ref_copied.matrix_world = (
                     mathutils.Matrix(trafo_matrix) @ reference_mesh.matrix_world
                 )
@@ -701,7 +702,8 @@ class ShrinkwrapOperator(Operator):
             targets = targets[::-1]
 
         for target_mesh in targets:
-            self.report({'INFO'}, f"Shrink-wrapping: {source_mesh.name} to {target_mesh.name}")
+            target_name = target_mesh.name  # capture before copy may trigger Blender renaming
+            self.report({'INFO'}, f"Shrink-wrapping: {source_mesh.name} to {target_name}")
             bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
 
             if context.scene.tissue_cartography_align_iter > 0:
@@ -721,11 +723,11 @@ class ShrinkwrapOperator(Operator):
 
             source_mesh_copied = source_mesh.copy()
             source_mesh_copied.data = source_mesh.data.copy()
+            source_mesh_copied.name = f"{target_name}_wrapped"  # set before linking to prevent naming cascade
             bpy.context.collection.objects.link(source_mesh_copied)
             source_mesh_copied.matrix_world = (
                 mathutils.Matrix(trafo_matrix) @ source_mesh.matrix_world
             )
-            source_mesh_copied.name = f"{target_mesh.name}_wrapped"
 
             shrinkwrap_and_smooth(
                 source_mesh_copied, target_mesh,

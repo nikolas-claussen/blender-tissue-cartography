@@ -33,8 +33,12 @@
     <lastmod>2026-05-21T18:06:17.458Z</lastmod>
   </url>
   <url>
-    <loc>/tutorials/08_UV_maps_with_seams.html</loc>
-    <lastmod>2026-05-21T18:06:17.878Z</lastmod>
+    <loc>/tutorials/04_UV_maps_with_seams.html</loc>
+    <lastmod>2026-05-21T18:16:50.663Z</lastmod>
+  </url>
+  <url>
+    <loc>/tutorials/08_analysis_in_3d.html</loc>
+    <lastmod>2026-05-21T18:16:50.640Z</lastmod>
   </url>
   <url>
     <loc>/tutorials/07_analysis_in_3d.html</loc>
@@ -45,28 +49,40 @@
     <lastmod>2026-05-21T18:06:17.781Z</lastmod>
   </url>
   <url>
-    <loc>/tutorials/06_movies_and_dynamic_surfaces.html</loc>
-    <lastmod>2026-05-21T18:06:17.805Z</lastmod>
+    <loc>/tutorials/04_advanced_segmentation_and_meshing.html</loc>
+    <lastmod>2026-05-21T18:06:17.746Z</lastmod>
   </url>
   <url>
-    <loc>/methods_paper.html</loc>
-    <lastmod>2026-05-21T18:01:06.950Z</lastmod>
+    <loc>/tutorials/07_movies_and_dynamic_surfaces.html</loc>
+    <lastmod>2026-05-21T18:16:50.652Z</lastmod>
   </url>
   <url>
-    <loc>/03_more_on_tissue_cartography.html</loc>
-    <lastmod>2026-05-21T18:06:17.452Z</lastmod>
+    <loc>/tutorials/06_multiple_recordings_and_reference_meshes.html</loc>
+    <lastmod>2026-05-21T18:16:50.643Z</lastmod>
   </url>
   <url>
     <loc>/03_btc_addon.html</loc>
     <lastmod>2026-05-21T18:06:17.488Z</lastmod>
   </url>
   <url>
+    <loc>/03_more_on_tissue_cartography.html</loc>
+    <lastmod>2026-05-21T18:06:17.452Z</lastmod>
+  </url>
+  <url>
+    <loc>/methods_paper.html</loc>
+    <lastmod>2026-05-21T18:08:28.469Z</lastmod>
+  </url>
+  <url>
     <loc>/tutorials/03_improving_UV_maps.html</loc>
     <lastmod>2026-05-21T18:06:17.751Z</lastmod>
   </url>
   <url>
-    <loc>/tutorials/04_advanced_segmentation_and_meshing.html</loc>
-    <lastmod>2026-05-21T18:06:17.746Z</lastmod>
+    <loc>/tutorials/06_movies_and_dynamic_surfaces.html</loc>
+    <lastmod>2026-05-21T18:06:17.805Z</lastmod>
+  </url>
+  <url>
+    <loc>/tutorials/05_advanced_segmentation_and_meshing.html</loc>
+    <lastmod>2026-05-21T18:16:50.639Z</lastmod>
   </url>
   <url>
     <loc>/tutorials/01_btc_python_library.html</loc>
@@ -75,6 +91,10 @@
   <url>
     <loc>/tutorials/02_segmentation_with_ilastik.html</loc>
     <lastmod>2026-05-21T18:06:17.712Z</lastmod>
+  </url>
+  <url>
+    <loc>/tutorials/08_UV_maps_with_seams.html</loc>
+    <lastmod>2026-05-21T18:06:17.878Z</lastmod>
   </url>
   <url>
     <loc>/blender_tutorial.html</loc>
