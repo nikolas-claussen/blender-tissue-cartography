@@ -195,8 +195,11 @@ window.Quarto = {
   </div>
 </li>
         <li class="sidebar-item">
- <span class="menu-text">02_dynamic_datasets.ipynb</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="./dynamic_datasets_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dynamic datasets tutorial</span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
@@ -395,6 +398,7 @@ window.Quarto = {
   <li><a href="#annotating-data" id="toc-annotating-data" class="nav-link" data-scroll-target="#annotating-data">Annotating data</a></li>
   </ul></li>
   <li><a href="#appendix-add-on-troubleshooting" id="toc-appendix-add-on-troubleshooting" class="nav-link" data-scroll-target="#appendix-add-on-troubleshooting">Appendix: Add-on troubleshooting</a></li>
+  <li><a href="#appendix-uv-mapping-101" id="toc-appendix-uv-mapping-101" class="nav-link" data-scroll-target="#appendix-uv-mapping-101">Appendix: UV mapping 101</a></li>
   <li><a href="#appendix-3d-segmentation-with-ilastik" id="toc-appendix-3d-segmentation-with-ilastik" class="nav-link" data-scroll-target="#appendix-3d-segmentation-with-ilastik">Appendix: 3D segmentation with Ilastik</a>
   <ul class="collapse">
   <li><a href="#starting-an-ilastik-project" id="toc-starting-an-ilastik-project" class="nav-link" data-scroll-target="#starting-an-ilastik-project">Starting an Ilastik project</a></li>
@@ -435,7 +439,7 @@ window.Quarto = {
 <li><p><a href="https://www.blender.org/download/lts/4-5/">Install Blender</a>. We recommend the LTS version 4.5.</p></li>
 <li><p>Download the add-on <code>.zip</code> from <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_download">GitHub</a>. Choose the file that matches your operating system (e.g.&nbsp;<code>linux_x64</code>).</p>
 <ul>
-<li>If your OS is unavailable, download the <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_src">add-on source code</a>, and install the python library <code>scikit-image</code> in Blender’s Python interface.</li>
+<li>If your OS is unavailable, download the <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/tissue_cartography_addon_src">add-on source code</a>, and install the python library <code>scikit-image</code> in Blender’s Python interface.</li>
 </ul></li>
 <li><p>Download the folder with the <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_test_data">test dataset</a> for the tutorial.</p></li>
 <li><p><strong>Optional</strong>: Download and install the MeshLab add-on (<code>pymeshlab_remesh-*.zip</code>for your OS) from the same GitHub folder. Install it via “Edit -&gt; Preferences -&gt; Add-ons -&gt; Install from disk”. It adds mesh-improvement filters under “Scene -&gt; PyMeshLab Remeshing”, which are useful for cleaning up meshes from 3D segmentations (see Fixing surfaces below).</p></li>
@@ -565,8 +569,8 @@ window.Quarto = {
 </figure>
 </div>
 </section>
-<section id="what-type-of-segmentation-do-i-need" class="level4">
-<h4 class="anchored" data-anchor-id="what-type-of-segmentation-do-i-need">⚠️ What type of segmentation do I need?</h4>
+<section id="what-type-of-segmentation-do-you-need" class="level4">
+<h4 class="anchored" data-anchor-id="what-type-of-segmentation-do-you-need">⚠️ What type of segmentation do you need?</h4>
 <p>The add-on expects a segmentation of a <em>3D volume</em> of which the surface is the boundary (e.g., the sphere is the boundary of a solid ball). The “inside” should be <code>1</code> and the outside <code>0</code>. You can also load a segmentation with multiple labels (which will create multiple surfaces). Do not segment the pixels belonging to your surface directly (except if you <em>want</em> to use the “open surface” workflow below).</p>
 <p>This repo does not contain any image segmentation tools as excellent software is already available. See the tutorial appendix for how to use <a href="https://www.ilastik.org/">Ilastik</a> to segment out your surface of interest. For Python users, the library includes the <a href="https://github.com/pmneila/morphsnakes">Morphsnakes</a> algorithm for segmentation. Below, we will also cover <strong>remeshing</strong>: operations that improve the quality of your mesh, and can make tissue cartography run much smoother.</p>
 <section id="segmentation-and-meshing-for-open-surfaces" class="level5">
@@ -611,7 +615,7 @@ window.Quarto = {
 </section>
 <section id="vertex-shading" class="level4">
 <h4 class="anchored" data-anchor-id="vertex-shading">Vertex shading</h4>
-<p>The second option is to project the image onto the vertices of the mesh to generate a <strong>preview</strong> of good since it makes everything run faster, but it means that vertex shading will be blurry. Fortunately, it is only a <strong>preview</strong> of the high-quality projections we will create below. The mesh is usually not as “highly resolved” as the full data (i.e., it has a smaller number of vertices than the number of pixels along each axis). This is good since it makes everything run faster, but it means that vertex shading will be blurry.</p>
+<p>The second option is to project the image onto the vertices of the mesh to generate a <strong>preview</strong>. The mesh typically has fewer vertices than image pixels, keeping things fast, though vertex shading will appear blurry compared to the full projection. Fortunately, it is only a <strong>preview</strong> of the high-quality projections we will create below. The mesh is usually not as “highly resolved” as the full data (i.e., it has a smaller number of vertices than the number of pixels along each axis). This is good since it makes everything run faster, but it means that vertex shading will be blurry.</p>
 <p>The <strong>Normal Offset</strong> controls which part of the image is projected to the mesh. For example, a value of “4” means that we show the intensity 4 microns inside the surface along the surface normal. This option allows visualizing different layers of the data, like peeling off “onion layers”.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -631,14 +635,18 @@ window.Quarto = {
 </figure>
 </div>
 <p>The surface is no longer correctly aligned with the image data, and so the “wrong” intensities get projected on the mesh. The part outside the image becomes black (missing data). If you move the <code>BoundingBox</code> and the surface together, they stay aligned. Incorrect alignment is a common source of problems. Press <code>Ctrl + Z</code> to undo.</p>
-<p>More generally, <strong>your needs to fit the surface you want to extract</strong>. If this is not the case, you get images like this, where part of the mesh actually lies outside the embryo. One reason can be a bad 3D segmentation.</p>
+<p>More generally, <strong>your surface mesh needs to match the surface you want to extract</strong>. If this is not the case, you get images like this, where part of the mesh actually lies outside the embryo. One reason can be a bad 3D segmentation.</p>
 <p><img src="images/screenshot_pre_wrap.png" width="600"></p>
 </section>
 </section>
 <section id="fixing-surfaces-remeshing-and-modelling" class="level2">
 <h2 class="anchored" data-anchor-id="fixing-surfaces-remeshing-and-modelling">Fixing surfaces: remeshing and modelling</h2>
-<p>Surfaces generated by marching cubes from a 3D segmentation are often rough and have poor triangle quality — many small, elongated triangles. This can degrade the peformance of cartographic projection algorithms and downstream analysis. Before UV mapping, it is good practice to remesh the surface to get uniformly-sized, well-shaped triangles. Blender has built-in remeshing tools under the “Modifier” tab (Remesh modifier) and under “Sculpt Mode -&gt; Remesh”.</p>
+<p>Surfaces generated by marching cubes from a 3D segmentation are often rough and have poor triangle quality — many small, elongated triangles. This can degrade the performance of cartographic projection algorithms and downstream analysis. Before UV mapping, it is good practice to remesh the surface to get uniformly-sized, well-shaped triangles. Blender has built-in remeshing tools under the “Modifier” tab (Remesh modifier) and under “Sculpt Mode -&gt; Remesh”.</p>
 <p>In the Sculpting and Modelling workspaces, you can also edit the mesh to <strong>fix segmentation errors</strong>, or fill holes in meshes.</p>
+<section id="how-fine-should-your-mesh-be" class="level4">
+<h4 class="anchored" data-anchor-id="how-fine-should-your-mesh-be">How fine should your mesh be?</h4>
+<p>Your mesh should be sufficiently “fine” to smoothly follow the surface you want to capture, but not more. Importantly, the resolution of your projection does <em>not</em> depend on how fine your mesh is! You can get a high-resolution projection with a coarse mesh.</p>
+</section>
 </section>
 <section id="pymeshlab-remeshing-add-on" class="level2">
 <h2 class="anchored" data-anchor-id="pymeshlab-remeshing-add-on">PyMeshLab Remeshing add-on</h2>
@@ -677,36 +685,15 @@ window.Quarto = {
 </figure>
 </div>
 <p>Switch over to the UV Editing workspace. On the right, you see your selected mesh, on the left its projection into the 2D <strong>UV square</strong>. At the moment, it is empty. Notice also that we are now in “Edit Mode” since we will edit a property of our mesh, the UV map.</p>
-<p>The currently <strong>selected part of the mesh</strong> will be shown in orange. Note: for UV mapping, press <code>3</code> to go into “face select” mode. <code>1</code> selects mesh vertices, and <code>2</code> edges. To see the selected region clearly, we deactivate the material preview.</p>
-<section id="uv-mapping-101" class="level4">
-<h4 class="anchored" data-anchor-id="uv-mapping-101">UV mapping 101</h4>
-<p>Blender has many methods for creating cartographic projections, from cylindrical and spherical projections to more sophisticated algorithms that minimize distortion. A good cartographic projection that is adapted to your mesh geometry will make visualization and image analysis much simpler.</p>
-<p>The algorithms are available under “UV-&gt; Unwrap”. Some algorithms have parameters you can tune in a box that will appear in the bottom right corner.</p>
-<p>Let’s press “3” and “A” to select all faces of a mesh, and use the fully automatic “Smart UV project”:</p>
+<p>The currently <strong>selected part of the mesh</strong> will be shown in orange. Note: for UV mapping, press <code>3</code> the <code>A</code> select all faces. <code>1</code> selects mesh vertices, and <code>2</code> edges. Blender has many methods for creating cartographic projections. Let’s select a fully automatic one: “UV -&gt; Unwrap -&gt; Smart UV project”:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/screenshot_project.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
-<p>On the left, we now see how out mesh was unwrapped into the UV square. Since the surface was originally closed, it must be “cut” into several pieces to be mapped into the UV square. These are called <strong>UV islands</strong>, and the boundaries between them are called <strong>seams</strong>. In this case, the seams were placed automatically, but you can also choose them manually. You can also manually edit the projection created by the algorithm (e.g., move the UV islands).</p>
-<p><strong>Selecting a part of the mesh</strong></p>
-<p>Often, you only want to project a part of the mesh, or define a seam. To do this, use the selection tool: press <code>3</code>, then <code>C</code> and scroll to select the brush size. Only the orange, selected part of the mesh will be projected.</p>
-<p><strong>Defining seams</strong></p>
-<p>For meshes that need to be “cut up”, we recommend <a href="https://docs.blender.org/manual/en/latest/modeling/meshes/uv/unwrapping/seams.html">choosing the seams manually</a>. Press <code>2</code> to go into edge selection mode, select a loop along which you want to cut, <code>right-click</code>, and select “Mark seam”. Seams should show up in red (from the Blender website):</p>
-<p><img src="images/screenshot_seam.png" width="800"></p>
-<p>Here are two short-cuts, so you don’t have to select all edges by hand:</p>
-<ol type="1">
-<li><p>Select two vertices and find the shortest path between them. Press <code>1</code> for vertex mode, <code>right click</code> on the initial vertex, hold <code>ctrl</code> and <code>left click</code> on the final vertex, then press <code>2</code> to switch back to edge mode.</p></li>
-<li><p>Select a region in face mode (press <code>3</code> and <code>C</code> for the circle select tool), and use “Select -&gt; Select loops -&gt; Select boundary loop”.</p></li>
-</ol>
-<p><strong>Unwrapping algorithm recommendations</strong></p>
-<p>The Blender documentation has <a href="https://docs.blender.org/manual/en/latest/modeling/meshes/uv/unwrapping/introduction.html">a great guide</a> on how to unwrap meshes. The “minimum stretch” projection algorithm is a great choice since it … minimizes stretch. If your mesh has a simple geometry, you can use a spherical, cylindrical, or axis projection. These algorithms can easily be applied to many meshes (time points, samples) in batch. You generally want a UV map that minimizes distortion (how much the mesh is stretched when unwrapping). Distortion can be visualized in the left panel of the UV editor under “Overlays”.</p>
-<p><strong>Self-intersections</strong></p>
-<p>It is important to try to unwrap the mesh while avoiding self-intersection (where the mesh is folded onto itself in 2D). This is bad because the multiple 3D positions are mapped to the same cartographic location. When you project image data, different 3D locations will be written to the same 2D pixel, and it will be a mess. For example, if you use the “project from view” method on the current mesh, the left and right side of the embryo get collapsed.</p>
-<p><strong>Improving UV maps</strong></p>
-<p>The UV mapping process is iterative. Make an initial UV map, look at the projection and UV distortion, and then improve the map. In the left part of the UV editor, you can directly edit the UV map. For example, try moving UV islands around.</p>
-</section>
+<p>On the left, we now see how out mesh was unwrapped into the UV square. Since the surface was originally closed, it must be “cut” into several pieces (called “UV islands”) to be mapped into the UV square.</p>
+<p>More information on UV mapping can be found at the end of the tutorial in the “Appendix: UV mapping 101”</p>
 </section>
 <section id="exporting-meshes" class="level3">
 <h3 class="anchored" data-anchor-id="exporting-meshes">Exporting meshes</h3>
@@ -794,7 +781,7 @@ window.Quarto = {
 <p>When you make a projection or use vertex shading, the add-on generates a material that shows the image intensity on the mesh. Thanks to our UV map, we can take any square picture and project it onto the 3d mesh. You can fine-tune the materials in the “Shading” workspace. For example, you can adjust brightness and contrast, or mix together different channels. Let’s take a look:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/screenshot_batch.png" class="img-fluid figure-img"></p>
+<p><img src="images/screenshot_shading.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
@@ -831,9 +818,38 @@ window.Quarto = {
 <li><p>Please report any bugs on GitHub!</p></li>
 </ul>
 </section>
+<section id="appendix-uv-mapping-101" class="level2">
+<h2 class="anchored" data-anchor-id="appendix-uv-mapping-101">Appendix: UV mapping 101</h2>
+<p>Blender has many methods for creating cartographic projections, from cylindrical and spherical projections to more sophisticated algorithms that minimize distortion. A good cartographic projection that is adapted to your mesh geometry will make visualization and image analysis much simpler.</p>
+<p>The algorithms are available under “UV-&gt; Unwrap”. Some algorithms have parameters you can tune in a box that will appear in the bottom right corner.</p>
+<p>Let’s press “3” and “A” to select all faces of a mesh, and use the fully automatic “Smart UV project”:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/screenshot_project.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>On the left, we now see how out mesh was unwrapped into the UV square. Since the surface was originally closed, it must be “cut” into several pieces to be mapped into the UV square. These are called <strong>UV islands</strong>, and the boundaries between them are called <strong>seams</strong>. In this case, the seams were placed automatically, but you can also choose them manually. You can also manually edit the projection created by the algorithm (e.g., move the UV islands).</p>
+<p><strong>Selecting a part of the mesh</strong></p>
+<p>Often, you only want to project a part of the mesh, or define a seam. To do this, use the selection tool: press <code>3</code>, then <code>C</code> and scroll to select the brush size. Only the orange, selected part of the mesh will be projected.</p>
+<p><strong>Defining seams</strong></p>
+<p>For meshes that need to be “cut up”, we recommend <a href="https://docs.blender.org/manual/en/latest/modeling/meshes/uv/unwrapping/seams.html">choosing the seams manually</a>. Press <code>2</code> to go into edge selection mode, select a loop along which you want to cut, <code>right-click</code>, and select “Mark seam”. Seams should show up in red (from the Blender website):</p>
+<p><img src="images/screenshot_seam.png" width="800"></p>
+<p>Here are two short-cuts, so you don’t have to select all edges by hand:</p>
+<ol type="1">
+<li><p>Select two vertices and find the shortest path between them. Press <code>1</code> for vertex mode, <code>right click</code> on the initial vertex, hold <code>ctrl</code> and <code>left click</code> on the final vertex, then press <code>2</code> to switch back to edge mode.</p></li>
+<li><p>Select a region in face mode (press <code>3</code> and <code>C</code> for the circle select tool), and use “Select -&gt; Select loops -&gt; Select boundary loop”.</p></li>
+</ol>
+<p><strong>Unwrapping algorithm recommendations</strong></p>
+<p>The Blender documentation has <a href="https://docs.blender.org/manual/en/latest/modeling/meshes/uv/unwrapping/introduction.html">a great guide</a> on how to unwrap meshes. The “minimum stretch” projection algorithm is a great choice since it … minimizes stretch. If your mesh has a simple geometry, you can use a spherical, cylindrical, or axis projection. These algorithms can easily be applied to many meshes (time points, samples) in batch. You generally want a UV map that minimizes distortion (how much the mesh is stretched when unwrapping). Distortion can be visualized in the left panel of the UV editor under “Overlays”.</p>
+<p><strong>Self-intersections</strong></p>
+<p>It is important to try to unwrap the mesh while avoiding self-intersection (where the mesh is folded onto itself in 2D). This is bad because the multiple 3D positions are mapped to the same cartographic location. When you project image data, different 3D locations will be written to the same 2D pixel, and it will be a mess. For example, if you use the “project from view” method on the current mesh, the left and right side of the embryo get collapsed.</p>
+<p><strong>Improving UV maps</strong></p>
+<p>The UV mapping process is iterative. Make an initial UV map, look at the projection and UV distortion, and then improve the map. In the left part of the UV editor, you can directly edit the UV map. For example, try moving UV islands around.</p>
+</section>
 <section id="appendix-3d-segmentation-with-ilastik" class="level2">
 <h2 class="anchored" data-anchor-id="appendix-3d-segmentation-with-ilastik">Appendix: 3D segmentation with Ilastik</h2>
-<p>Here, we to use <a href="https://www.ilastik.org/">Ilastik</a> to obtain a 3D image segmentation. This is the first step in the tissue cartography pipeline. The surface of interest data is then defined as the segmentation boundary, i.e.&nbsp;between “inside” and “outside”. Many tools are available for segmenting 3D data. The only thing that matters is that it provides you with a 3D mask as a multipage <code>.tiff</code>.</p>
+<p>This appendix is only needed if you don’t yet have a 3D segmentation. We will use <a href="https://www.ilastik.org/">Ilastik</a> to obtain a 3D image segmentation. This is the first step in the tissue cartography pipeline. The surface of interest data is then defined as the segmentation boundary, i.e.&nbsp;between “inside” and “outside”. Many tools are available for segmenting 3D data. The only thing that matters is that it provides you with a 3D mask as a multipage <code>.tiff</code>.</p>
 <p>In our experience, Ilastik is a very robust and versatile segmentation tool, and we use it in most of our tissue cartography pipelines. This is why we recommend it as a starting point. Ilastik uses machine learning algorithms to segment and classify your data. You draw the labels on your data, and the algorithm predicts a segmentation. You correct the errors interactively until you are happy. Once trained, you can reuse Ilastik models for batch prediction.</p>
 <p>Start by <strong>down sampling</strong> the 3D image dataset <code>Drosophila_CAAX-mCherry.tif</code> by 2x along each axis. This reduces the image size by 8x and will greatly speed up segmentation. This lower resolution is still more than sufficient to identify the embryo’s surface, which is relatively smooth. Save the result as a <code>.h5</code> file (this makes Ilastik run faster). You can do this step in FIJI, or using python.</p>
 <section id="fiji-down-sampling" class="level4">

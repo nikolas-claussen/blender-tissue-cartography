@@ -5,7 +5,7 @@ website:
       - index.ipynb
       - methods_paper.qmd
       - 01_blender_tutorial.ipynb
-      - 02_dynamic_datasets.ipynb
+      - 02_dynamic_datasets_tutorial.ipynb
       - section: Tutorials (Python Library)
         contents:
           - tutorials/01_btc_python_library.ipynb
