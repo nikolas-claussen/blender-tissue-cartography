@@ -22,8 +22,8 @@ def blender_to_pymeshlab(obj):
         MeshSet containing one mesh.
     """
     mesh = obj.data
-    mesh.calc_loop_triangles()
     mesh.update()
+    mesh.calc_loop_triangles()
 
     verts = np.zeros(len(mesh.vertices) * 3, dtype=np.float64)
     mesh.vertices.foreach_get('co', verts)
@@ -64,9 +64,16 @@ def pymeshlab_to_blender(ms, name, context):
     pm_mesh = ms.current_mesh()
     verts = pm_mesh.vertex_matrix()
     faces = pm_mesh.face_matrix()
+    n_verts, n_faces = len(verts), len(faces)
 
     mesh = bpy.data.meshes.new(name)
-    mesh.from_pydata(verts.tolist(), [], faces.tolist())
+    mesh.vertices.add(n_verts)
+    mesh.vertices.foreach_set('co', verts.ravel())
+    mesh.loops.add(n_faces * 3)
+    mesh.loops.foreach_set('vertex_index', faces.ravel())
+    mesh.polygons.add(n_faces)
+    mesh.polygons.foreach_set('loop_start', np.arange(0, n_faces * 3, 3, dtype=np.int32))
+    mesh.polygons.foreach_set('loop_total', np.full(n_faces, 3, dtype=np.int32))
     mesh.update()
 
     obj = bpy.data.objects.new(name, mesh)

@@ -1,11 +1,5 @@
 """PyMeshLab Remeshing — Blender extension entry point."""
 
-bl_info = {
-    "name": "PyMeshLab Remeshing",
-    "blender": (4, 2, 0),
-    "category": "Scene",
-}
-
 import bpy
 from bpy.props import (
     FloatProperty, IntProperty, BoolProperty, EnumProperty,
@@ -85,6 +79,7 @@ def register():
     bpy.types.Scene.pymeshlab_alphawrap_offset = FloatProperty(
         name="Offset",
         default=0.001, min=0.0001, max=0.1,
+        precision=4,
         description="Surface offset as fraction of bbox diagonal",
     )
 

@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Dynamic datasets tutorial</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-f245066ca199b7326ac6b360085ddf3a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Dynamic datasets tutorial">
+<meta property="og:description" content="">
+<meta property="og:image" content="/images/screenshot_planar.png">
+<meta property="og:image:height" content="1910">
+<meta property="og:image:width" content="3718">
+<meta name="twitter:title" content="Dynamic datasets tutorial">
+<meta name="twitter:description" content="">
+<meta name="twitter:image" content="/images/screenshot_planar.png">
+<meta name="twitter:image-height" content="1910">
+<meta name="twitter:image-width" content="3718">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Dynamic datasets tutorial</li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">blender-tissue-cartography</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./methods_paper.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Methods Paper</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./blender_tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Blender add-on tutorial</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+ <span class="menu-text">02_dynamic_datasets.ipynb</span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+ <span class="menu-text">Tutorials (Python Library)</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/01_btc_python_library.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>blender_tissue_cartography</code> Python library</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/02_segmentation_with_ilastik.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">1. 3d segmentation with Ilastik</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/03_improving_UV_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Iteratively improving cartographic projections</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/04_UV_maps_with_seams.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tissue cartography with “seams”</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/05_advanced_segmentation_and_meshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Advanced segmentation and meshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/06_multiple_recordings_and_reference_meshes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Consistent cartographic projections across multiple recordings</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/07_movies_and_dynamic_surfaces.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Time-lapse imaging and dynamic surfaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/08_analysis_in_3d.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3D Image analysis with cartographic projections</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Library API reference</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/io.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>io</code> - Image I/O</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/mesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>mesh</code> - Mesh data structure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/01c_interface_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>interface_pymeshlab</code> - interface with MeshLab</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/interface_trimesh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>interface_trimesh</code> - interface with <code>trimesh</code></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/morphsnakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>morphsnakes</code> - Morphsnakes segmentation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/cartographic_interpolation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>interpolation</code> - Cartographic interpolation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/differential_geometry.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>diffgeo</code> - Surface differential geometry</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/remeshing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>remesh</code> - Mesh creation and remeshing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/remeshing_pymeshlab.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>remesh_pymeshlab</code> - Mesh creation and remeshing with MeshLab</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/smoothing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>smoothing</code> - Mesh smoothing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/registration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>registration</code> - Rigid-body registration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/registration_rotation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>rotation</code> -</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>wrapping</code> - Shrink-wrapping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./src/harmonic_wrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><code>harmonic</code> - Harmonic mapping</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#option-1-batch-computing-uv-maps" id="toc-option-1-batch-computing-uv-maps" class="nav-link active" data-scroll-target="#option-1-batch-computing-uv-maps">Option (1): Batch-computing UV maps</a>
+  <ul class="collapse">
+  <li><a href="#spatial-alignment" id="toc-spatial-alignment" class="nav-link" data-scroll-target="#spatial-alignment">Spatial alignment</a></li>
+  </ul></li>
+  <li><a href="#option-2-reference-mesh" id="toc-option-2-reference-mesh" class="nav-link" data-scroll-target="#option-2-reference-mesh">Option (2): Reference mesh</a></li>
+  <li><a href="#add-on-user-interface-mesh-registration" id="toc-add-on-user-interface-mesh-registration" class="nav-link" data-scroll-target="#add-on-user-interface-mesh-registration">Add-on user interface: Mesh registration</a>
+  <ul class="collapse">
+  <li><a href="#reference-mesh-for-a-single-time-point" id="toc-reference-mesh-for-a-single-time-point" class="nav-link" data-scroll-target="#reference-mesh-for-a-single-time-point">Reference mesh for a single time point</a></li>
+  </ul></li>
+  <li><a href="#mesh-registration-for-dynamic-datasets" id="toc-mesh-registration-for-dynamic-datasets" class="nav-link" data-scroll-target="#mesh-registration-for-dynamic-datasets">Mesh registration for dynamic datasets</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Dynamic datasets tutorial</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>In the <a href="blender_tutorial.html">add-on tutorial</a>, we looked at a single volumetric dataset. We also saw how to <strong>batch-process</strong> multiple mesh/3D image pairs. We now explain how to work with dynamic data. This tutorial focuses on the Blender user interface: for background, see the <a href="methods_paper.html">methods paper</a>, and the python library tutorials (sidebar).</p>
+<p>Often, a dataset is part of a larger collection - for example, frames of a movie or recordings different of different samples. How can we obtain a “consistent” cartographic projection across multiple datasets? We would like “the same” part of the surface to be mapped to the same cartographic location across frames or samples. This allows comparison and analysis across datasets, and avoids having to manually re-designing the UV map for each mesh in the collection.</p>
+<p>There are two approaches to this problem:</p>
+<ol type="1">
+<li>Define a UV map separately for each mesh in the collection, but using the same procedure/algorithm each time.</li>
+<li>Define a UV map for a single <em>reference mesh</em>, and then <em>deform/warp</em> the reference mesh to “fit” each mesh in the collection. The deformed mesh now fits the surface we want to extract from the 3D data but also has a UV map for cartographic projections. This also known as <em>texture transfer</em> or <em>mesh to mesh mapping</em>.</li>
+</ol>
+<p>Getting a consistent UV map across multiple meshes is a complicated problem. Which approach you should use depends on your problem.</p>
+<p><strong>Representation of time-lapse data</strong></p>
+<p>We represent time-lapse datasets frame-by-frame: for each time point, you need to provide a volumetric <code>.tif</code> file and a surface mesh.</p>
+<section id="option-1-batch-computing-uv-maps" class="level2">
+<h2 class="anchored" data-anchor-id="option-1-batch-computing-uv-maps">Option (1): Batch-computing UV maps</h2>
+<p>For surfaces with relatively simple geometries, approach 1 can work well. One very common example is a surface that can be defined by a height function over a 2D plane, without any “overhangs”. For example, let’s load the 3 meshes in the folder <code>blender_addon_test_data/dynamic_datasets/planar_meshes</code> (drag-and-drop them into Blender):</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/screenshot_planar.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>We can UV-project them using the “Project from view” option. Go to the UV editor, select all meshes to process and navigate to a view that looks straight down on the meshes (use X/Y/Z axes icon). Now click “UV-&gt;Project from view (bounds)” to get a projection:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/screenshot_planar_project.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Now all three meshes (which could be time points from a movie) have a consistent UV map. This approach works great for mildly curved surfaces extracted from a confocal microscope <span class="math inline">\(z\)</span>-stack.</p>
+<p>You can also batch-process using Blender’s Cylindrical, Cube, or Spherical UV projection operators.</p>
+<section id="spatial-alignment" class="level3">
+<h3 class="anchored" data-anchor-id="spatial-alignment">Spatial alignment</h3>
+<p>For this projection method to work, the different frames/samples need to be spatially aligned. For example, here is an example from the <a href="methods_paper.html">methods paper</a>, where we use <strong>spherical projections</strong> of a movie of zebrafish development across multiple hours. By rotating and centering each time point, we can align the “equator” with the head-tail axis, and get a consistent projection. (C-C’) shows fluorescent intensities at two layers:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/figure_zebrafish.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="option-2-reference-mesh" class="level2">
+<h2 class="anchored" data-anchor-id="option-2-reference-mesh">Option (2): Reference mesh</h2>
+<p>Method (2) uses <em>mesh to mesh mapping</em>. The idea is that we have a <em>reference mesh</em> - for example, from the first frame of a movie - on which a UV map is defined. If you have a consistently shaped samples - for example, <a href="https://doi.org/10.25349/D9WW43">&gt; 500 <em>in toto</em> recordings of the early <em>Drosophila</em> embryo</a> you can also make an “idealized” mesh with a nice UV map as a reference.</p>
+<p>We then move and deform this mesh so that it fits our <em>target mesh</em> - which describes the surface we want to extract from the volumetric data, for example in subsequent frames - as well as possible. The deformed reference mesh now fits the volumetric data but still carries the UV map, and create a cartographic projection. The advantage of the reference mesh approach is that it allows you to use any custom UV map you want, potentially hand-crafted. Furthermore, the projection will always cover the same parts of the UV square. Here is a visualization, with the reference mesh in green, and the mesh extracted from the image data in orange:</p>
+<p><img src="images/figure_reference.png" width="600"></p>
+<p>We proceed in two steps:</p>
+<ol type="1">
+<li><em>Registration</em>: Align reference mesh to target mesh using translations, rotations, and rescaling</li>
+<li><em>Shrink-wrapping</em>: Move each point on the registered reference mesh to the closest point on the surface defined by the target mesh.</li>
+</ol>
+<p>Here is an illustration - the green reference mesh is first registered to the orange target mesh:</p>
+<p><img src="images/screenshot_reference_1.png" width="600"></p>
+<p>Next, the shrink-wrapping operation deforms the reference mesh to snugly fit the target mesh:</p>
+<p><img src="images/screenshot_reference_2.png" width="600"></p>
+<p>This approach works if the reference mesh and the target mesh are roughly of similar shape. If this is no longer the case - for example in a movie where the surface of interest undergoes drastic deformations - more sophisticated approaches are required (see <a href="tutorials/07_movies_and_dynamic_surfaces.html">this tutorial</a>).</p>
+</section>
+<section id="add-on-user-interface-mesh-registration" class="level2">
+<h2 class="anchored" data-anchor-id="add-on-user-interface-mesh-registration">Add-on user interface: Mesh registration</h2>
+<section id="reference-mesh-for-a-single-time-point" class="level3">
+<h3 class="anchored" data-anchor-id="reference-mesh-for-a-single-time-point">Reference mesh for a single time point</h3>
+<p>The mesh <code>blender_addon_test_data/Drosophila_reference.obj</code> is an idealized (smoothed, symmetric) <em>Drosophila</em> embryo with a cylindrical cartographic projection. Let’s load it into Blender by drag-and-drop:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/screenshot_align_tool_1.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>For the <strong>registration</strong> step, we can use the “Mesh registration” section of the add-on. Select <code>Drosophila_reference</code> as reference mesh. Blender-select the mesh extracted from the image data <code>Drosophila_CAAX-mCherry_subsampled-image_Probabilities_c0</code> (should be highlighted in orange). There are two alignment modes:</p>
+<ol type="1">
+<li><p>Align Blender-selected meshes to reference mesh</p></li>
+<li><p>Align reference mesh to Blender-selected meshes. This mode makes a copy of the reference mesh for each selected mesh.</p></li>
+</ol>
+<p>The options allow you to fine-tune the alignment process.</p>
+<ol type="1">
+<li><p>Pre-align: leave checked unless the two meshes are already closely aligned</p></li>
+<li><p>Allow shear / allow scale: scale and stretch the meshes during alignment. If unchecked, only rotations and translations are allowed.</p></li>
+<li><p>ICP iterations: higher values may improve alignment but can take longer.</p></li>
+</ol>
+<p>Let’s click the “Align Meshes” button - you should get a copy of the idealized reference mesh overlaid with the data mesh:</p>
+<p><img src="images/screenshot_align_copy.png" width="600"></p>
+<p>However, the fit between the reference mesh and the data mesh is not yet perfect. When generating a projection, this means that some parts of the surface are actually outside the embryo and appear black:</p>
+<p><img src="images/screenshot_pre_wrap.png" width="600"></p>
+<p>To fix this, proceed to the <strong>Shrink-wrapping</strong> step.</p>
+<ol type="1">
+<li><p>Blender-select the data mesh (in orange).</p></li>
+<li><p>Select “Shrinkwrap Mode: One-To-All”. This makes a copy of the reference mesh for each Blender-selected mesh.</p></li>
+<li><p>Set “Shrinkwrap Corrective Smooth”. This smoothing removes “creases” that can occur in shrink-wrapping.</p></li>
+</ol>
+<p>You should see this result:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/screenshot_wrap.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>The add-on has created a copy of the reference mesh, shrink-wrapped to the data mesh. The wrapping operation also <strong>copies the UV map</strong> from the reference to the data mesh. We can now create a nice cartographic projection using either the wrapped or the data mesh (try it out).</p>
+</section>
+</section>
+<section id="mesh-registration-for-dynamic-datasets" class="level2">
+<h2 class="anchored" data-anchor-id="mesh-registration-for-dynamic-datasets">Mesh registration for dynamic datasets</h2>
+<p>Next, let’s consider a movie with many frames (see also <a href="tutorials/07_movies_and_dynamic_surfaces.html">this tutorial</a>). The simplest option is to use the same mesh for every time point. This works well if the surface is roughly static (but cells can be moving <em>on</em> the surface). Look at the <a href="blender_tutorial.html">batch-processing section of the add-on-tutorial</a>.</p>
+<p>If the surface deforms a lot, you need a different mesh for every frame. First, you will need to obtain these meshes (for example, you can batch-segment all frames of a movie, and convert all segmentations to meshes with the add-on). Then, you need to generate the UV map for all of these meshes. You can natch-compute the UV map, or shrink-wrap a reference mesh to all frame meshes (see above). The reference mesh is one of your frames (the <em>keyframe</em>) for which you have made a UV map. Shrinkwrapping works best when the reference and the target mesh are relatively similar.</p>
+<p>For strongly deforming surfaces, we improve results with an <strong>iterative approach</strong>: first shrinkwrap the keyframe mesh to the mesh of the subsequent frame, then use that result and shrinkwrap it to the next-to-subsequent frame, etc. Use your most “complicated” shape as a keyframe. In developmental biology, this is often the last time point, and propagating it backward in time. As you iterative the shrink-wrapping, you may run into trouble if your keyframe becomes too deformed. You may therefore have to define multiple keyframes.</p>
+<p>Let’s try this out with meshes of the surface of a strongly deforming organ the developing <em>Drosophila</em> midgut (courtesy of N. Mitchell, <a href="https://elifesciences.org/articles/77355">Mitchell et al 2022</a>). The gut undergoes dramatic shape changes (constriction and coiling) as it develops. It is therefore a very challenging test case for a movie pipeline. The gut looks like this:</p>
+<p><img src="images/figure_Mitchell.png" width="600"></p>
+<p>As shown in the methods paper, the idea is to make a UV map for the final time point, and “propagate” it to all other timepoints:</p>
+<p><img src="images/figure_iterative.png" width="800"></p>
+<p>We will use meshes of the gut surface already computed by Mitchell <em>et al.</em> (see <a href="tutorials/05_advanced_segmentation_and_meshing.html">this tutorial</a>). Load them into Blender from the <code>blender_addon_test_data/dynamic_datasets/shrinkwrap_meshes</code> tutorial. In the UV editor, you can see that only the reference mesh (time point 10) has a UV map:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/screenshot_shrinkwrap_meshes.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>Let’s switch back to the Layout workspace, and use the add-on to shrink-wrap mesh 10 iteratively onto all other time points. Select mesh 10 as reference, and Blender-select all other meshes. As shrinkwrap mode, choose “Iterative Backward”. Shrink-wrapping happens in alphabetical order (so from <code>reference_mesh_10</code> to <code>mesh_09</code>, then from <code>mesh_09</code> to <code>mesh_08</code>, etc).</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/screenshot_wrapping_backwards.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>After clicking “Shrinkwrap Reference to Selected”, you should see a “wrapped” mesh for every time point, equipped with a UV map. You can also see that parts of the mesh get distorted during the wrapping process.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

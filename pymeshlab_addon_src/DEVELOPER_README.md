@@ -39,7 +39,7 @@ From the `pymeshlab_remesh_addon/` directory:
 /Applications/Blender.app/Contents/MacOS/Blender \
     --command extension build \
     --source-dir . \
-    --output-dir ./blender_addon_download/ \
+    --output-dir ../blender_addon_download/ \
     --split-platforms
 ```
 

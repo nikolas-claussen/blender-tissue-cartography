@@ -3,8 +3,7 @@ website:
     contents:
       - index.ipynb
       - 01_blender_tutorial.ipynb
-      - 03_btc_addon.ipynb
-      - 03_more_on_tissue_cartography.ipynb
+      - 02_dynamic_datasets_tutorial.ipynb
       - section: src
         contents:
           - src/01a_io.ipynb

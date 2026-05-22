@@ -39,6 +39,10 @@ def _run_pymeshlab(self, context, apply_fn, suffix):
         self.report({'ERROR'}, str(e))
         return {'CANCELLED'}
 
+    if ms.current_mesh().vertex_number() == 0:
+        self.report({'WARNING'}, "Result mesh has no vertices; check input and parameters.")
+        return {'CANCELLED'}
+
     new_name = obj.name + suffix
     pymeshlab_to_blender(ms, new_name, context)
     self.report({'INFO'}, f"Created '{new_name}'.")
@@ -50,6 +54,7 @@ class IsotropicRemeshOperator(Operator):
 
     bl_idname = "scene.pymeshlab_iso_remesh"
     bl_label = "Apply Isotropic Remeshing"
+    bl_description = "Remesh with uniform triangle size. Ideal after marching cubes. Erases existing UV."
 
     def execute(self, context):
         scene = context.scene
@@ -72,6 +77,7 @@ class QuadricDecimateOperator(Operator):
 
     bl_idname = "scene.pymeshlab_decimate"
     bl_label = "Apply Quadric Decimation"
+    bl_description = "Reduce face count while preserving shape via quadric edge collapse."
 
     def execute(self, context):
         scene = context.scene
@@ -93,6 +99,7 @@ class PoissonReconstructOperator(Operator):
 
     bl_idname = "scene.pymeshlab_poisson"
     bl_label = "Apply Poisson Reconstruction"
+    bl_description = "Reconstruct a surface from a point cloud using screened Poisson reconstruction."
 
     def execute(self, context):
         scene = context.scene
@@ -116,6 +123,7 @@ class AlphaWrapOperator(Operator):
 
     bl_idname = "scene.pymeshlab_alphawrap"
     bl_label = "Apply Alpha Wrap"
+    bl_description = "Generate a watertight surface from any mesh, including non-manifold and open boundaries."
 
     def execute(self, context):
         scene = context.scene
@@ -133,6 +141,7 @@ class MeshCleanupOperator(Operator):
 
     bl_idname = "scene.pymeshlab_cleanup"
     bl_label = "Apply Mesh Cleanup"
+    bl_description = "Remove duplicate vertices, null faces, unreferenced vertices, and non-manifold edges."
 
     def execute(self, context):
         scene = context.scene

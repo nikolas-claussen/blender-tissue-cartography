@@ -17,7 +17,6 @@ class MeshLabRemeshPanel(Panel):
         layout = self.layout
         scene = context.scene
 
-        layout.label(text="PyMeshLab Remeshing", icon='MESH_DATA')
         layout.label(text="Select a mesh or point cloud object in the scene, then apply an operation below.")
 
         # --- Isotropic Remeshing ---
@@ -45,10 +44,9 @@ class MeshLabRemeshPanel(Panel):
         box.label(text="Screened Poisson Reconstruction", icon='POINTCLOUD_DATA')
         box.label(text="Surface from point cloud. Input must be a mesh or point cloud with vertex positions.")
         box.prop(scene, "pymeshlab_poisson_normals")
-        if scene.pymeshlab_poisson_normals:
-            row = box.row()
-            row.separator()
-            row.prop(scene, "pymeshlab_poisson_k")
+        col = box.column()
+        col.active = scene.pymeshlab_poisson_normals
+        col.prop(scene, "pymeshlab_poisson_k")
         box.prop(scene, "pymeshlab_poisson_depth")
         box.prop(scene, "pymeshlab_poisson_fulldepth")
         box.operator("scene.pymeshlab_poisson")
@@ -63,7 +61,7 @@ class MeshLabRemeshPanel(Panel):
 
         # --- Mesh Cleanup ---
         box = layout.box()
-        box.label(text="Mesh Cleanup", icon='BRUSH_DATA')
+        box.label(text="Mesh Cleanup", icon='MODIFIER')
         box.label(text="Remove duplicates, null faces, unreferenced vertices, non-manifold edges.")
         box.prop(scene, "pymeshlab_cleanup_close_holes")
         if scene.pymeshlab_cleanup_close_holes:

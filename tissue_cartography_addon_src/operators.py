@@ -149,7 +149,7 @@ class LoadTIFFOperator(Operator):
             )
 
             box = create_box(*(np.array(data.shape[1:]) * resolution),
-                             name=f"{Path(file_path).stem}_BoundingBox",
+                             name=f"{Path(file_path).stem}_Box",
                              hide=False)
             box.display_type = 'WIRE'
             bpy.types.Scene.tissue_cartography_3D_data[box] = data
@@ -532,7 +532,8 @@ class SlicePlaneOperator(Operator):
         position = context.scene.tissue_cartography_slice_position
 
         slice_plane = create_slice_plane(length, width, height, axis=axis, position=position)
-        slice_plane.name = f"{slice_plane.name}_{box.name}"
+        data_name = box.name[:-4]
+        slice_plane.name = f"{slice_plane.name}_{data_name}"
         slice_plane.matrix_world = box.matrix_world
 
         slice_img = get_slice_image(data, resolution, axis=axis, position=position)
@@ -540,7 +541,7 @@ class SlicePlaneOperator(Operator):
                                         channel_axis=0, clip=True)
         create_material_from_array(
             slice_plane, slice_img[ch],
-            material_name=f"SliceMaterial_{box.name}_{axis}_{position}"
+            material_name=f"Slice_{data_name}_{axis}_{position}"
         )
         return {'FINISHED'}
 
@@ -670,7 +671,7 @@ class AlignOperator(Operator):
                 )
                 ref_copied = reference_mesh.copy()
                 ref_copied.data = reference_mesh.data.copy()
-                ref_copied.name = f"{target_name}_aligned"  # set before linking to prevent naming cascade
+                ref_copied.name = f"{target_name}_align"  # set before linking to prevent naming cascade
                 bpy.context.collection.objects.link(ref_copied)
                 ref_copied.matrix_world = (
                     mathutils.Matrix(trafo_matrix) @ reference_mesh.matrix_world
@@ -723,7 +724,7 @@ class ShrinkwrapOperator(Operator):
 
             source_mesh_copied = source_mesh.copy()
             source_mesh_copied.data = source_mesh.data.copy()
-            source_mesh_copied.name = f"{target_name}_wrapped"  # set before linking to prevent naming cascade
+            source_mesh_copied.name = f"{target_name}_wrap"  # set before linking to prevent naming cascade
             bpy.context.collection.objects.link(source_mesh_copied)
             source_mesh_copied.matrix_world = (
                 mathutils.Matrix(trafo_matrix) @ source_mesh.matrix_world

@@ -83,7 +83,7 @@ def create_slice_plane(length, width, height, axis='z', position=0.0):
 
     bpy.ops.mesh.primitive_plane_add(size=2, location=(0, 0, 0))
     plane = bpy.context.active_object
-    plane.name = f"SlicePlane_{axis.upper()}_{position:.2f}"
+    plane.name = f"Slice_{axis.upper()}_{position:.1f}"
     plane.scale = (plane_size[0] / 2, plane_size[1] / 2, 1)
     plane.location = location
     plane.rotation_euler = rotation
@@ -174,7 +174,7 @@ def create_material_from_array(slice_plane, array, material_name="SliceMaterial"
     slice_plane.active_material = material
 
 
-def create_material_from_multilayer_array(mesh, array, material_name="ProjectedMaterial"):
+def create_material_from_multilayer_array(mesh, array, material_name="ProjMat"):
     """
     Create and assign a material for a mesh using a multi-channel, multi-layer projection.
 
@@ -199,6 +199,14 @@ def create_material_from_multilayer_array(mesh, array, material_name="ProjectedM
     image_height, image_width = array.shape[-2:]
     n_channels, n_layers = array.shape[:2]
 
+    # Create material first so we can use its actual Blender-assigned name (which may be
+    # auto-incremented, e.g. "ProjectedMaterial_MeshA.001") as a unique prefix for image
+    # names. Without this, images from different projections all share the same generic
+    # names ("Channel_0_Layer_0", …), and Blender may re-generate (clearing to black) any
+    # GENERATED image when a new image with the same base name is created.
+    material = bpy.data.materials.new(name=material_name)
+    actual_name = material.name  # may differ from material_name if a duplicate existed
+
     images = {}
     for ic, channel in enumerate(array_normalized):
         for il, layer in enumerate(channel):
@@ -206,13 +214,15 @@ def create_material_from_multilayer_array(mesh, array, material_name="ProjectedM
             pixel_data[..., 0] = pixel_data[..., 1] = pixel_data[..., 2] = layer[::-1]
             pixel_data[..., 3] = 1.0
             img = bpy.data.images.new(
-                name=f"Channel_{ic}_Layer_{il}",
+                name=f"{actual_name}_Channel_{ic}_Layer_{il}",
                 width=image_width, height=image_height,
             )
             img.pixels.foreach_set(pixel_data.flatten())
+            # Pack the image so its source changes from GENERATED to PACKED. This embeds
+            # the pixel data in the .blend file and prevents Blender from regenerating
+            # the image (which would produce a black result) on subsequent operations.
+            img.pack()
             images[(ic, il)] = img
-
-    material = bpy.data.materials.new(name=material_name)
     material.use_nodes = True
     nodes = material.node_tree.nodes
     links = material.node_tree.links
@@ -295,7 +305,7 @@ def assign_vertex_colors(obj, colors):
     ca["VertexColor"].data.foreach_set("color", colors_rgba.flatten())
 
 
-def create_vertex_color_material(obj, material_name="VertexColorMaterial"):
+def create_vertex_color_material(obj, material_name="VertMat"):
     """
     Create a material that renders vertex colors through per-channel Map Range nodes.
 
