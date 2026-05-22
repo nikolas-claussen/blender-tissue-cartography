@@ -15,7 +15,7 @@ process.
 Tissue cartography exploits that many biological systems are organized
 as thin, curved sheets (for example, epithelia). Tissue cartography
 takes advantage of the laminar, sheet-like organization of many
-biological tissues. For more on tissue cartography, see our [methods
+biological tissues. For more info, see our [methods
 paper](https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1) and
 [Heemskerk & Streichan 2015](https://doi.org/10.1038/nmeth.3648).
 
@@ -40,6 +40,25 @@ This repository contains two tissue-cartography tools:
 Blender has powerful tools for mesh editing, cartographic mapping, and
 3D visualization. You can learn to use Blender from one of many
 tutorials or the [manual](https://docs.blender.org/manual/en/latest/).
+
+With `blender tissue cartography`, you can process surfaces with complex
+and deforming shapes, where tools like
+[localzprojector](https://gitlab.pasteur.fr/iah-public/localzprojector)
+break down.
+
+### For what can I use tissue cartography?
+
+The simplest example is **replacing Z-projections** on Z-stacks from a
+confocal microscope. Even in a mildly curved tissue, tissue cartography
+yields much better results since it can follow the curved surface. Here
+are some more use cases:
+
+- [Study tissue flows across an entire
+  embryo](https://elifesciences.org/articles/27454)
+- [Measure holes in a basement
+  membrane](https://www.nature.com/articles/s41467-025-61441-6)
+- [Segment and track cells of a curved
+  epithelium](https://www.cell.com/current-biology/fulltext/S0960-9822(22)00329-3)
 
 ## Installation
 
@@ -152,9 +171,8 @@ In movies, the surface of interest can move or deform over time.
 Aligning recordings of multiple samples leads to a similar problem. The
 add-on and library also provide tools for this more complex use case.
 You create a cartographic projection for a *reference time point* which
-is aligned to all other time points using surface-to-surface
-registration algorithms. This generates consistent projections across
-multiple frames or samples.
+is aligned to all other time points. This generates consistent
+projections across multiple frames or samples.
 
 ### Blender add-on
 
@@ -163,7 +181,7 @@ edit meshes and cartographic projections interactively. Here is a
 screenshot using the example [*Drosophila* blastoderm
 dataset](https://github.com/nikolas-claussen/blender-tissue-cartography/blob/main/blender_addon_test_data/Drosophila_CAAX-mCherry.tif):
 
-![image.png](images/screenshot_readme.png)
+![image.png](index_files/screenshot_readme.png)
 
 Left: Projected 2D image. Center: 3D view of image data (volume bounding
 box, image slices, and extracted surface). Right: Tissue Cartography
