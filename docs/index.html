@@ -301,8 +301,7 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#for-what-can-i-use-tissue-cartography" id="toc-for-what-can-i-use-tissue-cartography" class="nav-link active" data-scroll-target="#for-what-can-i-use-tissue-cartography">For what can I use tissue cartography?</a></li>
-  <li><a href="#installation" id="toc-installation" class="nav-link" data-scroll-target="#installation">Installation</a>
+  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a>
   <ul class="collapse">
   <li><a href="#blender-add-on" id="toc-blender-add-on" class="nav-link" data-scroll-target="#blender-add-on">Blender add-on</a></li>
   <li><a href="#python-library" id="toc-python-library" class="nav-link" data-scroll-target="#python-library">Python library</a></li>
@@ -361,7 +360,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Tissue cartography extracts and cartographically projects curved surfaces from volumetric image data. This turns your 3D data into 2D data, which is much easier to visualize, analyze, and computationally process.</p>
 <section id="click-here-for-a-2-minute-video-demo" class="level4">
 <h4 class="anchored" data-anchor-id="click-here-for-a-2-minute-video-demo">Click here for a <a href="https://youtu.be/Y3Vb6IDv0g0">2-minute video demo</a></h4>
-<p>Tissue cartography exploits that many biological systems are organized as thin, curved sheets (for example, epithelia). Tissue cartography takes advantage of the laminar, sheet-like organization of many biological tissues. For more info, see our <a href="https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1">methods paper</a> and <a href="https://doi.org/10.1038/nmeth.3648">Heemskerk &amp; Streichan 2015</a>.</p>
+<p>Tissue cartography takes advantage of the fact that many biological systems are organized as thin, curved sheets (for example, epithelia). For more info, see our <a href="https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1">methods paper</a> and <a href="https://doi.org/10.1038/nmeth.3648">Heemskerk &amp; Streichan 2015</a>.</p>
 <p>This repository contains two tissue-cartography tools:</p>
 <ol type="1">
 <li><p>An add-on for the 3d creation software <a href="https://www.blender.org/">Blender</a> to do tissue cartography 100% in an interactive, graphical user interface (<strong>Version 2</strong> now available). Use the add-on to quickly process a new dataset, or if you are not a coding expert.</p>
@@ -373,9 +372,9 @@ ul.task-list li input[type="checkbox"] {
 <p>Blender has powerful tools for mesh editing, cartographic mapping, and 3D visualization. You can learn to use Blender from one of many tutorials or the <a href="https://docs.blender.org/manual/en/latest/">manual</a>.</p>
 <p>With <code>blender tissue cartography</code>, you can process surfaces with complex and deforming shapes, where tools like <a href="https://gitlab.pasteur.fr/iah-public/localzprojector">localzprojector</a> break down.</p>
 </section>
-<section id="for-what-can-i-use-tissue-cartography" class="level3">
-<h3 class="anchored" data-anchor-id="for-what-can-i-use-tissue-cartography">For what can I use tissue cartography?</h3>
-<p>The simplest example is <strong>replacing Z-projections</strong> on Z-stacks from a confocal microscope. Even in a mildly curved tissue, tissue cartography yields much better results since it can follow the curved surface. Here are some more use cases:</p>
+<section id="for-what-can-i-use-tissue-cartography" class="level4">
+<h4 class="anchored" data-anchor-id="for-what-can-i-use-tissue-cartography">For what can I use tissue cartography?</h4>
+<p>The simplest example is <strong>replacing Z-projections</strong> on Z-stacks from a confocal microscope. Even in a mildly curved tissue, tissue cartography yields much better results since it follows the curved surface. Here are some more use cases:</p>
 <ul>
 <li><a href="https://elifesciences.org/articles/27454">Study tissue flows across an entire embryo</a></li>
 <li><a href="https://www.nature.com/articles/s41467-025-61441-6">Measure holes in a basement membrane</a></li>
@@ -389,11 +388,11 @@ ul.task-list li input[type="checkbox"] {
 <section id="blender-add-on" class="level3">
 <h3 class="anchored" data-anchor-id="blender-add-on">Blender add-on</h3>
 <ol type="1">
-<li><p>Install <a href="https://www.blender.org/">Blender 4.2 or later</a> (pre-4.2 version will <em>not</em> work)</p>
+<li><p>Install <a href="https://www.blender.org/">Blender 4.5</a> (pre-4.2 version will <em>not</em> work)</p>
 <ul>
 <li>Optional: install <a href="https://fiji.sc/">Fiji</a> (for looking at 3D <code>.tif</code>s) and <a href="https://www.ilastik.org/">Ilastik</a> (for 3D segmentation).</li>
 </ul></li>
-<li><p>Download the add-on <code>.zip</code> from <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_download">GitHub</a>. Choose the file that matches your operating system (e.g.&nbsp;<code>linux_x64</code>).</p>
+<li><p>Download the add-on <code>.zip</code> from <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_download">GitHub</a>. Choose the file that matches your operating system, like <code>blender_tissue_cartography-2.0.0-windows_x64.zip</code>.</p>
 <ul>
 <li>If your OS is unavailable, download the <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/tissue_cartography_addon_src">add-on source code</a>, and install the python library <code>scikit-image</code> in Blender’s Python interface.</li>
 </ul></li>
@@ -405,7 +404,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="python-library" class="level3">
 <h3 class="anchored" data-anchor-id="python-library">Python library</h3>
 <ol type="1">
-<li><p>Optional: Install <a href="https://www.blender.org/">Blender 4.2 or later</a></p>
+<li><p>Optional: Install <a href="https://www.blender.org/">Blender</a></p>
 <ul>
 <li>Some workflows also require <a href="https://fiji.sc/">Fiji</a>, <a href="https://www.ilastik.org/">Ilastik</a>, or <a href="https://www.meshlab.net/">Meshlab</a>.</li>
 </ul></li>

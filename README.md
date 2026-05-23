@@ -12,10 +12,9 @@ process.
 
 #### Click here for a [2-minute video demo](https://youtu.be/Y3Vb6IDv0g0)
 
-Tissue cartography exploits that many biological systems are organized
-as thin, curved sheets (for example, epithelia). Tissue cartography
-takes advantage of the laminar, sheet-like organization of many
-biological tissues. For more info, see our [methods
+Tissue cartography takes advantage of the fact that many biological
+systems are organized as thin, curved sheets (for example, epithelia).
+For more info, see our [methods
 paper](https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1) and
 [Heemskerk & Streichan 2015](https://doi.org/10.1038/nmeth.3648).
 
