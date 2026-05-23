@@ -46,12 +46,12 @@ and deforming shapes, where tools like
 [localzprojector](https://gitlab.pasteur.fr/iah-public/localzprojector)
 break down.
 
-### For what can I use tissue cartography?
+#### For what can I use tissue cartography?
 
 The simplest example is **replacing Z-projections** on Z-stacks from a
 confocal microscope. Even in a mildly curved tissue, tissue cartography
-yields much better results since it can follow the curved surface. Here
-are some more use cases:
+yields much better results since it follows the curved surface. Here are
+some more use cases:
 
 - [Study tissue flows across an entire
   embryo](https://elifesciences.org/articles/27454)
@@ -70,8 +70,8 @@ computer has a GPU.
 
 ### Blender add-on
 
-1.  Install [Blender 4.2 or later](https://www.blender.org/) (pre-4.2
-    version will *not* work)
+1.  Install [Blender 4.5](https://www.blender.org/) (pre-4.2 version
+    will *not* work)
 
     - Optional: install [Fiji](https://fiji.sc/) (for looking at 3D
       `.tif`s) and [Ilastik](https://www.ilastik.org/) (for 3D
@@ -79,8 +79,8 @@ computer has a GPU.
 
 2.  Download the add-on `.zip` from
     [GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_download).
-    Choose the file that matches your operating system
-    (e.g. `linux_x64`).
+    Choose the file that matches your operating system, like
+    `blender_tissue_cartography-2.0.0-windows_x64.zip`.
 
     - If your OS is unavailable, download the [add-on source
       code](https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/tissue_cartography_addon_src),
@@ -103,7 +103,7 @@ computer has a GPU.
 
 ### Python library
 
-1.  Optional: Install [Blender 4.2 or later](https://www.blender.org/)
+1.  Optional: Install [Blender](https://www.blender.org/)
 
     - Some workflows also require [Fiji](https://fiji.sc/),
       [Ilastik](https://www.ilastik.org/), or
