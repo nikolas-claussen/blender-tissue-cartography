@@ -1,16 +1,12 @@
 """UI panel for PyMeshLab Remeshing."""
 
-import bpy
 from bpy.types import Panel
+from .pymeshlab_runtime import PYMESHLAB_IMPORT_ERROR
 
 
 def _pymeshlab_status():
-    """Return None if pymeshlab is importable, else an error string."""
-    try:
-        import pymeshlab  # noqa: F401
-        return None
-    except Exception as e:
-        return str(e)
+    """Return None if pymeshlab is available, else a static error string."""
+    return PYMESHLAB_IMPORT_ERROR
 
 
 class MeshLabRemeshPanel(Panel):

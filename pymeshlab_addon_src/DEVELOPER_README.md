@@ -79,18 +79,29 @@ The bundled wheels are **pymeshlab 2025.7.post1** (cp311, released January 2026)
 `2023.12.post2` (and `post3`) contain a confirmed Windows crash bug: calling
 `load_default_plugins()` on import triggers an access violation on Python 3.11+
 (see [PyMeshLab issue #398](https://github.com/cnr-isti-vclab/PyMeshLab/issues/398)).
-Since the imports were previously at module level, Blender crashed on add-on
-load with no recoverable error. `2025.7.post1` fixes this.
+`2025.7.post1` is retained for macOS/Linux compatibility with Blender 4.5's
+Python 3.11 runtime, but it does not solve the Windows native crash.
 
-**Lazy imports** — `import pymeshlab` is now deferred to the first call of each
-operator / conversion function. This prevents a hard Blender crash if the wheel
-fails to load for any reason; instead the panel shows a red warning and
-operators report a `{'CANCELLED'}` with a descriptive message.
+**Windows — not supported** — pymeshlab is unconditionally blocked on Windows via the
+shared runtime guard in `pymeshlab_runtime.py` (`sys.platform == 'win32'`). The panel
+shows an error message and all operators return `{'CANCELLED'}` without ever calling
+`import pymeshlab`.
+
+On supported platforms (macOS/Linux), `pymeshlab` is imported once at module-load
+time in `operators.py`, `mesh_utils.py`, and `ux.py` and the import status is cached.
+
+The reason is a native crash that Python `try/except` *cannot* intercept: pymeshlab's
+plugin manager (`PyInit_pmeshlab → PluginManager::loadPlugins`) loads
+`filter_texture_defragmentation.dll`, which in turn loads `Qt5Core.dll` late into the
+Blender process. Qt5's thread-local-storage (TLS) initialisation then dereferences a
+null pointer inside `MSVCP140.dll::Thrd_yield`, killing the process with
+`EXCEPTION_ACCESS_VIOLATION`. This affects every tested pymeshlab version including
+`2025.7.post1`. See [pymeshlab issue #398](https://github.com/cnr-isti-vclab/PyMeshLab/issues/398).
 
 **Linux glibc requirement** — the `manylinux_2_35` wheels require **glibc 2.35+**
 (Ubuntu 22.04 / Fedora 36 or newer). Users on older distributions (Ubuntu 20.04,
 glibc 2.31) will see the panel warning rather than a crash, but the add-on
 will not function. If broad older-Linux support is needed in the future, the
-Windows/macOS wheels can stay on `2025.7.post1` while the Linux wheel is
+macOS wheel can stay on `2025.7.post1` while the Linux wheel is
 downgraded to a `manylinux_2_31` build (the last one available is
 `2023.12.post3`, which is unaffected by the Windows crash).

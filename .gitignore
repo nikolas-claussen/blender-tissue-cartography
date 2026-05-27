@@ -80,3 +80,6 @@ blender_addon_test_data/*.blend1
 # Blender package files
 blender_addon_src/wheels/
 blender_addon_src/wheels_bak/
+
+# Crash logs for debugging
+*crash.txt
