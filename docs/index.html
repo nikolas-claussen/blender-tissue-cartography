@@ -357,10 +357,9 @@ ul.task-list li input[type="checkbox"] {
 <figcaption>image.png</figcaption>
 </figure>
 </div>
-<p>Tissue cartography extracts and cartographically projects curved surfaces from volumetric image data. This turns your 3D data into 2D data, which is much easier to visualize, analyze, and computationally process.</p>
 <section id="click-here-for-a-2-minute-video-demo" class="level4">
 <h4 class="anchored" data-anchor-id="click-here-for-a-2-minute-video-demo">Click here for a <a href="https://youtu.be/Y3Vb6IDv0g0">2-minute video demo</a></h4>
-<p>Tissue cartography takes advantage of the fact that many biological systems are organized as thin, curved sheets (for example, epithelia). For more info, see our <a href="https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1">methods paper</a> and <a href="https://doi.org/10.1038/nmeth.3648">Heemskerk &amp; Streichan 2015</a>.</p>
+<p>Tissue cartography extracts and cartographically projects curved surfaces from volumetric image data. This turns your 3D data into 2D data, which is much easier to visualize, analyze, and computationally process. Tissue cartography takes advantage of the fact that many biological systems are organized as thin, curved sheets (for example, epithelia). For more info, see our <a href="https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1">methods paper</a> and <a href="https://doi.org/10.1038/nmeth.3648">Heemskerk &amp; Streichan 2015</a>.</p>
 <p>This repository contains two tissue-cartography tools:</p>
 <ol type="1">
 <li><p>An add-on for the 3d creation software <a href="https://www.blender.org/">Blender</a> to do tissue cartography 100% in an interactive, graphical user interface (<strong>Version 2</strong> now available). Use the add-on to quickly process a new dataset, or if you are not a coding expert.</p>
@@ -369,12 +368,11 @@ ul.task-list li input[type="checkbox"] {
 </ul></li>
 <li><p>A Python library for custom and automatized analysis pipelines. The library is available on <a href="https://pypi.org/project/blender-tissue-cartography/">pip</a>, and as source in <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_tissue_cartography">this GitHub directory</a>.</p></li>
 </ol>
-<p>Blender has powerful tools for mesh editing, cartographic mapping, and 3D visualization. You can learn to use Blender from one of many tutorials or the <a href="https://docs.blender.org/manual/en/latest/">manual</a>.</p>
-<p>With <code>blender tissue cartography</code>, you can process surfaces with complex and deforming shapes, where tools like <a href="https://gitlab.pasteur.fr/iah-public/localzprojector">localzprojector</a> break down.</p>
+<p>Blender has powerful tools for mesh editing, cartographic mapping, and 3D visualization. You can learn to use Blender from one of many tutorials or the <a href="https://docs.blender.org/manual/en/latest/">manual</a>. With <code>blender_tissue_cartography</code>, you can process surfaces with complex and deforming shapes, where tools like <a href="https://gitlab.pasteur.fr/iah-public/localzprojector">localzprojector</a> break down.</p>
 </section>
 <section id="for-what-can-i-use-tissue-cartography" class="level4">
 <h4 class="anchored" data-anchor-id="for-what-can-i-use-tissue-cartography">For what can I use tissue cartography?</h4>
-<p>The simplest example is <strong>replacing Z-projections</strong> on Z-stacks from a confocal microscope. Even in a mildly curved tissue, it yields much better results since it follows the curved surface. Tissue cartography really shines when <strong>analyzing strongly curved surfaces</strong> like the <em>Drosophila</em> blastoderm (figure above). Here are some use cases:</p>
+<p>You can use tissue cartography to <strong>replace Z-projections</strong> on Z-stacks from a confocal microscope. Even in a mildly curved tissue, it yields much better results since it follows the curved surface. Tissue cartography really shines when <strong>analyzing strongly curved surfaces</strong> like the <em>Drosophila</em> blastoderm (figure above). Here are some use cases:</p>
 <ul>
 <li><a href="https://elifesciences.org/articles/27454">Study tissue flows across an entire <em>Drosophila</em> embryo</a></li>
 <li><a href="https://www.nature.com/articles/s41467-025-61441-6">Measure holes in a mouse embryo basement membrane</a></li>
@@ -438,13 +436,13 @@ ul.task-list li input[type="checkbox"] {
 <h3 class="anchored" data-anchor-id="tissue-cartography-workflow">Tissue cartography workflow</h3>
 <p>The workflow starts with a 3D, volumetric image, and a 3D segmentation of the object you want to extract. This repo does not contain any image segmentation tools as excellent software is already available (e.g.&nbsp;<a href="https://www.ilastik.org/">Ilastik</a>)</p>
 <ol type="1">
-<li><p><strong>Meshing</strong> Convert the 3D segmentation into a surface</p></li>
-<li><p><strong>UV mapping</strong> Cartographically unwrap the surface into a 2D plane</p></li>
-<li><p><strong>Projection</strong> of your 3D iamge data to 2D</p></li>
-<li><p><strong>Analysis and visualization</strong> of the results in 2D or 3D, and use the 2D projections for quantitative analysis</p></li>
-<li><p><strong>Batch processing</strong>: of multiple 3D images, like frames of a movie</p></li>
+<li><p><strong>Meshing</strong> Convert the 3D segmentation into a surface.</p></li>
+<li><p><strong>UV mapping</strong> Cartographically unwrap the surface into a 2D plane.</p></li>
+<li><p><strong>Projection</strong> of your 3D image data to 2D.</p></li>
+<li><p><strong>Analysis and visualization</strong> of the results in 2D or 3D. Use the 2D projections for quantitative analysis.</p></li>
+<li><p><strong>Batch processing</strong>: of multiple 3D images, like frames of a movie.</p></li>
 </ol>
-<p>Each workflow step can also be carried out with any external tool - just import the required file into Blender/python.</p>
+<p>Each step can also be carried out with external tools - just import/export the required files into Blender/python.</p>
 <section id="dynamic-datasets" class="level4">
 <h4 class="anchored" data-anchor-id="dynamic-datasets">Dynamic datasets</h4>
 <p>In movies, the surface of interest can move or deform over time. Aligning recordings of multiple samples leads to a similar problem. The add-on and library also provide tools for this more complex use case. You create a cartographic projection for a <em>reference time point</em> which is aligned to all other time points. This generates consistent projections across multiple frames or samples.</p>
