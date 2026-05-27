@@ -405,3 +405,8 @@ def unregister():
         if hasattr(bpy.types.Scene, prop):
             delattr(bpy.types.Scene, prop)
 
+    # Remove intersection live-update handler and clear tracker if still registered
+    from .visualization import _update_intersection_handler, _intersection_trackers
+    if _update_intersection_handler in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.depsgraph_update_post.remove(_update_intersection_handler)
+    _intersection_trackers.clear()

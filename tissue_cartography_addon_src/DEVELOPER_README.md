@@ -51,6 +51,17 @@ that show the image data on the mesh. For instance, `create_material_from_multil
 
 - **Two-stage mesh alignment.** `combined_alignment()` runs an inertia-tensor pre-alignment (exhaustively tries all 8 axis-flip combinations to handle reflective ambiguity) followed by ICP. Either stage can be disabled independently.
 
+- **Mesh–plane intersection visualization.** When "Show intersection" is checked and a slice plane is created, `create_intersection_line_visualization()` in `visualization.py` creates a Blender CURVE object (named `Intersect_<plane_name>`) that draws the intersection of the surface mesh with the cutting plane as a thick red line. This allows the user to check
+if the surface mesh and the image are correctly aligned. A `depsgraph_update_post` handler (`_update_intersection_handler`) keeps it live: whenever the surface mesh or the slice plane is moved, the curve is recomputed.
+
+  - **Analytic edge–plane intersection.** `compute_plane_intersection_segments()` computes the intersection of all mesh polygon s with the image plane. Works on non-watertight meshes (no Boolean intersection required).
+
+  - **Global state.** Two key module-level variables in `visualization.py`:
+    - `_intersection_trackers: dict` — maps each curve object's name to `(surface_mesh_name, slice_plane_name)`. Entries are removed automatically when either tracked object is deleted.
+    - `_is_updating: bool` — re-entrancy guard. The `depsgraph_update_post` handler sets this to `True` while it updates curve splines; writing to curve data triggers another depsgraph update, so without this guard the handler would recurse infinitely.
+
+  - **Handler lifecycle.** `_update_intersection_handler` is appended to `bpy.app.handlers.depsgraph_update_post` the first time an intersection curve is created, and is removed automatically once `_intersection_trackers` is empty or `unregister()` is called. 
+
 ---
 
 ## Building the Installable Extension
@@ -80,7 +91,7 @@ Replace `<TAG>` with the target platform tag (e.g. `win_amd64`, `manylinux_2_17_
 
 ## Interactive Testing
 
-The `blender_addon_src/` folder is symlinked into Blender's extension directory.
+The `tissue_cartography_addon_src/` folder is symlinked into Blender's extension directory.
 On a Mac, this means:
 
 ```sh

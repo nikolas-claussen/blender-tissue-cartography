@@ -3,10 +3,14 @@ Visualization utilities: bounding boxes, ortho-slice planes, materials, and vert
 """
 
 import bpy
-import bmesh
 import numpy as np
 
 from .io_utils import normalize_quantiles
+
+
+# ---------------------------------------------------------------------------
+# Create Box to represent 3D image data bounds
+# ---------------------------------------------------------------------------
 
 
 def create_box(length, width, height, name="RectangularBox", hide=True):
@@ -41,6 +45,11 @@ def create_box(length, width, height, name="RectangularBox", hide=True):
     if current_active:
         bpy.context.view_layer.objects.active = current_active
     return obj
+
+
+# ---------------------------------------------------------------------------
+# Slice planes for image visualization
+# ---------------------------------------------------------------------------
 
 
 def create_slice_plane(length, width, height, axis='z', position=0.0):
@@ -93,89 +102,6 @@ def create_slice_plane(length, width, height, axis='z', position=0.0):
     if current_active:
         bpy.context.view_layer.objects.active = current_active
     return plane
-
-
-def create_intersection_visualization(slice_plane, surface_mesh):
-    """
-    Create a live intersection visualization between a slice plane and a surface mesh.
-
-    Duplicates the slice plane, adds a Boolean INTERSECT modifier (Float solver) against
-    the surface mesh, and a Wireframe modifier to make the intersection line visible from
-    both sides. The duplicate is parented to the slice plane so the visualization updates
-    live when either object is moved or edited. A red emission material is assigned.
-
-    Parameters
-    ----------
-    slice_plane : bpy.types.Object
-        The slice plane object (already placed in the scene, transforms applied).
-    surface_mesh : bpy.types.Object
-        The surface mesh to intersect with.
-
-    Returns
-    -------
-    bpy.types.Object
-        The intersection visualization object, named ``Intersect_{slice_plane.name}``.
-    """
-    prime_data = slice_plane.data.copy()
-    prime = bpy.data.objects.new(f"Intersect_{slice_plane.name}", prime_data)
-    bpy.context.collection.objects.link(prime)
-    prime.matrix_world = slice_plane.matrix_world.copy()
-
-    # Create a hidden normals-proxy of surface_mesh so the Boolean INTERSECT works
-    # correctly even when the original mesh has flipped/inconsistent normals.
-    # bmesh.ops.recalc_face_normals orients all faces outward on the copy.
-    # The proxy is parented to surface_mesh so it follows its transforms live.
-    proxy_data = surface_mesh.data.copy()
-    bm = bmesh.new()
-    bm.from_mesh(proxy_data)
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    bm.to_mesh(proxy_data)
-    bm.free()
-    proxy = bpy.data.objects.new(f"_NormProxy_{slice_plane.name}", proxy_data)
-    bpy.context.collection.objects.link(proxy)
-    proxy.matrix_world = surface_mesh.matrix_world.copy()
-    proxy.hide_set(True)
-    proxy.hide_render = True
-    proxy.parent = surface_mesh
-    proxy.matrix_parent_inverse = surface_mesh.matrix_world.inverted()
-
-    # Boolean INTERSECT (EXACT solver required; FAST is unreliable on real meshes)
-    mod_bool = prime.modifiers.new(name="Intersection", type='BOOLEAN')
-    mod_bool.operation = 'INTERSECT'
-    mod_bool.solver = 'EXACT'
-    mod_bool.object = proxy
-
-    # Wireframe: thickness ~ 1% of mean edge length so it scales with the dataset
-    thickness = float(np.mean(compute_edge_lengths(slice_plane)) / 80)
-    mod_wire = prime.modifiers.new(name="Wireframe", type='WIREFRAME')
-    mod_wire.thickness = thickness
-    mod_wire.use_even_offset = False
-
-    # Parent prime to slice_plane; set matrix_parent_inverse so world position is preserved
-    prime.parent = slice_plane
-    prime.matrix_parent_inverse = slice_plane.matrix_world.inverted()
-
-    # Red emission material
-    mat = bpy.data.materials.new(name=f"IntersectionEmission_{slice_plane.name}")
-    mat.use_nodes = True
-    nodes = mat.node_tree.nodes
-    links = mat.node_tree.links
-    # Remove everything except the auto-created Material Output to avoid duplicate outputs
-    for node in list(nodes):
-        if node.type != 'OUTPUT_MATERIAL':
-            nodes.remove(node)
-    output = next((n for n in nodes if n.type == 'OUTPUT_MATERIAL'), None)
-    if output is None:
-        output = nodes.new('ShaderNodeOutputMaterial')
-    emission = nodes.new('ShaderNodeEmission')
-    emission.inputs['Color'].default_value = (1.0, 0.0, 0.0, 1.0)
-    emission.inputs['Strength'].default_value = 3.0
-    links.new(emission.outputs['Emission'], output.inputs['Surface'])
-    # Clear any stale materials copied from the slice plane before assigning
-    prime.data.materials.clear()
-    prime.data.materials.append(mat)
-
-    return prime
 
 
 def get_slice_image(image_3d, resolution, axis='z', position=0.0):
@@ -258,77 +184,262 @@ def create_material_from_array(slice_plane, array, material_name="SliceMaterial"
     slice_plane.active_material = material
 
 
-def create_material_from_multilayer_array(mesh, array, material_name="ProjMat"):
-    """
-    Create and assign a material for a mesh using a multi-channel, multi-layer projection.
+# ---------------------------------------------------------------------------
+# Mesh–plane intersection (analytic edge-plane intersection)
+# ---------------------------------------------------------------------------
 
-    All channel/layer textures are added as image texture nodes in the shader graph,
-    but only channel 0, layer 0 is wired to the BSDF Base Color by default.
-    Additional textures can be connected manually in the shader editor.
+# Maps intersection curve object name → (surface_mesh_name, slice_plane_name).
+# Used by the depsgraph handler to know which objects to track and update.
+_intersection_trackers: dict = {}
+_is_updating = False  # re-entrancy guard for the depsgraph handler
+
+
+def compute_plane_intersection_segments(surface_mesh, plane_obj, z_offset=0.0):
+    """
+    Compute line segments where the surface mesh intersects an axis-aligned plane object.
+
+    Derives the cutting-plane equation from the world-space positions of ``plane_obj``'s
+    vertices, then tests every triangulated edge of ``surface_mesh`` against the plane.
+    For each triangle with two crossing edges the two interpolated intersection points form
+    one segment. Fully vectorised with numpy; works on non-watertight and flipped-normal
+    meshes, and handles slice planes whose local origin is not at the cutting position
+    (as produced by :func:`create_slice_plane`).
 
     Parameters
     ----------
-    mesh : bpy.types.Object
-        The mesh object to receive the material.
-    array : np.array of shape (n_channels, n_layers, H, W)
-        Projection data. Normalized per-channel before creating textures.
-    material_name : str, optional
-        Name for the new material.
+    surface_mesh : bpy.types.Object
+        Mesh whose intersection with the plane is computed.
+    plane_obj : bpy.types.Object
+        A planar mesh object defining the cutting plane (e.g. created by
+        :func:`create_slice_plane`). Its current ``matrix_world`` is used, so
+        the function is correct even after the object has been moved.
+    z_offset : float, optional
+        Small offset applied along the plane's world-space normal to all intersection
+        points before returning them. Lifts the curve slightly above the slice plane
+        surface to avoid z-fighting in the viewport.
+
+    Returns
+    -------
+    np.ndarray of shape (K, 2, 3)
+        World-space endpoints of K intersection line segments.
+        Empty array of shape (0, 2, 3) when there is no intersection.
     """
-    if array.ndim != 4:
-        raise ValueError("Input array must have 4 axes (channels, layers, H, W).")
+    # --- Plane equation from plane_obj's world-space vertex positions ---
+    # Using world-space vertices directly is correct regardless of how the local
+    # vertex positions and matrix_world were set (e.g. after transform_apply).
+    p0 = np.array(plane_obj.matrix_world @ plane_obj.data.vertices[0].co)
+    p1 = np.array(plane_obj.matrix_world @ plane_obj.data.vertices[1].co)
+    p2 = np.array(plane_obj.matrix_world @ plane_obj.data.vertices[2].co)
+    normal = np.cross(p1 - p0, p2 - p0)
+    norm_len = np.linalg.norm(normal)
+    if norm_len < 1e-12:
+        return np.zeros((0, 2, 3), dtype=np.float64)
+    normal /= norm_len  # unit normal in world space
 
-    array_normalized = normalize_quantiles(array, quantiles=(0.01, 0.99), channel_axis=0,
-                                           clip=True, data_type=None)
-    image_height, image_width = array.shape[-2:]
-    n_channels, n_layers = array.shape[:2]
+    # --- Surface mesh vertices in world space ---
+    mw_a = np.array(surface_mesh.matrix_world)
+    n_verts = len(surface_mesh.data.vertices)
+    verts_local_a = np.empty(n_verts * 3, dtype=np.float32)
+    surface_mesh.data.vertices.foreach_get("co", verts_local_a)
+    verts_local_a = verts_local_a.reshape(n_verts, 3)
+    verts_world = (mw_a[:3, :3] @ verts_local_a.T).T + mw_a[:3, 3]  # (N, 3)
 
-    # Create material first so we can use its actual Blender-assigned name (which may be
-    # auto-incremented, e.g. "ProjectedMaterial_MeshA.001") as a unique prefix for image
-    # names. Without this, images from different projections all share the same generic
-    # names ("Channel_0_Layer_0", …), and Blender may re-generate (clearing to black) any
-    # GENERATED image when a new image with the same base name is created.
-    material = bpy.data.materials.new(name=material_name)
-    actual_name = material.name  # may differ from material_name if a duplicate existed
+    # --- Signed distances from the plane ---
+    d = (verts_world - p0) @ normal  # (N,)
 
-    images = {}
-    for ic, channel in enumerate(array_normalized):
-        for il, layer in enumerate(channel):
-            pixel_data = np.zeros((image_height, image_width, 4), dtype=np.float32)
-            pixel_data[..., 0] = pixel_data[..., 1] = pixel_data[..., 2] = layer[::-1]
-            pixel_data[..., 3] = 1.0
-            img = bpy.data.images.new(
-                name=f"{actual_name}_Channel_{ic}_Layer_{il}",
-                width=image_width, height=image_height,
+    # --- Triangulated faces ---
+    surface_mesh.data.calc_loop_triangles()
+    n_tris = len(surface_mesh.data.loop_triangles)
+    if n_tris == 0:
+        return np.zeros((0, 2, 3), dtype=np.float64)
+    tri_verts_flat = np.empty(n_tris * 3, dtype=np.int32)
+    surface_mesh.data.loop_triangles.foreach_get("vertices", tri_verts_flat)
+    tris = tri_verts_flat.reshape(n_tris, 3)  # (M, 3)
+
+    # --- Vectorised edge-plane crossing ---
+    # Three directed edges per triangle: 0→1, 1→2, 2→0
+    a_cols = np.array([0, 1, 2])
+    b_cols = np.array([1, 2, 0])
+    va_idx = tris[:, a_cols]  # (M, 3) vertex indices for edge starts
+    vb_idx = tris[:, b_cols]  # (M, 3) vertex indices for edge ends
+    da = d[va_idx]            # (M, 3) signed distances at edge starts
+    db = d[vb_idx]            # (M, 3) signed distances at edge ends
+    crosses = da * db < 0     # (M, 3) True when edge straddles the plane
+
+    n_crosses = crosses.sum(axis=1)  # (M,)
+    valid = n_crosses == 2           # one segment per intersecting triangle
+
+    if not valid.any():
+        return np.zeros((0, 2, 3), dtype=np.float64)
+
+    denom = da - db
+    denom = np.where(np.abs(denom) < 1e-12, 1e-12, denom)  # avoid div-by-zero
+    t = da / denom  # (M, 3) interpolation parameter along each edge
+
+    va_pos = verts_world[va_idx]  # (M, 3, 3) world-space edge starts
+    vb_pos = verts_world[vb_idx]  # (M, 3, 3) world-space edge ends
+    pts = va_pos + t[:, :, np.newaxis] * (vb_pos - va_pos)  # (M, 3, 3) world space
+
+    # Extract the 2 crossing-edge intersection points per valid triangle.
+    # argsort(~crosses) sorts False(=0) before True(=1), so the FIRST 2 indices
+    # of the sorted result are the positions of the 2 True (crossing) entries.
+    valid_pts = pts[valid]        # (K, 3, 3)
+    valid_cross = crosses[valid]  # (K, 3)
+    cross_idx = np.argsort(~valid_cross, axis=1)[:, :2]  # (K, 2)
+    K = int(valid.sum())
+    row_idx = np.arange(K)[:, np.newaxis]
+    segments = valid_pts[row_idx, cross_idx]  # (K, 2, 3) world-space endpoints
+
+    # Lift slightly above the slice plane to avoid z-fighting
+    if z_offset != 0.0:
+        segments = segments + z_offset * normal  # broadcast (K, 2, 3) + (3,)
+
+    return segments
+
+
+def _make_red_emission_material(name):
+    """Return a new red emission material suitable for intersection visualizations."""
+    mat = bpy.data.materials.new(name=name)
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    for node in list(nodes):
+        if node.type != 'OUTPUT_MATERIAL':
+            nodes.remove(node)
+    output = next((n for n in nodes if n.type == 'OUTPUT_MATERIAL'), None)
+    if output is None:
+        output = nodes.new('ShaderNodeOutputMaterial')
+    emission = nodes.new('ShaderNodeEmission')
+    emission.inputs['Color'].default_value = (1.0, 0.0, 0.0, 1.0)
+    emission.inputs['Strength'].default_value = 3.0
+    links.new(emission.outputs['Emission'], output.inputs['Surface'])
+    return mat
+
+
+def _build_curve_splines(curve_data, segments):
+    """
+    Rebuild all POLY splines of *curve_data* from a (K, 2, 3) segments array.
+
+    Clears existing splines first. Safe to call with an empty segments array.
+    """
+    curve_data.splines.clear()
+    for seg in segments:
+        sp = curve_data.splines.new('POLY')
+        sp.points.add(1)  # POLY spline starts with 1 point; add a second
+        sp.points[0].co = (*seg[0], 1.0)
+        sp.points[1].co = (*seg[1], 1.0)
+
+
+def _update_intersection_handler(scene, depsgraph):
+    """
+    depsgraph_update_post handler: recompute and redisplay all registered
+    mesh–plane intersection curves when either tracked object changes.
+    """
+    global _is_updating
+    if _is_updating or not depsgraph.id_type_updated('OBJECT'):
+        return
+
+    updated_names = {
+        upd.id.name
+        for upd in depsgraph.updates
+        if isinstance(upd.id, bpy.types.Object)
+    }
+
+    _is_updating = True
+    try:
+        to_remove = []
+        for obj_name, (mesh_name, plane_name) in list(_intersection_trackers.items()):
+            # Clean up stale entries whose objects have been deleted
+            if (obj_name not in bpy.data.objects
+                    or mesh_name not in bpy.data.objects
+                    or plane_name not in bpy.data.objects):
+                to_remove.append(obj_name)
+                continue
+            # Only recompute if one of the tracked objects actually changed
+            if mesh_name not in updated_names and plane_name not in updated_names:
+                continue
+            curve_obj = bpy.data.objects[obj_name]
+            z_offset = float(curve_obj.get("_tc_z_offset", 0.0))
+            surface_mesh = bpy.data.objects[mesh_name]
+            plane_obj = bpy.data.objects[plane_name]
+            segments = compute_plane_intersection_segments(
+                surface_mesh, plane_obj, z_offset=z_offset
             )
-            img.pixels.foreach_set(pixel_data.flatten())
-            # Pack the image so its source changes from GENERATED to PACKED. This embeds
-            # the pixel data in the .blend file and prevents Blender from regenerating
-            # the image (which would produce a black result) on subsequent operations.
-            img.pack()
-            images[(ic, il)] = img
-    material.use_nodes = True
-    nodes = material.node_tree.nodes
-    links = material.node_tree.links
-    for node in nodes:
-        nodes.remove(node)
+            _build_curve_splines(curve_obj.data, segments)
 
-    texture_nodes = {}
-    for (ic, il), img in images.items():
-        tex = nodes.new(type="ShaderNodeTexImage")
-        tex.image = img
-        tex.location = (-400, ic * 400 + il * 300)
-        texture_nodes[(ic, il)] = tex
+        for name in to_remove:
+            del _intersection_trackers[name]
+    finally:
+        _is_updating = False
 
-    bsdf_node = nodes.new(type="ShaderNodeBsdfPrincipled")
-    bsdf_node.location = (0, 0)
-    output_node = nodes.new(type="ShaderNodeOutputMaterial")
-    output_node.location = (400, 0)
+    if not _intersection_trackers:
+        bpy.app.handlers.depsgraph_update_post.remove(_update_intersection_handler)
 
-    links.new(texture_nodes[(0, 0)].outputs["Color"], bsdf_node.inputs["Base Color"])
-    links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
 
-    mesh.active_material = material
+def create_intersection_line_visualization(slice_plane, surface_mesh):
+    """
+    Create a live intersection visualization between a slice plane and a surface mesh.
+
+    Computes the intersection analytically by testing each triangulated mesh edge
+    against the cutting plane (see :func:`compute_plane_intersection_segments`).
+    The result is displayed as a CURVE object with a bevel giving it finite thickness
+    and a red emission material. A ``depsgraph_update_post`` handler keeps the curve
+    updated whenever either object is moved or edited.
+
+    Unlike the Boolean modifier approach this works correctly on non-watertight meshes
+    and meshes with flipped normals.
+
+    Parameters
+    ----------
+    slice_plane : bpy.types.Object
+        The slice plane object (already placed in the scene).
+    surface_mesh : bpy.types.Object
+        The surface mesh to intersect with.
+
+    Returns
+    -------
+    bpy.types.Object
+        The intersection curve object, named ``Intersect_{slice_plane.name}``.
+    """
+    # line thickness is heuristically chosen based on overall scene scale
+    thickness = float(np.mean(compute_edge_lengths(slice_plane)) / 500) 
+    segments = compute_plane_intersection_segments(surface_mesh, slice_plane,
+                                                   z_offset=0) # z_offset=thickness, not needed
+
+    # Create the CURVE object
+    curve_name = f"Intersect_{slice_plane.name}"
+    curve_data = bpy.data.curves.new(curve_name, type='CURVE')
+    curve_data.dimensions = '3D'
+    curve_data.bevel_depth = thickness
+    curve_data.bevel_resolution = 2
+    curve_data.use_fill_caps = True
+
+    _build_curve_splines(curve_data, segments)
+
+    obj = bpy.data.objects.new(curve_name, curve_data)
+    bpy.context.collection.objects.link(obj)
+    obj.show_in_front = True
+
+    # Red emission material
+    mat = _make_red_emission_material(f"IntersectionEmission_{slice_plane.name}")
+    obj.data.materials.append(mat)
+
+    # Store tracking info as custom properties so the handler can read them
+    obj["_tc_surface_mesh"] = surface_mesh.name
+    obj["_tc_slice_plane"] = slice_plane.name
+    obj["_tc_z_offset"] = z_offset
+
+    # Register live-update handler and record this object in the tracker
+    _intersection_trackers[obj.name] = (surface_mesh.name, slice_plane.name)
+    if _update_intersection_handler not in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.depsgraph_update_post.append(_update_intersection_handler)
+
+    return obj
+
+
+# ---------------------------------------------------------------------------
+# Projecting image data onto mesh vertices
+# ---------------------------------------------------------------------------
 
 
 def compute_edge_lengths(obj):
@@ -455,3 +566,81 @@ def create_vertex_color_material(obj, material_name="VertMat"):
         map_range_node.inputs["To Max"].default_value = 1.0
 
     obj.active_material = material
+
+
+# ---------------------------------------------------------------------------
+# Projecting image data onto mesh using UV maps
+# ---------------------------------------------------------------------------
+
+
+def create_material_from_multilayer_array(mesh, array, material_name="ProjMat"):
+    """
+    Create and assign a material for a mesh using a multi-channel, multi-layer projection.
+
+    All channel/layer textures are added as image texture nodes in the shader graph,
+    but only channel 0, layer 0 is wired to the BSDF Base Color by default.
+    Additional textures can be connected manually in the shader editor.
+
+    Parameters
+    ----------
+    mesh : bpy.types.Object
+        The mesh object to receive the material.
+    array : np.array of shape (n_channels, n_layers, H, W)
+        Projection data. Normalized per-channel before creating textures.
+    material_name : str, optional
+        Name for the new material.
+    """
+    if array.ndim != 4:
+        raise ValueError("Input array must have 4 axes (channels, layers, H, W).")
+
+    array_normalized = normalize_quantiles(array, quantiles=(0.01, 0.99), channel_axis=0,
+                                           clip=True, data_type=None)
+    image_height, image_width = array.shape[-2:]
+    n_channels, n_layers = array.shape[:2]
+
+    # Create material first so we can use its actual Blender-assigned name (which may be
+    # auto-incremented, e.g. "ProjectedMaterial_MeshA.001") as a unique prefix for image
+    # names. Without this, images from different projections all share the same generic
+    # names ("Channel_0_Layer_0", …), and Blender may re-generate (clearing to black) any
+    # GENERATED image when a new image with the same base name is created.
+    material = bpy.data.materials.new(name=material_name)
+    actual_name = material.name  # may differ from material_name if a duplicate existed
+
+    images = {}
+    for ic, channel in enumerate(array_normalized):
+        for il, layer in enumerate(channel):
+            pixel_data = np.zeros((image_height, image_width, 4), dtype=np.float32)
+            pixel_data[..., 0] = pixel_data[..., 1] = pixel_data[..., 2] = layer[::-1]
+            pixel_data[..., 3] = 1.0
+            img = bpy.data.images.new(
+                name=f"{actual_name}_Channel_{ic}_Layer_{il}",
+                width=image_width, height=image_height,
+            )
+            img.pixels.foreach_set(pixel_data.flatten())
+            # Pack the image so its source changes from GENERATED to PACKED. This embeds
+            # the pixel data in the .blend file and prevents Blender from regenerating
+            # the image (which would produce a black result) on subsequent operations.
+            img.pack()
+            images[(ic, il)] = img
+    material.use_nodes = True
+    nodes = material.node_tree.nodes
+    links = material.node_tree.links
+    for node in nodes:
+        nodes.remove(node)
+
+    texture_nodes = {}
+    for (ic, il), img in images.items():
+        tex = nodes.new(type="ShaderNodeTexImage")
+        tex.image = img
+        tex.location = (-400, ic * 400 + il * 300)
+        texture_nodes[(ic, il)] = tex
+
+    bsdf_node = nodes.new(type="ShaderNodeBsdfPrincipled")
+    bsdf_node.location = (0, 0)
+    output_node = nodes.new(type="ShaderNodeOutputMaterial")
+    output_node.location = (400, 0)
+
+    links.new(texture_nodes[(0, 0)].outputs["Color"], bsdf_node.inputs["Base Color"])
+    links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
+
+    mesh.active_material = material

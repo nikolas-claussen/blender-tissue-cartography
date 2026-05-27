@@ -1,60 +1,3 @@
-This file contains internal notes and instructions for new features.
-
-## Mesh - slice plane intersection visualization
-
-### Context
-
-In the folder `tissue_cartography_addon_src`, I define an add-on for the 3d software blender for processing 3D data through tissue cartography. This technique extracts curved, 2d surfaces from volumetric microscopy and maps the image data to the plane. The user needs to provide a 3D image (.tif) and either a segmentation of the object of interest as a .tif, or a mesh. The add-on then interpolate the image data onto the mesh. The code is structured into a couple of utility modules, the file operator.py, which defines the operators the user will interact with, the user interface in ux.py, and the init.py, which loads and initializes the add-on (see `DEVELOPER_README.md`). I can test the add-on by on test data in blender, so let me know if there is something you want to check.
-
-### Problem
-
-A common problem users encounter is that the 3D image and the surface mesh are not correctly aligned. This can occur because of an axis permutation or flip, or because the segmentation the mesh is based on is bad. To diagnose and fix this issue, I want to add a new functionality. Using the `SlicePlaneOperator`, the user can visualize X/Y/Z slices of the 3D data. I want to add an option to visualize the intersection of the currently selected surface mesh, and the slice plane. This visualization should be updated live as either mesh is moved or edited.
-
-### Task
-
-### Option 1 - Boolean intersect
-
-I already have a working "manual" workflow in Blender:
-
-1. Start with the surface mesh and the image slice which is a plane mesh (P below)
-2. Make a copy of P, called P'
-3. use a Boolean modifier to compute the intersection of the surface mesh and P'. In the modifier options, select Solver = "Float"
-4. add a second wireframe Modifier to thicken the intersection visualization. This also ensures the wireframe can be seen from both sides of the slice plane.
-5. make the original P the parent of the modified P' (Object -> Parent -> Object). This ensures the intersection is updated live if either mesh is moved or edited.
-6. create an emission material for P' that makes it glow red.
-
-This option is already automated and integrated into the add-on (commit No. 7c5af0b6e4484843c7ac9ddf702f485d86c9e94a, 
-in particular function create_intersection_visualization in module visualization.py)
-
-As it turns out, the Boolean intersection modifier does not always work very well with large and potentially low quality meshes derived from image data. It also appears to fail for non-water-tight meshes or meshes with flipped normals. This is not good. 
-
-### Option 2 - Line segment calculation
-
-Therefore, we turn to option 2. Wwe do not need to create general mesh-mesh intersection: mesh P is an X/Y/Z = const. _plane_. We can exploit this by computing the intersection points of surface mesh edges with the plane much more simply.
-
-1. Find the linear equation that of the plane 
-2. Initialize a list of intersection line segments.
-3. Iterate over mesh faces. If face intersects plane, add a (short) line segment to the list. Vectorize if possible. The endpoints of these segments will intersect.
-4. Display these line segments (with a finite thickness, and a red emission shader) in Blender
-
-For option 2, the task is to remove the existing "option 1" solution in the code, and replace it by an implementation of the algorithm just described. This will require custom functions for the intersection detection, updating, and visualizing the curve.
-
-Below, I created added a prototype Blender script that computes the intersection segments between a mesh and a plane, creates a Blender curve from it, and updates it based on the mesh motion. You can use it as a base for implementing option2. It of course lacks the logic for integrating with the add-on, and only works for z=0 planes. It's also prototype code that may need to be refactored for maintainability and speed.
-
-#### User interface details
-
-This new functionality should be activatable with a checkmark (unchecked by default) next to the "Create slice plane" button. If you need to add new utlility functions, please put the in the visualization.py module. Use some automatic logic to figure out a reasonable thickness for the wireframe.
-
-#### Error handling
-
-If the intersection function is off, the user can generate slice planes without having to select an active surface mesh. If the function is one, an error message needs to be shown if no mesh is selected.
-
-
-
-#### Prototype Blender script for option 2
-
-```python
-
 import bpy
 import numpy as np
 from mathutils import Vector
@@ -288,5 +231,3 @@ def disable():
 enable()
 
 #disable() # uncomment this to turn off interactive mode
-
-```

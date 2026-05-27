@@ -23,7 +23,7 @@ from .projection import (
 from .visualization import (
     create_box,
     create_slice_plane,
-    create_intersection_visualization,
+    create_intersection_line_visualization,
     get_slice_image,
     create_material_from_array,
     create_material_from_multilayer_array,
@@ -551,7 +551,7 @@ class SlicePlaneOperator(Operator):
             material_name=f"Slice_{data_name}_{axis}_{position}"
         )
         if show_intersection:
-            create_intersection_visualization(slice_plane, surface_mesh)
+            create_intersection_line_visualization(slice_plane, surface_mesh)
         return {'FINISHED'}
 
 
