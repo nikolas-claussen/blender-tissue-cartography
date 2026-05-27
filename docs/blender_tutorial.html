@@ -373,21 +373,21 @@ window.Quarto = {
   <li><a href="#workspaces" id="toc-workspaces" class="nav-link" data-scroll-target="#workspaces">Workspaces</a></li>
   <li><a href="#installing-add-ons" id="toc-installing-add-ons" class="nav-link" data-scroll-target="#installing-add-ons">Installing add-ons</a></li>
   </ul></li>
-  <li><a href="#add-on-user-interface-data-loading-and-visualization" id="toc-add-on-user-interface-data-loading-and-visualization" class="nav-link" data-scroll-target="#add-on-user-interface-data-loading-and-visualization">Add-on user interface: data loading and visualization</a>
+  <li><a href="#data-loading-and-visualization" id="toc-data-loading-and-visualization" class="nav-link" data-scroll-target="#data-loading-and-visualization">Data loading and visualization</a>
   <ul class="collapse">
   <li><a href="#data-loading" id="toc-data-loading" class="nav-link" data-scroll-target="#data-loading">Data loading</a></li>
   <li><a href="#selected-datasets" id="toc-selected-datasets" class="nav-link" data-scroll-target="#selected-datasets">Selected datasets</a></li>
-  <li><a href="#data-visualization" id="toc-data-visualization" class="nav-link" data-scroll-target="#data-visualization">Data visualization</a></li>
-  <li><a href="#volumetric-image---surface-alignment" id="toc-volumetric-image---surface-alignment" class="nav-link" data-scroll-target="#volumetric-image---surface-alignment">Volumetric Image - Surface alignment</a></li>
   </ul></li>
+  <li><a href="#data-visualization" id="toc-data-visualization" class="nav-link" data-scroll-target="#data-visualization">Data visualization</a></li>
+  <li><a href="#d-image---surface-alignment" id="toc-d-image---surface-alignment" class="nav-link" data-scroll-target="#d-image---surface-alignment">3D Image - Surface alignment</a></li>
   <li><a href="#fixing-surfaces-remeshing-and-modelling" id="toc-fixing-surfaces-remeshing-and-modelling" class="nav-link" data-scroll-target="#fixing-surfaces-remeshing-and-modelling">Fixing surfaces: remeshing and modelling</a></li>
-  <li><a href="#pymeshlab-remeshing-add-on" id="toc-pymeshlab-remeshing-add-on" class="nav-link" data-scroll-target="#pymeshlab-remeshing-add-on">PyMeshLab Remeshing add-on</a></li>
+  <li><a href="#optional-pymeshlab-remeshing-add-on" id="toc-optional-pymeshlab-remeshing-add-on" class="nav-link" data-scroll-target="#optional-pymeshlab-remeshing-add-on">Optional: PyMeshLab Remeshing add-on</a></li>
   <li><a href="#cartographic-projection-with-the-uv-editor" id="toc-cartographic-projection-with-the-uv-editor" class="nav-link" data-scroll-target="#cartographic-projection-with-the-uv-editor">Cartographic projection with the UV editor</a>
   <ul class="collapse">
   <li><a href="#the-uv-editing-workspace" id="toc-the-uv-editing-workspace" class="nav-link" data-scroll-target="#the-uv-editing-workspace">The UV Editing workspace</a></li>
   <li><a href="#exporting-meshes" id="toc-exporting-meshes" class="nav-link" data-scroll-target="#exporting-meshes">Exporting meshes</a></li>
   </ul></li>
-  <li><a href="#add-on-user-interface-making-projections" id="toc-add-on-user-interface-making-projections" class="nav-link" data-scroll-target="#add-on-user-interface-making-projections">Add-on user interface: making projections</a>
+  <li><a href="#making-projections" id="toc-making-projections" class="nav-link" data-scroll-target="#making-projections">Making projections</a>
   <ul class="collapse">
   <li><a href="#projections" id="toc-projections" class="nav-link" data-scroll-target="#projections">Projections</a></li>
   <li><a href="#batch-processing" id="toc-batch-processing" class="nav-link" data-scroll-target="#batch-processing">Batch processing</a></li>
@@ -525,8 +525,8 @@ window.Quarto = {
 <p>Now we <a href="https://docs.blender.org/manual/en/latest/editors/preferences/addons.html">install the add-on</a>: Click “Edit -&gt; Preferences -&gt; Add-ons -&gt; Add-on Settings -&gt; Install from disk” and select the file you just downloaded. You may need to restart Blender. The add-on can now be found under “Scene -&gt; Tissue Cartography (V2)”.</p>
 </section>
 </section>
-<section id="add-on-user-interface-data-loading-and-visualization" class="level2">
-<h2 class="anchored" data-anchor-id="add-on-user-interface-data-loading-and-visualization">Add-on user interface: data loading and visualization</h2>
+<section id="data-loading-and-visualization" class="level2">
+<h2 class="anchored" data-anchor-id="data-loading-and-visualization">Data loading and visualization</h2>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/screenshot_ux.png" class="img-fluid figure-img"></p>
@@ -600,15 +600,16 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="selected-datasets">Selected datasets</h3>
 <p>You can load multiple surfaces and 3D images into Blender at once. The “Selected datasets” panel determines which one is currently active. The add-on operations are applied to the currently active dataset. Select the <code>BoundingBox</code> as active 3D dataset, and the embryo surface as active mesh.</p>
 </section>
-<section id="data-visualization" class="level3">
-<h3 class="anchored" data-anchor-id="data-visualization">Data visualization</h3>
+</section>
+<section id="data-visualization" class="level2">
+<h2 class="anchored" data-anchor-id="data-visualization">Data visualization</h2>
 <p>Before we carry out cartographic projection, we can visualize the 3D data in Blender. This is also a good check whether data loading and surface import have worked correctly.</p>
 <section id="orthogonal-slices" class="level4">
 <h4 class="anchored" data-anchor-id="orthogonal-slices">Orthogonal slices</h4>
-<p>The first option is to show slices of the data along the X/Y/X axes. Use the slider to select the position of the slice and click “Create slice plane”. To preview the image data, select “Material preview” in the top right corner. Let’s toggle the visibility of the mesh off so we can see the slice:</p>
+<p>The first option is to show slices of the data along the X/Y/X axes. Use the slider to select the position of the slice and click “Create slice plane”. To preview the image data, select “Material preview” in the top right corner. Let’s toggle the visibility of the mesh off, so we can see the slices:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="images/screenshot_slice.png" class="img-fluid figure-img"></p>
+<p><img src="images/screenshot_slice_new.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
@@ -625,17 +626,30 @@ window.Quarto = {
 </div>
 </section>
 </section>
-<section id="volumetric-image---surface-alignment" class="level3">
-<h3 class="anchored" data-anchor-id="volumetric-image---surface-alignment">Volumetric Image - Surface alignment</h3>
-<p>To project image intensity onto the surface, the add-on needs to know “where” in the image volume each surface point lies. It is essential that your image and your surface are correctly <strong>aligned</strong>. Move the surface mesh relative to the bounding box (press <code>G</code>) , refresh the vertex shading, and see what happens:</p>
+<section id="d-image---surface-alignment" class="level2">
+<h2 class="anchored" data-anchor-id="d-image---surface-alignment">3D Image - Surface alignment</h2>
+<section id="visualize-mesh-image-intersection" class="level4">
+<h4 class="anchored" data-anchor-id="visualize-mesh-image-intersection">Visualize mesh-image intersection</h4>
+<p>To project image intensity onto the surface, the add-on needs to know “where” in the image volume each surface point lies. It is essential that your image and your surface are correctly <strong>aligned</strong>. To make check this, you can use the <strong>show intersection</strong> option. It will show the intersection between the surface mesh and a slice plane in red, and updates interactively as you move or edit the mesh. Check “Show intersection” and create a new slice plane. Toggle the visibility of the surface mesh to “off” to see the intersection clearly:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/screenshot_slice_intersection.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+<p>The red line matches the edge of the embryo, so the alignment is good.</p>
+</section>
+<section id="bad-alignment-leads-to-bad-projections" class="level4">
+<h4 class="anchored" data-anchor-id="bad-alignment-leads-to-bad-projections">Bad alignment leads to bad projections</h4>
+<p>Move the surface mesh relative to the bounding box (press <code>G</code>) , refresh the vertex shading, and see what happens:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/screenshot_alignment.png" class="img-fluid figure-img"></p>
 <figcaption>image.png</figcaption>
 </figure>
 </div>
-<p>The surface is no longer correctly aligned with the image data, and so the “wrong” intensities get projected on the mesh. The part outside the image becomes black (missing data). If you move the <code>BoundingBox</code> and the surface together, they stay aligned. Incorrect alignment is a common source of problems. Press <code>Ctrl + Z</code> to undo.</p>
-<p>More generally, <strong>your surface mesh needs to match the surface you want to extract</strong>. If this is not the case, you get images like this, where part of the mesh actually lies outside the embryo. One reason can be a bad 3D segmentation.</p>
+<p>The surface is no longer correctly aligned with the image data, and so the <strong>wrong</strong> intensities get projected on the mesh. The part outside the image becomes black (missing data). If you move the <code>BoundingBox</code> and the surface together, they stay aligned. Incorrect alignment is a common source of problems. Press <code>Ctrl + Z</code> to undo.</p>
+<p>More generally, <strong>your surface mesh needs to match the surface you want to extract</strong>. If this is not the case, you get images like this, where part of the mesh actually lies outside the embryo. One reason can be a <strong>bad 3D segmentation</strong>.</p>
 <p><img src="images/screenshot_pre_wrap.png" width="600"></p>
 </section>
 </section>
@@ -648,9 +662,10 @@ window.Quarto = {
 <p>Your mesh should be sufficiently “fine” to smoothly follow the surface you want to capture, but not more. Importantly, the resolution of your projection does <em>not</em> depend on how fine your mesh is! You can get a high-resolution projection with a coarse mesh.</p>
 </section>
 </section>
-<section id="pymeshlab-remeshing-add-on" class="level2">
-<h2 class="anchored" data-anchor-id="pymeshlab-remeshing-add-on">PyMeshLab Remeshing add-on</h2>
+<section id="optional-pymeshlab-remeshing-add-on" class="level2">
+<h2 class="anchored" data-anchor-id="optional-pymeshlab-remeshing-add-on">Optional: PyMeshLab Remeshing add-on</h2>
 <p>Blender’s algorithms are, however, not built for meshes extracted from 3D Image data. For example,Blender remeshing fails if your mesh is not closed/watertight. For more control, the PyMeshLab Remeshing add-on (optional install, see Installation above) exposes additional filters from MeshLab directly in Blender under “Scene -&gt; PyMeshLab Remeshing”.</p>
+<p>⚠️ PyMeshLab can fail to install / crash blender on some systems. If that happens to you, skip this optional step.</p>
 <p>The add-on provides five operations. Select a mesh in the scene, adjust the parameters, and click the button — the result is created as a new object, leaving the original intact.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -709,8 +724,8 @@ window.Quarto = {
 </ul>
 </section>
 </section>
-<section id="add-on-user-interface-making-projections" class="level2">
-<h2 class="anchored" data-anchor-id="add-on-user-interface-making-projections">Add-on user interface: making projections</h2>
+<section id="making-projections" class="level2">
+<h2 class="anchored" data-anchor-id="making-projections">Making projections</h2>
 <section id="projections" class="level3">
 <h3 class="anchored" data-anchor-id="projections">Projections</h3>
 <p>Now that the surface has UV map that defines how it is unwrapped, we can project the image intensity into the plane. Without a UV map, this process will throw an error.</p>
