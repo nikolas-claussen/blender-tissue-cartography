@@ -1,6 +1,8 @@
+# Notes on new features
+
 This file contains internal notes and instructions for new features.
 
-## Mesh - slice plane intersection visualization
+## Mesh - slice plane intersection visualization [IMPLEMENTED as of 832b1d25557f72c2b880888035e4f2707e8352fa]
 
 ### Context
 

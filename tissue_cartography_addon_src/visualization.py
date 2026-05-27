@@ -330,10 +330,21 @@ def _build_curve_splines(curve_data, segments):
         sp.points[1].co = (*seg[1], 1.0)
 
 
+def _plane_and_ancestors(plane_name):
+    """Yield plane_name and the names of all its ancestors (for parent-move detection)."""
+    obj = bpy.data.objects.get(plane_name)
+    while obj:
+        yield obj.name
+        obj = obj.parent
+
+
 def _update_intersection_handler(scene, depsgraph):
     """
     depsgraph_update_post handler: recompute and redisplay all registered
     mesh–plane intersection curves when either tracked object changes.
+
+    Also fires when a *parent* of the slice plane is moved (e.g. the bounding
+    box is translated together with all its child slice planes).
     """
     global _is_updating
     if _is_updating or not depsgraph.id_type_updated('OBJECT'):
@@ -355,8 +366,10 @@ def _update_intersection_handler(scene, depsgraph):
                     or plane_name not in bpy.data.objects):
                 to_remove.append(obj_name)
                 continue
-            # Only recompute if one of the tracked objects actually changed
-            if mesh_name not in updated_names and plane_name not in updated_names:
+            # Recompute if the surface mesh changed, the plane changed directly,
+            # or any ancestor of the plane changed (covers "move bounding box" case).
+            plane_affected = not updated_names.isdisjoint(_plane_and_ancestors(plane_name))
+            if mesh_name not in updated_names and not plane_affected:
                 continue
             curve_obj = bpy.data.objects[obj_name]
             z_offset = float(curve_obj.get("_tc_z_offset", 0.0))
@@ -403,8 +416,9 @@ def create_intersection_line_visualization(slice_plane, surface_mesh):
     """
     # line thickness is heuristically chosen based on overall scene scale
     thickness = float(np.mean(compute_edge_lengths(slice_plane)) / 500) 
+    z_offset = 0 # thickness # move curve slightly above plane
     segments = compute_plane_intersection_segments(surface_mesh, slice_plane,
-                                                   z_offset=0) # z_offset=thickness, not needed
+                                                   z_offset=z_offset)
 
     # Create the CURVE object
     curve_name = f"Intersect_{slice_plane.name}"
