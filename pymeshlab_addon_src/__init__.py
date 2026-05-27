@@ -97,25 +97,29 @@ def register():
 
 
 def unregister():
-    """Unregister all add-on classes and scene properties."""
-    for cls in reversed(OPERATOR_CLASSES):
-        bpy.utils.unregister_class(cls)
-    bpy.utils.unregister_class(MeshLabRemeshPanel)
+    """Unregister all add-on classes and scene properties.
 
-    del bpy.types.Scene.pymeshlab_iso_iterations
-    del bpy.types.Scene.pymeshlab_iso_targetlen
-    del bpy.types.Scene.pymeshlab_iso_featuredeg
-    del bpy.types.Scene.pymeshlab_decim_mode
-    del bpy.types.Scene.pymeshlab_decim_facenum
-    del bpy.types.Scene.pymeshlab_decim_perc
-    del bpy.types.Scene.pymeshlab_poisson_normals
-    del bpy.types.Scene.pymeshlab_poisson_k
-    del bpy.types.Scene.pymeshlab_poisson_depth
-    del bpy.types.Scene.pymeshlab_poisson_fulldepth
-    del bpy.types.Scene.pymeshlab_alphawrap_alpha
-    del bpy.types.Scene.pymeshlab_alphawrap_offset
-    del bpy.types.Scene.pymeshlab_cleanup_close_holes
-    del bpy.types.Scene.pymeshlab_cleanup_maxholesize
+    Guards against double-unregister that occurs when a hot-reload script
+    reloads modules before calling addon_disable: the reloaded class objects
+    are new Python objects without bl_rna, so unregister_class would raise.
+    """
+    for cls in reversed(OPERATOR_CLASSES):
+        if hasattr(cls, 'bl_rna'):
+            bpy.utils.unregister_class(cls)
+    if hasattr(MeshLabRemeshPanel, 'bl_rna'):
+        bpy.utils.unregister_class(MeshLabRemeshPanel)
+
+    props = [
+        'pymeshlab_iso_iterations', 'pymeshlab_iso_targetlen', 'pymeshlab_iso_featuredeg',
+        'pymeshlab_decim_mode', 'pymeshlab_decim_facenum', 'pymeshlab_decim_perc',
+        'pymeshlab_poisson_normals', 'pymeshlab_poisson_k',
+        'pymeshlab_poisson_depth', 'pymeshlab_poisson_fulldepth',
+        'pymeshlab_alphawrap_alpha', 'pymeshlab_alphawrap_offset',
+        'pymeshlab_cleanup_close_holes', 'pymeshlab_cleanup_maxholesize',
+    ]
+    for prop in props:
+        if hasattr(bpy.types.Scene, prop):
+            delattr(bpy.types.Scene, prop)
 
 
 if __name__ == "__main__":

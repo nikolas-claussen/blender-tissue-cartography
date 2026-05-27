@@ -66,7 +66,7 @@ if the surface mesh and the image are correctly aligned. A `depsgraph_update_pos
 
 ## Building the Installable Extension
 
-From the `blender_addon/` directory:
+From the `tissue_cartography_addon_src/` directory:
 
 ```sh
 /Applications/Blender.app/Contents/MacOS/Blender --command extension build \

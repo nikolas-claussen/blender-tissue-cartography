@@ -258,10 +258,8 @@ def compute_plane_intersection_segments(surface_mesh, plane_obj, z_offset=0.0):
 
     # --- Vectorised edge-plane crossing ---
     # Three directed edges per triangle: 0→1, 1→2, 2→0
-    a_cols = np.array([0, 1, 2])
-    b_cols = np.array([1, 2, 0])
-    va_idx = tris[:, a_cols]  # (M, 3) vertex indices for edge starts
-    vb_idx = tris[:, b_cols]  # (M, 3) vertex indices for edge ends
+    va_idx = tris                        # (M, 3) vertex indices for edge starts
+    vb_idx = np.roll(tris, -1, axis=1)   # (M, 3) vertex indices for edge ends
     da = d[va_idx]            # (M, 3) signed distances at edge starts
     db = d[vb_idx]            # (M, 3) signed distances at edge ends
     crosses = da * db < 0     # (M, 3) True when edge straddles the plane
@@ -281,14 +279,11 @@ def compute_plane_intersection_segments(surface_mesh, plane_obj, z_offset=0.0):
     pts = va_pos + t[:, :, np.newaxis] * (vb_pos - va_pos)  # (M, 3, 3) world space
 
     # Extract the 2 crossing-edge intersection points per valid triangle.
-    # argsort(~crosses) sorts False(=0) before True(=1), so the FIRST 2 indices
-    # of the sorted result are the positions of the 2 True (crossing) entries.
+    # Each valid row has exactly 2 True entries in crosses, so ravelling the
+    # boolean mask and applying it to the flattened points yields (K*2, 3).
     valid_pts = pts[valid]        # (K, 3, 3)
-    valid_cross = crosses[valid]  # (K, 3)
-    cross_idx = np.argsort(~valid_cross, axis=1)[:, :2]  # (K, 2)
-    K = int(valid.sum())
-    row_idx = np.arange(K)[:, np.newaxis]
-    segments = valid_pts[row_idx, cross_idx]  # (K, 2, 3) world-space endpoints
+    valid_cross = crosses[valid]  # (K, 3) — exactly 2 True per row
+    segments = valid_pts.reshape(-1, 3)[valid_cross.ravel()].reshape(-1, 2, 3)
 
     # Lift slightly above the slice plane to avoid z-fighting
     if z_offset != 0.0:
@@ -303,12 +298,8 @@ def _make_red_emission_material(name):
     mat.use_nodes = True
     nodes = mat.node_tree.nodes
     links = mat.node_tree.links
-    for node in list(nodes):
-        if node.type != 'OUTPUT_MATERIAL':
-            nodes.remove(node)
-    output = next((n for n in nodes if n.type == 'OUTPUT_MATERIAL'), None)
-    if output is None:
-        output = nodes.new('ShaderNodeOutputMaterial')
+    nodes.clear()
+    output = nodes.new('ShaderNodeOutputMaterial')
     emission = nodes.new('ShaderNodeEmission')
     emission.inputs['Color'].default_value = (1.0, 0.0, 0.0, 1.0)
     emission.inputs['Strength'].default_value = 3.0
@@ -415,8 +406,8 @@ def create_intersection_line_visualization(slice_plane, surface_mesh):
         The intersection curve object, named ``Intersect_{slice_plane.name}``.
     """
     # line thickness is heuristically chosen based on overall scene scale
-    thickness = float(np.mean(compute_edge_lengths(slice_plane)) / 500) 
-    z_offset = 0 # thickness # move curve slightly above plane
+    thickness = float(np.mean(compute_edge_lengths(slice_plane)) / 500)
+    z_offset = 0.0
     segments = compute_plane_intersection_segments(surface_mesh, slice_plane,
                                                    z_offset=z_offset)
 

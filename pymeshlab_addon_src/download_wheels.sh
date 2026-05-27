@@ -5,7 +5,7 @@
 set -euo pipefail
 
 DEST="$(dirname "$0")/wheels"
-PYMLVER="pymeshlab==2023.12.post2"
+PYMLVER="pymeshlab==2025.7.post1"
 PY="311"
 
 mkdir -p "$DEST"
@@ -16,7 +16,7 @@ pip download "$PYMLVER" --no-deps \
     -d "$DEST"
 
 pip download "$PYMLVER" --no-deps \
-    --platform manylinux_2_31_x86_64 \
+    --platform manylinux_2_35_x86_64 \
     --only-binary=:all: --python-version "$PY" \
     -d "$DEST"
 

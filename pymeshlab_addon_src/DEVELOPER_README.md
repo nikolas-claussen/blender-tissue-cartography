@@ -70,3 +70,27 @@ polygons (i.e. `len(mesh.loop_triangles) == 0`). The pipeline is:
 
 The *Compute Normals* option is on by default. Disable it only if the input
 already has well-oriented normals and you want to skip the neighbourhood step.
+
+## PyMeshLab version and wheel notes
+
+The bundled wheels are **pymeshlab 2025.7.post1** (cp311, released January 2026).
+
+**Why not an older release?**
+`2023.12.post2` (and `post3`) contain a confirmed Windows crash bug: calling
+`load_default_plugins()` on import triggers an access violation on Python 3.11+
+(see [PyMeshLab issue #398](https://github.com/cnr-isti-vclab/PyMeshLab/issues/398)).
+Since the imports were previously at module level, Blender crashed on add-on
+load with no recoverable error. `2025.7.post1` fixes this.
+
+**Lazy imports** — `import pymeshlab` is now deferred to the first call of each
+operator / conversion function. This prevents a hard Blender crash if the wheel
+fails to load for any reason; instead the panel shows a red warning and
+operators report a `{'CANCELLED'}` with a descriptive message.
+
+**Linux glibc requirement** — the `manylinux_2_35` wheels require **glibc 2.35+**
+(Ubuntu 22.04 / Fedora 36 or newer). Users on older distributions (Ubuntu 20.04,
+glibc 2.31) will see the panel warning rather than a crash, but the add-on
+will not function. If broad older-Linux support is needed in the future, the
+Windows/macOS wheels can stay on `2025.7.post1` while the Linux wheel is
+downgraded to a `manylinux_2_31` build (the last one available is
+`2023.12.post3`, which is unaffected by the Windows crash).

@@ -1,6 +1,5 @@
 """In-memory conversion between Blender mesh objects and pymeshlab MeshSet."""
 import numpy as np
-import pymeshlab
 import bpy
 
 
@@ -21,6 +20,7 @@ def blender_to_pymeshlab(obj):
     pymeshlab.MeshSet
         MeshSet containing one mesh.
     """
+    import pymeshlab
     mesh = obj.data
     mesh.update()
     mesh.calc_loop_triangles()
@@ -61,6 +61,7 @@ def pymeshlab_to_blender(ms, name, context):
     bpy.types.Object
         Newly created and linked Blender object.
     """
+    import pymeshlab  # noqa: F401 — ensures numpy is loaded via pymeshlab's context
     pm_mesh = ms.current_mesh()
     verts = pm_mesh.vertex_matrix()
     faces = pm_mesh.face_matrix()

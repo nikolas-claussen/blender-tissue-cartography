@@ -4,6 +4,15 @@ import bpy
 from bpy.types import Panel
 
 
+def _pymeshlab_status():
+    """Return None if pymeshlab is importable, else an error string."""
+    try:
+        import pymeshlab  # noqa: F401
+        return None
+    except Exception as e:
+        return str(e)
+
+
 class MeshLabRemeshPanel(Panel):
     """Panel for PyMeshLab remeshing operations."""
 
@@ -16,6 +25,14 @@ class MeshLabRemeshPanel(Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
+
+        err = _pymeshlab_status()
+        if err:
+            box = layout.box()
+            box.alert = True
+            box.label(text="PyMeshLab failed to load — operations disabled.", icon='ERROR')
+            box.label(text=err[:100])
+            layout.enabled = False
 
         layout.label(text="Select a mesh or point cloud object in the scene, then apply an operation below.")
 

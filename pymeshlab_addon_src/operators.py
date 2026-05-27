@@ -2,7 +2,6 @@
 
 import bpy
 from bpy.types import Operator
-import pymeshlab
 
 from .mesh_utils import blender_to_pymeshlab, pymeshlab_to_blender
 
@@ -26,6 +25,12 @@ def _run_pymeshlab(self, context, apply_fn, suffix):
     set
         {'FINISHED'} or {'CANCELLED'}.
     """
+    try:
+        import pymeshlab  # noqa: F401
+    except ImportError as e:
+        self.report({'ERROR'}, f"PyMeshLab failed to load: {e}")
+        return {'CANCELLED'}
+
     if context.active_object is None or context.active_object.type != 'MESH':
         self.report({'ERROR'}, "Select a mesh object first.")
         return {'CANCELLED'}
@@ -57,6 +62,7 @@ class IsotropicRemeshOperator(Operator):
     bl_description = "Remesh with uniform triangle size. Ideal after marching cubes. Erases existing UV."
 
     def execute(self, context):
+        import pymeshlab  # needed by apply_fn closure (pymeshlab.PercentageValue)
         scene = context.scene
         iterations = scene.pymeshlab_iso_iterations
         targetlen = scene.pymeshlab_iso_targetlen

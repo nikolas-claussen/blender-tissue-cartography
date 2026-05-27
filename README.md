@@ -48,13 +48,14 @@ break down.
 #### For what can I use tissue cartography?
 
 The simplest example is **replacing Z-projections** on Z-stacks from a
-confocal microscope. Even in a mildly curved tissue, tissue cartography
-yields much better results since it follows the curved surface. Here are
-some more use cases:
+confocal microscope. Even in a mildly curved tissue, it yields much
+better results since it follows the curved surface. Tissue cartography
+really shines when **analyzing strongly curved surfaces** like the
+*Drosophila* blastoderm (figure above). Here are some use cases:
 
-- [Study tissue flows across an entire
+- [Study tissue flows across an entire *Drosophila*
   embryo](https://elifesciences.org/articles/27454)
-- [Measure holes in a basement
+- [Measure holes in a mouse embryo basement
   membrane](https://www.nature.com/articles/s41467-025-61441-6)
 - [Segment and track cells of a curved
   epithelium](https://www.cell.com/current-biology/fulltext/S0960-9822(22)00329-3)
