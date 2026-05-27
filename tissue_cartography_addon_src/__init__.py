@@ -206,6 +206,11 @@ def register():
         default=0,
         min=0,
     )
+    bpy.types.Scene.tissue_cartography_slice_show_intersection = BoolProperty(
+        name="Show intersection",
+        description="Visualize the intersection of the Active Mesh with the slice plane (requires Active Mesh to be set)",
+        default=False,
+    )
 
     # --- Vertex shader ---
     bpy.types.Scene.tissue_cartography_vertex_shader_offset = FloatProperty(
@@ -373,6 +378,7 @@ def unregister():
         "tissue_cartography_slice_position_pct",
         "tissue_cartography_slice_position",
         "tissue_cartography_slice_channel",
+        "tissue_cartography_slice_show_intersection",
         "tissue_cartography_vertex_shader_offset",
         "tissue_cartography_vertex_shader_channel_RGB",
         "tissue_cartography_vertex_shader_create_material",

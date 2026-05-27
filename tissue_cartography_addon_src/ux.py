@@ -89,7 +89,9 @@ class TissueCartographyPanel(Panel):
         rest_row.prop(scene, "tissue_cartography_slice_position_pct", slider=True)
         rest_row.prop(scene, "tissue_cartography_slice_position")
         rest_row.prop(scene, "tissue_cartography_slice_channel")
-        layout.operator("scene.create_slice_plane", text="Create slice plane")
+        slice_row = layout.row()
+        slice_row.prop(scene, "tissue_cartography_slice_show_intersection")
+        slice_row.operator("scene.create_slice_plane", text="Create slice plane")
         layout.separator()
 
         # --- Vertex shader ---

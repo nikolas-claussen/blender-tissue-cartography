@@ -3,6 +3,7 @@ Visualization utilities: bounding boxes, ortho-slice planes, materials, and vert
 """
 
 import bpy
+import bmesh
 import numpy as np
 
 from .io_utils import normalize_quantiles
@@ -92,6 +93,89 @@ def create_slice_plane(length, width, height, axis='z', position=0.0):
     if current_active:
         bpy.context.view_layer.objects.active = current_active
     return plane
+
+
+def create_intersection_visualization(slice_plane, surface_mesh):
+    """
+    Create a live intersection visualization between a slice plane and a surface mesh.
+
+    Duplicates the slice plane, adds a Boolean INTERSECT modifier (Float solver) against
+    the surface mesh, and a Wireframe modifier to make the intersection line visible from
+    both sides. The duplicate is parented to the slice plane so the visualization updates
+    live when either object is moved or edited. A red emission material is assigned.
+
+    Parameters
+    ----------
+    slice_plane : bpy.types.Object
+        The slice plane object (already placed in the scene, transforms applied).
+    surface_mesh : bpy.types.Object
+        The surface mesh to intersect with.
+
+    Returns
+    -------
+    bpy.types.Object
+        The intersection visualization object, named ``Intersect_{slice_plane.name}``.
+    """
+    prime_data = slice_plane.data.copy()
+    prime = bpy.data.objects.new(f"Intersect_{slice_plane.name}", prime_data)
+    bpy.context.collection.objects.link(prime)
+    prime.matrix_world = slice_plane.matrix_world.copy()
+
+    # Create a hidden normals-proxy of surface_mesh so the Boolean INTERSECT works
+    # correctly even when the original mesh has flipped/inconsistent normals.
+    # bmesh.ops.recalc_face_normals orients all faces outward on the copy.
+    # The proxy is parented to surface_mesh so it follows its transforms live.
+    proxy_data = surface_mesh.data.copy()
+    bm = bmesh.new()
+    bm.from_mesh(proxy_data)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(proxy_data)
+    bm.free()
+    proxy = bpy.data.objects.new(f"_NormProxy_{slice_plane.name}", proxy_data)
+    bpy.context.collection.objects.link(proxy)
+    proxy.matrix_world = surface_mesh.matrix_world.copy()
+    proxy.hide_set(True)
+    proxy.hide_render = True
+    proxy.parent = surface_mesh
+    proxy.matrix_parent_inverse = surface_mesh.matrix_world.inverted()
+
+    # Boolean INTERSECT (EXACT solver required; FAST is unreliable on real meshes)
+    mod_bool = prime.modifiers.new(name="Intersection", type='BOOLEAN')
+    mod_bool.operation = 'INTERSECT'
+    mod_bool.solver = 'EXACT'
+    mod_bool.object = proxy
+
+    # Wireframe: thickness ~ 1% of mean edge length so it scales with the dataset
+    thickness = float(np.mean(compute_edge_lengths(slice_plane)) / 80)
+    mod_wire = prime.modifiers.new(name="Wireframe", type='WIREFRAME')
+    mod_wire.thickness = thickness
+    mod_wire.use_even_offset = False
+
+    # Parent prime to slice_plane; set matrix_parent_inverse so world position is preserved
+    prime.parent = slice_plane
+    prime.matrix_parent_inverse = slice_plane.matrix_world.inverted()
+
+    # Red emission material
+    mat = bpy.data.materials.new(name=f"IntersectionEmission_{slice_plane.name}")
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    # Remove everything except the auto-created Material Output to avoid duplicate outputs
+    for node in list(nodes):
+        if node.type != 'OUTPUT_MATERIAL':
+            nodes.remove(node)
+    output = next((n for n in nodes if n.type == 'OUTPUT_MATERIAL'), None)
+    if output is None:
+        output = nodes.new('ShaderNodeOutputMaterial')
+    emission = nodes.new('ShaderNodeEmission')
+    emission.inputs['Color'].default_value = (1.0, 0.0, 0.0, 1.0)
+    emission.inputs['Strength'].default_value = 3.0
+    links.new(emission.outputs['Emission'], output.inputs['Surface'])
+    # Clear any stale materials copied from the slice plane before assigning
+    prime.data.materials.clear()
+    prime.data.materials.append(mat)
+
+    return prime
 
 
 def get_slice_image(image_3d, resolution, axis='z', position=0.0):

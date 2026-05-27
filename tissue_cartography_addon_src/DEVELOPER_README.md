@@ -85,7 +85,7 @@ On a Mac, this means:
 
 ```sh
 ln -s /path/to/blender_addon \
-  ~/Library/Application\ Support/Blender/4.5/extensions/user_default/tissue_cartography
+  ~/Library/Application\ Support/Blender/4.5/extensions/user_default/blender_tissue_cartography_interactive
 ```
 
 After editing source files, reload the add-on without restarting Blender by running `reload_script.py` in Blender's **Scripting** workspace.

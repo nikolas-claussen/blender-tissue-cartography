@@ -3,7 +3,7 @@
 
 import sys, importlib, bpy
 
-pkg = "bl_ext.user_default.tissue_cartography"
+pkg = "bl_ext.user_default.blender_tissue_cartography_interactive"
 for key in sorted(
     (k for k in sys.modules if k == pkg or k.startswith(pkg + ".")),
     key=lambda k: -k.count(".")

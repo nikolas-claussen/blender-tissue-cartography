@@ -23,6 +23,7 @@ from .projection import (
 from .visualization import (
     create_box,
     create_slice_plane,
+    create_intersection_visualization,
     get_slice_image,
     create_material_from_array,
     create_material_from_multilayer_array,
@@ -527,6 +528,12 @@ class SlicePlaneOperator(Operator):
             self.report({'ERROR'}, f"Channel {ch} is out of bounds.")
             return {'CANCELLED'}
 
+        show_intersection = context.scene.tissue_cartography_slice_show_intersection
+        surface_mesh = context.scene.tissue_cartography_active_mesh
+        if show_intersection and surface_mesh is None:
+            self.report({'ERROR'}, "Set an Active Mesh in the Selected Datasets section to visualize intersection.")
+            return {'CANCELLED'}
+
         length, width, height = np.array(data.shape[1:]) * resolution
         axis = context.scene.tissue_cartography_slice_axis
         position = context.scene.tissue_cartography_slice_position
@@ -543,6 +550,8 @@ class SlicePlaneOperator(Operator):
             slice_plane, slice_img[ch],
             material_name=f"Slice_{data_name}_{axis}_{position}"
         )
+        if show_intersection:
+            create_intersection_visualization(slice_plane, surface_mesh)
         return {'FINISHED'}
 
 
