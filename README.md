@@ -5,16 +5,14 @@
 
 ![image.png](index_files/figure_methods.png)
 
+#### Click here for a [2-minute video demo](https://youtu.be/Y3Vb6IDv0g0)
+
 Tissue cartography extracts and cartographically projects curved
 surfaces from volumetric image data. This turns your 3D data into 2D
 data, which is much easier to visualize, analyze, and computationally
-process.
-
-#### Click here for a [2-minute video demo](https://youtu.be/Y3Vb6IDv0g0)
-
-Tissue cartography takes advantage of the fact that many biological
-systems are organized as thin, curved sheets (for example, epithelia).
-For more info, see our [methods
+process. Tissue cartography takes advantage of the fact that many
+biological systems are organized as thin, curved sheets (for example,
+epithelia). For more info, see our [methods
 paper](https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1) and
 [Heemskerk & Streichan 2015](https://doi.org/10.1038/nmeth.3648).
 
@@ -39,19 +37,19 @@ This repository contains two tissue-cartography tools:
 Blender has powerful tools for mesh editing, cartographic mapping, and
 3D visualization. You can learn to use Blender from one of many
 tutorials or the [manual](https://docs.blender.org/manual/en/latest/).
-
-With `blender tissue cartography`, you can process surfaces with complex
+With `blender_tissue_cartography`, you can process surfaces with complex
 and deforming shapes, where tools like
 [localzprojector](https://gitlab.pasteur.fr/iah-public/localzprojector)
 break down.
 
 #### For what can I use tissue cartography?
 
-The simplest example is **replacing Z-projections** on Z-stacks from a
-confocal microscope. Even in a mildly curved tissue, it yields much
-better results since it follows the curved surface. Tissue cartography
-really shines when **analyzing strongly curved surfaces** like the
-*Drosophila* blastoderm (figure above). Here are some use cases:
+You can use tissue cartography to **replace Z-projections** on Z-stacks
+from a confocal microscope. Even in a mildly curved tissue, it yields
+much better results since it follows the curved surface. Tissue
+cartography really shines when **analyzing strongly curved surfaces**
+like the *Drosophila* blastoderm (figure above). Here are some use
+cases:
 
 - [Study tissue flows across an entire *Drosophila*
   embryo](https://elifesciences.org/articles/27454)
@@ -151,19 +149,19 @@ of the object you want to extract. This repo does not contain any image
 segmentation tools as excellent software is already available
 (e.g. [Ilastik](https://www.ilastik.org/))
 
-1.  **Meshing** Convert the 3D segmentation into a surface
+1.  **Meshing** Convert the 3D segmentation into a surface.
 
-2.  **UV mapping** Cartographically unwrap the surface into a 2D plane
+2.  **UV mapping** Cartographically unwrap the surface into a 2D plane.
 
-3.  **Projection** of your 3D iamge data to 2D
+3.  **Projection** of your 3D image data to 2D.
 
-4.  **Analysis and visualization** of the results in 2D or 3D, and use
-    the 2D projections for quantitative analysis
+4.  **Analysis and visualization** of the results in 2D or 3D. Use the
+    2D projections for quantitative analysis.
 
-5.  **Batch processing**: of multiple 3D images, like frames of a movie
+5.  **Batch processing**: of multiple 3D images, like frames of a movie.
 
-Each workflow step can also be carried out with any external tool - just
-import the required file into Blender/python.
+Each step can also be carried out with external tools - just
+import/export the required files into Blender/python.
 
 #### Dynamic datasets
 
