@@ -43,6 +43,9 @@ From the `pymeshlab_remesh_addon/` directory:
     --split-platforms
 ```
 
+If all three wheels are present, this produces macOS, Linux, and Windows builds.
+Windows support is currently experimental.
+
 ## In-memory mesh conversion
 
 `mesh_utils.py` mirrors `blender_tissue_cartography/interface_pymeshlab.py`:
@@ -82,21 +85,32 @@ The bundled wheels are **pymeshlab 2025.7.post1** (cp311, released January 2026)
 `2025.7.post1` is retained for macOS/Linux compatibility with Blender 4.5's
 Python 3.11 runtime, but it does not solve the Windows native crash.
 
-**Windows — not supported** — pymeshlab is unconditionally blocked on Windows via the
-shared runtime guard in `pymeshlab_runtime.py` (`sys.platform == 'win32'`). The panel
-shows an error message and all operators return `{'CANCELLED'}` without ever calling
-`import pymeshlab`.
+**Windows — experimental** — 
 
-On supported platforms (macOS/Linux), `pymeshlab` is imported once at module-load
-time in `operators.py`, `mesh_utils.py`, and `ux.py` and the import status is cached.
+Standard `pymeshlab` crashes Blender when importing due loading
+`filter_texture_defragmentation.dll`. See also Blender [issue  #135721](projects.blender.org/blender/blender/issues/135721)
 
-The reason is a native crash that Python `try/except` *cannot* intercept: pymeshlab's
-plugin manager (`PyInit_pmeshlab → PluginManager::loadPlugins`) loads
-`filter_texture_defragmentation.dll`, which in turn loads `Qt5Core.dll` late into the
-Blender process. Qt5's thread-local-storage (TLS) initialisation then dereferences a
-null pointer inside `MSVCP140.dll::Thrd_yield`, killing the process with
-`EXCEPTION_ACCESS_VIOLATION`. This affects every tested pymeshlab version including
-`2025.7.post1`. See [pymeshlab issue #398](https://github.com/cnr-isti-vclab/PyMeshLab/issues/398).
+The shipped Windows wheel is patched so that
+`pymeshlab/__init__.py` does **not** call `load_default_plugins()` at import time,
+and the offending `dll` is never loaded.
+Instead, `pymeshlab_runtime.py` imports pymeshlab once and then selectively loads only:
+
+- `filter_meshing.dll`
+- `filter_clean.dll`
+- `filter_screened_poisson.dll`
+- `filter_mesh_alpha_wrap.dll`
+
+These are the only plugins currently required by the add-on operators. 
+The patched replacement file is stored in:
+
+- `wheel_patch/windows/pymeshlab/__init__.py`
+
+If you re-download the wheels, replace the Windows wheel entry
+`pymeshlab-2025.7.post1.data/purelib/pymeshlab/__init__.py` with that saved file
+before building the Blender extension.
+
+On macOS/Linux, the upstream wheels are used unchanged.
+
 
 **Linux glibc requirement** — the `manylinux_2_35` wheels require **glibc 2.35+**
 (Ubuntu 22.04 / Fedora 36 or newer). Users on older distributions (Ubuntu 20.04,
