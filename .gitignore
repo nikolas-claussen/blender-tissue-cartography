@@ -83,3 +83,6 @@ blender_addon_src/wheels_bak/
 
 # Crash logs for debugging
 *crash.txt
+
+# distribution files for add-on
+blender_addon_download/
