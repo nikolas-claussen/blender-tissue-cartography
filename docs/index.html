@@ -307,13 +307,13 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#python-library" id="toc-python-library" class="nav-link" data-scroll-target="#python-library">Python library</a></li>
   <li><a href="#developer-instructions" id="toc-developer-instructions" class="nav-link" data-scroll-target="#developer-instructions">Developer instructions</a></li>
   </ul></li>
+  <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation">Documentation</a></li>
   <li><a href="#basic-usage" id="toc-basic-usage" class="nav-link" data-scroll-target="#basic-usage">Basic Usage</a>
   <ul class="collapse">
   <li><a href="#tissue-cartography-workflow" id="toc-tissue-cartography-workflow" class="nav-link" data-scroll-target="#tissue-cartography-workflow">Tissue cartography workflow</a></li>
   <li><a href="#blender-add-on-1" id="toc-blender-add-on-1" class="nav-link" data-scroll-target="#blender-add-on-1">Blender add-on</a></li>
   <li><a href="#blender_tissue_cartography-python-library" id="toc-blender_tissue_cartography-python-library" class="nav-link" data-scroll-target="#blender_tissue_cartography-python-library"><code>blender_tissue_cartography</code> Python library</a></li>
   </ul></li>
-  <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation">Documentation</a></li>
   <li><a href="#other-useful-software-for-tissue-cartography" id="toc-other-useful-software-for-tissue-cartography" class="nav-link" data-scroll-target="#other-useful-software-for-tissue-cartography">Other useful software for tissue cartography</a></li>
   <li><a href="#citation" id="toc-citation" class="nav-link" data-scroll-target="#citation">Citation</a>
   <ul class="collapse">
@@ -390,13 +390,13 @@ ul.task-list li input[type="checkbox"] {
 <ul>
 <li>Optional: install <a href="https://fiji.sc/">Fiji</a> (for looking at 3D <code>.tif</code>s) and <a href="https://www.ilastik.org/">Ilastik</a> (for 3D segmentation).</li>
 </ul></li>
-<li><p>Download the add-on <code>.zip</code> from <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_download">GitHub</a>. Choose the file that matches your operating system, like <code>blender_tissue_cartography-2.0.0-windows_x64.zip</code>.</p>
+<li><p>Download the add-on <code>.zip</code> from <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/releases">the GitHub releases page</a>. Choose the file that matches your operating system, like <code>blender_tissue_cartography-2.0.0-windows_x64.zip</code>.</p>
 <ul>
 <li>If your OS is unavailable, download the <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/tissue_cartography_addon_src">add-on source code</a>, and install the python library <code>scikit-image</code> in Blender’s Python interface.</li>
 </ul></li>
 <li><p><a href="https://docs.blender.org/manual/en/latest/editors/preferences/addons.html">Install the add-on</a>: Click “Edit -&gt; Preferences -&gt; Add-ons -&gt; Add-on Settings -&gt; Install from disk” and select the <code>.zip</code> file you just downloaded.</p></li>
 <li><p>Restart Blender. The add-on is under “Scene -&gt; Tissue Cartography”.</p></li>
-<li><p>Optional: Install the MeshLab add-on (for improving meshes obtained from 3D image data). Download the matching <code>pymeshlab_remesh-*.zip</code> for your OS from <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_download">GitHub</a> and install it the same way as the main add-on. The panel appears under “Scene -&gt; PyMeshLab Remeshing”.</p></li>
+<li><p>Optional: Install the MeshLab add-on (for improving meshes obtained from 3D image data). Download the matching <code>pymeshlab_remesh-*.zip</code> for your OS from <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/releases">the GitHub releases page</a> and install it the same way as the main add-on. The panel appears under “Scene -&gt; PyMeshLab Remeshing”.</p></li>
 </ol>
 </section>
 <section id="python-library" class="level3">
@@ -429,6 +429,18 @@ ul.task-list li input[type="checkbox"] {
 <li><p>Install <a href="https://nbdev.fast.ai/">nbdev</a>. The Python library is developed in Jupyter notebooks that are exported to Python modules and the documentation webpage.</p></li>
 </ol>
 </section>
+</section>
+<section id="documentation" class="level2">
+<h2 class="anchored" data-anchor-id="documentation">Documentation</h2>
+<ul>
+<li><p>The <a href="https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1">methods paper</a> explains the science behind tissue cartography, the software design, and shows several examples.</p></li>
+<li><p><a href="https://nikolas-claussen.github.io/blender-tissue-cartography/">Documentation webpage</a>.</p>
+<ul>
+<li>Start with the <a href="https://nikolas-claussen.github.io/blender-tissue-cartography/blender_tutorial.html">Blender add-on tutorial</a>. Download the tutorial dataset from <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/releases">the GitHub releases page</a>.</li>
+<li>The Python library is covered by the API documentation and a set of tutorials. Dataset and tutorial Jupyter notebooks be downloaded <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials/">from GitHub</a></li>
+</ul></li>
+</ul>
+<p>The documentation covers common issues &amp; troubleshooting. Please report any bugs on GitHub!</p>
 </section>
 <section id="basic-usage" class="level2">
 <h2 class="anchored" data-anchor-id="basic-usage">Basic Usage</h2>
@@ -463,18 +475,6 @@ ul.task-list li input[type="checkbox"] {
 <h3 class="anchored" data-anchor-id="blender_tissue_cartography-python-library"><code>blender_tissue_cartography</code> Python library</h3>
 <p>With the Python library, you can build automated and custom tissue cartography pipelines. The library also has tools for quantitative image analysis on projections (to mathematically account for <strong>cartographic distortion</strong>).</p>
 </section>
-</section>
-<section id="documentation" class="level2">
-<h2 class="anchored" data-anchor-id="documentation">Documentation</h2>
-<ul>
-<li><p>The <a href="https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1">methods paper</a> explains the science behind tissue cartography, the software design, and shows several examples.</p></li>
-<li><p><a href="https://nikolas-claussen.github.io/blender-tissue-cartography/">Documentation webpage</a>.</p>
-<ul>
-<li>Start with the <a href="https://nikolas-claussen.github.io/blender-tissue-cartography/blender_tutorial.html">Blender add-on tutorial</a></li>
-<li>The Python library is covered by the API documentation and a set of tutorials. Dataset and tutorial Jupyter notebooks be downloaded <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials/">from GitHub</a></li>
-</ul></li>
-</ul>
-<p>The documentation covers common issues &amp; troubleshooting. Please report any bugs on GitHub!</p>
 </section>
 <section id="other-useful-software-for-tissue-cartography" class="level2">
 <h2 class="anchored" data-anchor-id="other-useful-software-for-tissue-cartography">Other useful software for tissue cartography</h2>

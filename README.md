@@ -75,8 +75,8 @@ computer has a GPU.
       `.tif`s) and [Ilastik](https://www.ilastik.org/) (for 3D
       segmentation).
 
-2.  Download the add-on `.zip` from
-    [GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_download).
+2.  Download the add-on `.zip` from [the GitHub releases
+    page](https://github.com/nikolas-claussen/blender-tissue-cartography/releases).
     Choose the file that matches your operating system, like
     `blender_tissue_cartography-2.0.0-windows_x64.zip`.
 
@@ -94,8 +94,8 @@ computer has a GPU.
 
 5.  Optional: Install the MeshLab add-on (for improving meshes obtained
     from 3D image data). Download the matching `pymeshlab_remesh-*.zip`
-    for your OS from
-    [GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/blender_addon_download)
+    for your OS from [the GitHub releases
+    page](https://github.com/nikolas-claussen/blender-tissue-cartography/releases)
     and install it the same way as the main add-on. The panel appears
     under “Scene -\> PyMeshLab Remeshing”.
 
@@ -139,6 +139,28 @@ To extend the **Python library**:
 3.  Install [nbdev](https://nbdev.fast.ai/). The Python library is
     developed in Jupyter notebooks that are exported to Python modules
     and the documentation webpage.
+
+## Documentation
+
+- The [methods
+  paper](https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1)
+  explains the science behind tissue cartography, the software design,
+  and shows several examples.
+
+- [Documentation
+  webpage](https://nikolas-claussen.github.io/blender-tissue-cartography/).
+
+  - Start with the [Blender add-on
+    tutorial](https://nikolas-claussen.github.io/blender-tissue-cartography/blender_tutorial.html).
+    Download the tutorial dataset from [the GitHub releases
+    page](https://github.com/nikolas-claussen/blender-tissue-cartography/releases).
+  - The Python library is covered by the API documentation and a set of
+    tutorials. Dataset and tutorial Jupyter notebooks be downloaded
+    [from
+    GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials/)
+
+The documentation covers common issues & troubleshooting. Please report
+any bugs on GitHub!
 
 ## Basic Usage
 
@@ -191,26 +213,6 @@ With the Python library, you can build automated and custom tissue
 cartography pipelines. The library also has tools for quantitative image
 analysis on projections (to mathematically account for **cartographic
 distortion**).
-
-## Documentation
-
-- The [methods
-  paper](https://www.biorxiv.org/content/10.1101/2025.02.04.636523v1)
-  explains the science behind tissue cartography, the software design,
-  and shows several examples.
-
-- [Documentation
-  webpage](https://nikolas-claussen.github.io/blender-tissue-cartography/).
-
-  - Start with the [Blender add-on
-    tutorial](https://nikolas-claussen.github.io/blender-tissue-cartography/blender_tutorial.html)
-  - The Python library is covered by the API documentation and a set of
-    tutorials. Dataset and tutorial Jupyter notebooks be downloaded
-    [from
-    GitHub](https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/nbs/Tutorials/)
-
-The documentation covers common issues & troubleshooting. Please report
-any bugs on GitHub!
 
 ## Other useful software for tissue cartography
 
