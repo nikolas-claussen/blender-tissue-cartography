@@ -1,12 +1,16 @@
 """UI panel for PyMeshLab Remeshing."""
 
 from bpy.types import Panel
-from .pymeshlab_runtime import PYMESHLAB_IMPORT_ERROR
+from .pymeshlab_runtime import import_error
 
 
 def _pymeshlab_status():
-    """Return None if pymeshlab is available, else a static error string."""
-    return PYMESHLAB_IMPORT_ERROR
+    """Return None if pymeshlab is available, else an error string.
+
+    While unavailable, the import is retried (rate-limited) so the panel
+    recovers automatically once Blender has extracted the bundled wheel.
+    """
+    return import_error()
 
 
 class MeshLabRemeshPanel(Panel):

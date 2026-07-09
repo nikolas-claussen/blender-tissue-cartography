@@ -25,5 +25,9 @@ pip download "$PYMLVER" --no-deps \
     --only-binary=:all: --python-version "$PY" \
     -d "$DEST"
 
+# Patch the Windows wheel (crash workaround + version bump, see
+# patch_windows_wheel.py and DEVELOPER_README.md).
+python3 "$(dirname "$0")/patch_windows_wheel.py"
+
 echo "Wheels downloaded to $DEST:"
 ls "$DEST"

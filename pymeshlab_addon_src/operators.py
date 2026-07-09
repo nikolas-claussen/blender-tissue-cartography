@@ -4,7 +4,7 @@ import bpy
 from bpy.types import Operator
 
 from .mesh_utils import blender_to_pymeshlab, pymeshlab_to_blender
-from .pymeshlab_runtime import PYMESHLAB_IMPORT_ERROR, pymeshlab
+from .pymeshlab_runtime import get_pymeshlab, import_error
 
 
 def _run_pymeshlab(self, context, apply_fn, suffix):
@@ -26,8 +26,8 @@ def _run_pymeshlab(self, context, apply_fn, suffix):
     set
         {'FINISHED'} or {'CANCELLED'}.
     """
-    if PYMESHLAB_IMPORT_ERROR is not None:
-        self.report({'ERROR'}, f"PyMeshLab failed to load: {PYMESHLAB_IMPORT_ERROR}")
+    if get_pymeshlab() is None:
+        self.report({'ERROR'}, f"PyMeshLab failed to load: {import_error()}")
         return {'CANCELLED'}
 
     if context.active_object is None or context.active_object.type != 'MESH':
@@ -65,6 +65,7 @@ class IsotropicRemeshOperator(Operator):
         iterations = scene.pymeshlab_iso_iterations
         targetlen = scene.pymeshlab_iso_targetlen
         featuredeg = scene.pymeshlab_iso_featuredeg
+        pymeshlab = get_pymeshlab()
 
         def apply_fn(ms):
             ms.meshing_isotropic_explicit_remeshing(

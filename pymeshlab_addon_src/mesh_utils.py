@@ -2,7 +2,7 @@
 
 import numpy as np
 import bpy
-from .pymeshlab_runtime import PYMESHLAB_IMPORT_ERROR, pymeshlab
+from .pymeshlab_runtime import get_pymeshlab, import_error
 
 
 def blender_to_pymeshlab(obj):
@@ -22,8 +22,9 @@ def blender_to_pymeshlab(obj):
     pymeshlab.MeshSet
         MeshSet containing one mesh.
     """
+    pymeshlab = get_pymeshlab()
     if pymeshlab is None:
-        raise RuntimeError(f"PyMeshLab failed to load: {PYMESHLAB_IMPORT_ERROR}")
+        raise RuntimeError(f"PyMeshLab failed to load: {import_error()}")
 
     mesh = obj.data
     mesh.update()
@@ -65,8 +66,8 @@ def pymeshlab_to_blender(ms, name, context):
     bpy.types.Object
         Newly created and linked Blender object.
     """
-    if pymeshlab is None:
-        raise RuntimeError(f"PyMeshLab failed to load: {PYMESHLAB_IMPORT_ERROR}")
+    if get_pymeshlab() is None:
+        raise RuntimeError(f"PyMeshLab failed to load: {import_error()}")
 
     pm_mesh = ms.current_mesh()
     verts = pm_mesh.vertex_matrix()

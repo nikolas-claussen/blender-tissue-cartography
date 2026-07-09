@@ -1,7 +1,16 @@
-"""Shared PyMeshLab availability state for the Blender add-on."""
+"""Shared PyMeshLab availability state for the Blender add-on.
+
+pymeshlab ships as a bundled wheel that Blender extracts into its shared
+extensions site-packages. Depending on installation order, the wheel may
+only become importable *after* the add-on is registered (e.g. right after
+installing the extension, or if a previous extraction was rolled back and
+is repeated on the next start). The import is therefore attempted lazily
+and retried, instead of once at module import time.
+"""
 
 import pathlib
 import sys
+import time
 
 
 _WINDOWS_PLUGIN_FILES = (
@@ -10,6 +19,10 @@ _WINDOWS_PLUGIN_FILES = (
     "filter_screened_poisson.dll",
     "filter_mesh_alpha_wrap.dll",
 )
+
+_module = None
+_error = None
+_last_attempt = 0.0
 
 
 def _bind_loaded_filters(pymeshlab_module):
@@ -39,12 +52,48 @@ def _ensure_windows_plugins(pymeshlab_module):
     _bind_loaded_filters(pymeshlab_module)
 
 
-try:
-    import pymeshlab
+def _try_import():
+    global _module, _error, _last_attempt
+    _last_attempt = time.monotonic()
+    try:
+        import pymeshlab
 
-    if sys.platform == 'win32':
-        _ensure_windows_plugins(pymeshlab)
-    PYMESHLAB_IMPORT_ERROR = None
-except Exception as e:
-    pymeshlab = None
-    PYMESHLAB_IMPORT_ERROR = str(e)
+        if sys.platform == 'win32':
+            _ensure_windows_plugins(pymeshlab)
+    except ModuleNotFoundError as e:
+        _module = None
+        _error = (
+            f"{e}. The bundled pymeshlab wheel is not installed — "
+            "try restarting Blender, or reinstall the add-on."
+        )
+    except Exception as e:
+        _module = None
+        _error = str(e)
+    else:
+        _module = pymeshlab
+        _error = None
+
+
+def get_pymeshlab():
+    """Return the pymeshlab module, importing it on first use.
+
+    Retries the import on every call while unavailable, so a wheel that
+    Blender extracts after the add-on registered is picked up without a
+    restart. Returns None if pymeshlab is unavailable; see import_error().
+    """
+    if _module is None:
+        _try_import()
+    return _module
+
+
+def import_error(retry_interval=5.0):
+    """Return the last import error string, or None if pymeshlab loaded.
+
+    Safe to call from UI draw code: while pymeshlab is unavailable, the
+    import is retried at most every ``retry_interval`` seconds.
+    """
+    if _module is not None:
+        return None
+    if _error is None or (time.monotonic() - _last_attempt) >= retry_interval:
+        _try_import()
+    return _error

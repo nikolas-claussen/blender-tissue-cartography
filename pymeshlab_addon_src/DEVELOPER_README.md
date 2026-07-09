@@ -32,7 +32,8 @@ pymeshlab_remesh_addon/
 From the `pymeshlab_remesh_addon/` directory:
 
 ```sh
-# 1. Ensure wheels are present
+# 1. Ensure wheels are present (also patches the Windows wheel,
+#    see "PyMeshLab version and wheel notes" below)
 ./download_wheels.sh
 
 # 2. Build with Blender's extension tool
@@ -93,7 +94,8 @@ Standard `pymeshlab` crashes Blender when importing due loading
 The shipped Windows wheel is patched so that
 `pymeshlab/__init__.py` does **not** call `load_default_plugins()` at import time,
 and the offending `dll` is never loaded.
-Instead, `pymeshlab_runtime.py` imports pymeshlab once and then selectively loads only:
+Instead, `pymeshlab_runtime.py` imports pymeshlab (lazily, retrying until the
+wheel is available) and then selectively loads only:
 
 - `filter_meshing.dll`
 - `filter_clean.dll`
@@ -105,9 +107,17 @@ The patched replacement file is stored in:
 
 - `wheel_patch/windows/pymeshlab/__init__.py`
 
-If you re-download the wheels, replace the Windows wheel entry
-`pymeshlab-2025.7.post1.data/purelib/pymeshlab/__init__.py` with that saved file
-before building the Blender extension.
+The patch is applied by `patch_windows_wheel.py` (run automatically at the end
+of `download_wheels.sh`). Besides swapping in the patched `__init__.py`, the
+script renames the wheel to the local version **`2025.7.post1+btc1`**
+(dist-info directory, `METADATA`, and `RECORD` updated accordingly). The
+version bump is **essential**: Blender's extension wheel manager decides
+whether a wheel needs (re)installation purely by the dist-info directory name
+in the shared `extensions/.local` site-packages — it never compares file
+contents. If the patched wheel kept the stock name, machines that already
+extracted the stock (crashing) wheel would silently keep it forever, and the
+patched wheel would never be installed. Any future change to the wheel
+contents must bump the local version again (`+btc2`, ...).
 
 On macOS/Linux, the upstream wheels are used unchanged.
 

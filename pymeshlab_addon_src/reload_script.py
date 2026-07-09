@@ -3,7 +3,7 @@
 
 import sys, importlib, bpy
 
-pkg = "bl_ext.user_default.pymeshlab_remesh_interactive"
+pkg = "bl_ext.user_default.pymeshlab_remesh"
 
 # Disable first so unregister() runs against currently registered class objects.
 if pkg in bpy.context.preferences.addons:
