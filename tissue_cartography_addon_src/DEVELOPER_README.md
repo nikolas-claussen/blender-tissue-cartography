@@ -69,7 +69,7 @@ if the surface mesh and the image are correctly aligned. A `depsgraph_update_pos
 From the `tissue_cartography_addon_src/` directory:
 
 ```sh
-/Applications/Blender.app/Contents/MacOS/Blender --command extension build \
+"/Applications/Blender 5.2.app/Contents/MacOS/Blender" --command extension build \
   --source-dir . --output-dir ../blender_addon_download/ --split-platforms
 ```
 
@@ -77,15 +77,26 @@ This produces platform-specific `.zip` files in `../blender_addon_download/`.
 
 ### Re-downloading Wheels
 
-Blender 4.2+ uses **Python 3.11**. The `wheels/` directory must contain platform wheels for `windows-x64`, `linux-x64`, and `macos-arm64` (see `blender_manifest.toml` for the full list). To refresh:
+The add-on targets **Blender 5.2 LTS**, which ships **Python 3.13**, so all
+binary wheels must be cp313 (the wheel Python tag must always match the
+Python version shipped by the targeted Blender). The `wheels/` directory must
+contain platform wheels for `windows-x64`, `linux-x64`, and `macos-arm64`
+(see `blender_manifest.toml` for the full list). To refresh:
 
 ```sh
-pip download scipy scikit-image pillow tifffile imageio networkx lazy_loader packaging \
-  --dest wheels/ --python-version 3.11 --only-binary=:all: \
-  --platform <TAG>
+PKGS="scipy==1.15.1 scikit-image==0.25.1 pillow==11.1.0 tifffile==2025.1.10 \
+  imageio==2.37.0 networkx==3.4.2 lazy_loader==0.4 packaging==24.2"
+pip download $PKGS --no-deps --dest wheels/ --python-version 313 --only-binary=:all: \
+  --platform macosx_11_0_arm64 --platform macosx_12_0_arm64
+pip download $PKGS --no-deps --dest wheels/ --python-version 313 --only-binary=:all: \
+  --platform manylinux_2_17_x86_64 --platform manylinux2014_x86_64
+pip download $PKGS --no-deps --dest wheels/ --python-version 313 --only-binary=:all: \
+  --platform win_amd64
 ```
 
-Replace `<TAG>` with the target platform tag (e.g. `win_amd64`, `manylinux_2_17_x86_64`, `macosx_12_0_arm64`). Run once per platform. numpy is bundled with Blender and is intentionally excluded.
+If you change package versions, update the filenames in
+`blender_manifest.toml` accordingly. numpy is bundled with Blender and is
+intentionally excluded (hence `--no-deps`).
 
 ---
 
@@ -96,7 +107,7 @@ On a Mac, this means:
 
 ```sh
 ln -s /path/to/blender_addon \
-  ~/Library/Application\ Support/Blender/4.5/extensions/user_default/blender_tissue_cartography_interactive
+  ~/Library/Application\ Support/Blender/5.2/extensions/user_default/blender_tissue_cartography_interactive
 ```
 
 After editing source files, reload the add-on without restarting Blender by running `reload_script.py` in Blender's **Scripting** workspace.
