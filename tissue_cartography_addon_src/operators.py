@@ -546,9 +546,12 @@ class SlicePlaneOperator(Operator):
         slice_img = get_slice_image(data, resolution, axis=axis, position=position)
         slice_img = normalize_quantiles(slice_img, quantiles=(0.01, 0.99),
                                         channel_axis=0, clip=True)
+        # Limit float precision in the name: Blender parses a numeric tail
+        # after the last "." when de-duplicating names, and a full-precision
+        # float (e.g. 20.100000381469727) overflows its int parser (crash).
         create_material_from_array(
             slice_plane, slice_img[ch],
-            material_name=f"Slice_{data_name}_{axis}_{position}"
+            material_name=f"Slice_{data_name}_{axis}_{position:.1f}"
         )
         if show_intersection:
             create_intersection_line_visualization(slice_plane, surface_mesh)
