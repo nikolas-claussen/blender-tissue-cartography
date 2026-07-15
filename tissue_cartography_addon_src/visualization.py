@@ -160,6 +160,9 @@ def create_material_from_array(slice_plane, array, material_name="SliceMaterial"
 
     image = bpy.data.images.new(name="SliceTexture", width=image_width, height=image_height)
     image.pixels.foreach_set(pixel_data.flatten())
+    # Pack so the pixel data is stored in the .blend file; unpacked GENERATED
+    # images are regenerated (black) when the file is reopened.
+    image.pack()
 
     material = bpy.data.materials.new(name=material_name)
     material.use_nodes = True

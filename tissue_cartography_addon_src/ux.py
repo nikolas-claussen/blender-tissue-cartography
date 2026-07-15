@@ -5,6 +5,8 @@ User interface panel for the Tissue Cartography add-on.
 import bpy
 from bpy.types import Panel
 
+from .operators import prune_orphaned_datasets
+
 
 class TissueCartographyPanel(Panel):
     """Panel defining the Tissue Cartography user interface layout."""
@@ -41,21 +43,18 @@ class TissueCartographyPanel(Panel):
             icon='TRIA_DOWN' if scene.tissue_cartography_show_datasets else 'TRIA_RIGHT',
             icon_only=True, emboss=False,
         )
+        prune_orphaned_datasets()  # frees data of deleted boxes; plain dict, safe in draw
         data_store = bpy.types.Scene.tissue_cartography_3D_data
-        header_row.label(text=f"Loaded 3D Datasets ({len(data_store)}). Datasets with deleted boxes may not appear here.")
+        header_row.label(text=f"Loaded 3D Datasets ({len(data_store)})")
         if scene.tissue_cartography_show_datasets:
             if not data_store:
                 datasets_box.label(text="No datasets currently loaded.", icon='INFO')
             else:
                 for ds_obj, arr in data_store.items():
-                    try:
-                        obj_name = ds_obj.name
-                    except ReferenceError:
-                        continue
                     row2 = datasets_box.row()
-                    row2.label(text=f"{obj_name}  shape={arr.shape}", icon='MESH_CUBE')
+                    row2.label(text=f"{ds_obj.name}  shape={arr.shape}", icon='MESH_CUBE')
                     op = row2.operator("scene.unload_dataset", text="", icon='X')
-                    op.box_name = obj_name
+                    op.box_name = ds_obj.name
             datasets_box.operator(
                 "scene.unload_all_datasets", text="Unload All Datasets", icon='TRASH'
             )

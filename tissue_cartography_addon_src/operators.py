@@ -44,6 +44,46 @@ from .alignment import combined_alignment
 # Helpers shared by multiple operators
 # ---------------------------------------------------------------------------
 
+def prune_orphaned_datasets():
+    """Drop 3D-data entries whose bounding-box object no longer exists.
+
+    The data store is keyed by Object references, which go stale when the
+    box is deleted or invalidated by undo; stale entries are unreachable
+    through the UI but keep their (large) arrays in memory. Returns the
+    number of entries removed. Also called from the panel's draw code —
+    the store is a plain Python dict, not Blender ID data, so mutating it
+    there is safe.
+    """
+    data_store = bpy.types.Scene.tissue_cartography_3D_data
+    stale = []
+    for obj in list(data_store):
+        try:
+            # == compares underlying IDs; the name lookup catches wrappers
+            # that are still readable but whose object was unlinked.
+            alive = bpy.data.objects.get(obj.name) == obj
+        except ReferenceError:  # datablock freed (deletion, undo)
+            alive = False
+        if not alive:
+            stale.append(obj)
+    for obj in stale:
+        del data_store[obj]
+    return len(stale)
+
+
+def _redraw_ui():
+    """Force a viewport redraw so progress messages appear during long loops.
+
+    No-op when Blender runs without a window (background/batch mode), where
+    redraw_timer's poll fails.
+    """
+    if bpy.app.background:
+        return
+    try:
+        bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+    except RuntimeError:
+        pass
+
+
 def _parse_axis_order(self, context, axis_order_string, data_shape):
     """Validate axis_order_string and return it, reporting errors via self."""
     if ''.join(sorted(axis_order_string)) not in ['', 'xyz', 'cxyz']:
@@ -125,6 +165,7 @@ class LoadTIFFOperator(Operator):
     bl_label = "Load TIFF File"
 
     def execute(self, context):
+        prune_orphaned_datasets()
         file_path = bpy.path.abspath(context.scene.tissue_cartography_file)
         resolution = np.array(context.scene.tissue_cartography_resolution)
         self.report({'INFO'}, f"Resolution loaded: {resolution}")
@@ -171,10 +212,14 @@ class UnloadDatasetOperator(Operator):
     box_name: bpy.props.StringProperty(name="Box Name", default="")
 
     def execute(self, context):
+        n_pruned = prune_orphaned_datasets()
         data_store = bpy.types.Scene.tissue_cartography_3D_data
         box = bpy.data.objects.get(self.box_name)
         if box is None or box not in data_store:
-            self.report({'WARNING'}, f"No loaded data found for '{self.box_name}'")
+            if n_pruned:
+                self.report({'INFO'}, f"Removed {n_pruned} dataset(s) with deleted boxes")
+            else:
+                self.report({'WARNING'}, f"No loaded data found for '{self.box_name}'")
             return {'CANCELLED'}
         del data_store[box]
         self.report({'INFO'}, f"Unloaded data for '{self.box_name}'")
@@ -207,7 +252,7 @@ class LoadSegmentationTIFFOperator(Operator):
         input_path = Path(bpy.path.abspath(context.scene.tissue_cartography_segmentation_file))
         if input_path.is_dir():
             files_to_process = [f for f in input_path.iterdir()
-                                 if f.is_file() and f.suffix in (".tif", ".tiff")]
+                                 if f.is_file() and f.suffix.lower() in (".tif", ".tiff")]
         elif input_path.is_file():
             files_to_process = [input_path]
         else:
@@ -216,7 +261,7 @@ class LoadSegmentationTIFFOperator(Operator):
 
         for i, file_path in enumerate(files_to_process):
             self.report({'INFO'}, f"Processing file {i + 1}/{len(files_to_process)}")
-            bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+            _redraw_ui()
             try:
                 data = tifffile.imread(file_path)
                 if data.ndim not in (3, 4):
@@ -389,7 +434,7 @@ class BatchProjectionOperator(Operator):
         )
         batch_files_sorted = sorted(
             [f for f in batch_path.iterdir()
-             if f.suffix in (".tif", ".tiff") and "Baked" not in f.stem],
+             if f.suffix.lower() in (".tif", ".tiff") and "Baked" not in f.stem],
             key=lambda f: f.stem,
         )
         if not batch_files_sorted:
@@ -438,7 +483,7 @@ class BatchProjectionOperator(Operator):
 
         for iobj, (obj, file_path) in enumerate(pairs):
             self.report({'INFO'}, f"Processing {iobj + 1}/{len(pairs)}")
-            bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+            _redraw_ui()
             if not obj.data.uv_layers:
                 self.report({'ERROR'}, f"Mesh {obj.name} does not have a UV map!")
                 return {'CANCELLED'}
@@ -537,6 +582,14 @@ class SlicePlaneOperator(Operator):
         length, width, height = np.array(data.shape[1:]) * resolution
         axis = context.scene.tissue_cartography_slice_axis
         position = context.scene.tissue_cartography_slice_position
+        axis_extent = {'x': length, 'y': width, 'z': height}[axis]
+        if not (0.0 <= position <= axis_extent):
+            self.report(
+                {'ERROR'},
+                f"Slice position {position:.1f} µm is outside the Active 3D Dataset "
+                f"(0–{axis_extent:.1f} µm along {axis}). Adjust the slice position.",
+            )
+            return {'CANCELLED'}
 
         slice_plane = create_slice_plane(length, width, height, axis=axis, position=position)
         data_name = box.name[:-4]
@@ -655,7 +708,7 @@ class AlignOperator(Operator):
             # Align each selected mesh in-place to the reference.
             for mesh in others:
                 self.report({'INFO'}, f"Aligning: {mesh.name} to {reference_mesh.name}")
-                bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+                _redraw_ui()
                 source = np.array([mesh.matrix_world @ v.co for v in mesh.data.vertices])
                 trafo_matrix = combined_alignment(
                     source, ref_verts,
@@ -671,7 +724,7 @@ class AlignOperator(Operator):
             for target_mesh in others:
                 target_name = target_mesh.name  # capture before copy may trigger Blender renaming
                 self.report({'INFO'}, f"Aligning copy of {reference_mesh.name} to {target_name}")
-                bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+                _redraw_ui()
                 target = np.array([target_mesh.matrix_world @ v.co
                                    for v in target_mesh.data.vertices])
                 trafo_matrix = combined_alignment(
@@ -717,7 +770,7 @@ class ShrinkwrapOperator(Operator):
         for target_mesh in targets:
             target_name = target_mesh.name  # capture before copy may trigger Blender renaming
             self.report({'INFO'}, f"Shrink-wrapping: {source_mesh.name} to {target_name}")
-            bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+            _redraw_ui()
 
             if context.scene.tissue_cartography_align_iter > 0:
                 target = np.array([target_mesh.matrix_world @ v.co
@@ -755,8 +808,11 @@ class ShrinkwrapOperator(Operator):
 
             original_active_obj = bpy.context.view_layer.objects.active
             bpy.context.view_layer.objects.active = target_mesh
-            bpy.ops.object.datalayout_transfer(modifier="DataTransfer")
-            bpy.ops.object.modifier_apply(modifier="DataTransfer")
+            # Use the actual assigned name: if the target already had a
+            # "DataTransfer" modifier, the new one is auto-renamed and the
+            # hardcoded name would apply the wrong (pre-existing) modifier.
+            bpy.ops.object.datalayout_transfer(modifier=data_transfer.name)
+            bpy.ops.object.modifier_apply(modifier=data_transfer.name)
             bpy.context.view_layer.objects.active = original_active_obj
 
             if mode in ("forward", "backward"):

@@ -1,8 +1,8 @@
 schema_version = "2.0.0"
 id = "blender_tissue_cartography"
-version = "2.1.1"
+version = "2.1.2"
 name = "Blender Tissue Cartography"
-tagline = "A tools for analysis of 4D imaging data in Blender"
+tagline = "Tools for analysis of 4D imaging data in Blender"
 maintainer = "Nikolas Claussen <nc1333@princeton.edu>"
 type = "add-on"
 # Blender 5.2 LTS only (ships Python 3.13, matching the cp313 wheels below).

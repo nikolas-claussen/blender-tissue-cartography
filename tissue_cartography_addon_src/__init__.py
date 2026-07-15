@@ -26,18 +26,24 @@ _AXIS_INDEX = {'x': 0, 'y': 1, 'z': 2}
 
 
 def _get_extent(context):
-    """Return the per-axis physical extents (µm) for the active bounding box.
+    """Return the per-axis physical extents (µm) for the Active 3D Dataset.
 
-    Falls back to the stored scene property when no valid box is active.
-    Never writes any scene property, so it is safe to call from draw().
+    Uses the same dataset as the slice-plane operator (the Active 3D Dataset
+    dropdown), so the fraction slider maps to the extent that will actually
+    be sliced. Falls back to the stored scene property (set on TIFF load)
+    when no valid box is selected. Never writes any scene property, so it
+    is safe to call from draw().
     """
     from .mesh_utils import get_numpy_attribute
-    active = context.active_object
-    if active and "3D_data" in active:
-        arr = bpy.types.Scene.tissue_cartography_3D_data.get(active)
-        if arr is not None and arr.ndim == 4 and "resolution" in active:
-            res = get_numpy_attribute(active, "resolution")
-            return np.array(arr.shape[1:]) * res
+    box = context.scene.tissue_cartography_active_box
+    if box is not None:
+        try:
+            arr = bpy.types.Scene.tissue_cartography_3D_data.get(box)
+            if arr is not None and arr.ndim == 4 and "resolution" in box:
+                res = get_numpy_attribute(box, "resolution")
+                return np.array(arr.shape[1:]) * res
+        except ReferenceError:
+            pass
     return np.array(context.scene.tissue_cartography_slice_extent)
 
 
