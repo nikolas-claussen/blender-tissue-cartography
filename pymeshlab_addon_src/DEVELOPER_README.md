@@ -2,7 +2,7 @@
 
 ## Overview
 
-Standalone Blender 4.2+ extension exposing five PyMeshLab mesh processing operations:
+Standalone Blender extension (Blender 5.2 LTS or newer) exposing five PyMeshLab mesh processing operations:
 
 | Operation | Filter | Use case |
 |---|---|---|
@@ -18,7 +18,7 @@ All operations work **in-memory** (see below).
 
 ```
 pymeshlab_remesh_addon/
-  blender_manifest.toml   Blender 4.2+ extension metadata, wheels list
+  blender_manifest.toml   Blender 5.2+ extension metadata, wheels list
   __init__.py             Registration: scene properties + classes
   mesh_utils.py           In-memory Blender ↔ pymeshlab conversion
   operators.py            Five Blender operators
@@ -77,14 +77,17 @@ already has well-oriented normals and you want to skip the neighbourhood step.
 
 ## PyMeshLab version and wheel notes
 
-The bundled wheels are **pymeshlab 2025.7.post1** (cp311, released January 2026).
+The bundled wheels are **pymeshlab 2025.7.post1** (cp313, matching the
+Python 3.13 runtime of Blender 5.2 LTS — the only Blender series this add-on
+supports; the wheel Python tag must always match the Python version shipped
+by the targeted Blender).
 
 **Why not an older release?**
 `2023.12.post2` (and `post3`) contain a confirmed Windows crash bug: calling
 `load_default_plugins()` on import triggers an access violation on Python 3.11+
-(see [PyMeshLab issue #398](https://github.com/cnr-isti-vclab/PyMeshLab/issues/398)).
-`2025.7.post1` is retained for macOS/Linux compatibility with Blender 4.5's
-Python 3.11 runtime, but it does not solve the Windows native crash.
+(see [PyMeshLab issue #398](https://github.com/cnr-isti-vclab/PyMeshLab/issues/398)),
+and they ship no cp313 wheels. `2025.7.post1` does not solve the Windows
+native crash either (see below).
 
 **Windows — experimental** — 
 
@@ -125,7 +128,5 @@ On macOS/Linux, the upstream wheels are used unchanged.
 **Linux glibc requirement** — the `manylinux_2_35` wheels require **glibc 2.35+**
 (Ubuntu 22.04 / Fedora 36 or newer). Users on older distributions (Ubuntu 20.04,
 glibc 2.31) will see the panel warning rather than a crash, but the add-on
-will not function. If broad older-Linux support is needed in the future, the
-macOS wheel can stay on `2025.7.post1` while the Linux wheel is
-downgraded to a `manylinux_2_31` build (the last one available is
-`2023.12.post3`, which is unaffected by the Windows crash).
+will not function. No older manylinux build of a cp313 wheel exists, so this
+is a hard requirement.

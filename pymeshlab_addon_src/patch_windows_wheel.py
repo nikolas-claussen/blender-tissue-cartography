@@ -23,8 +23,8 @@ Usage (from pymeshlab_addon_src/, after download_wheels.sh):
 
     python3 patch_windows_wheel.py
 
-Reads  wheels/pymeshlab-2025.7.post1-cp311-cp311-win_amd64.whl
-Writes wheels/pymeshlab-2025.7.post1+btc1-cp311-cp311-win_amd64.whl
+Reads  wheels/pymeshlab-2025.7.post1-cp313-cp313-win_amd64.whl
+Writes wheels/pymeshlab-2025.7.post1+btc1-cp313-cp313-win_amd64.whl
 and removes the input wheel so the build does not bundle both.
 """
 
@@ -38,7 +38,7 @@ import zipfile
 
 SRC_VERSION = "2025.7.post1"
 DST_VERSION = SRC_VERSION + "+btc1"
-WHEEL_TAGS = "cp311-cp311-win_amd64"
+WHEEL_TAGS = "cp313-cp313-win_amd64"
 
 ROOT = pathlib.Path(__file__).resolve().parent
 SRC_WHEEL = ROOT / "wheels" / f"pymeshlab-{SRC_VERSION}-{WHEEL_TAGS}.whl"

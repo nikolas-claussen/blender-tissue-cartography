@@ -6,7 +6,8 @@ set -euo pipefail
 
 DEST="$(dirname "$0")/wheels"
 PYMLVER="pymeshlab==2025.7.post1"
-PY="311"
+# Blender 5.2 LTS ships Python 3.13.
+PY="313"
 
 mkdir -p "$DEST"
 

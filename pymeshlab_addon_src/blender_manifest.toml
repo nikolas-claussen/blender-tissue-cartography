@@ -1,23 +1,24 @@
 schema_version = "2.0.0"
 id = "pymeshlab_remesh"
-version = "1.0.1"
+version = "1.1.0"
 name = "PyMeshLab Remeshing"
 tagline = "Remeshing and surface reconstruction via PyMeshLab"
 maintainer = "Nikolas Claussen <nc1333@princeton.edu>"
 type = "add-on"
-blender_version_min = "4.2.0"
+# Blender 5.2 LTS only (ships Python 3.13, matching the cp313 wheels below).
+blender_version_min = "5.2.0"
 license = ["SPDX:GPL-3.0-or-later",]
 
 platforms = ["macos-arm64", "linux-x64", "windows-x64"]
 
 # pymeshlab wheels — download with download_wheels.sh before building.
-# Blender 4.2+ ships numpy, so no numpy wheel needed.
+# Blender ships numpy, so no numpy wheel needed.
 # The Windows wheel is patched (patch_windows_wheel.py) and carries the
 # +btc1 local version so Blender replaces any stale stock install.
 wheels = [
-"./wheels/pymeshlab-2025.7.post1-cp311-cp311-macosx_11_0_arm64.whl",
-"./wheels/pymeshlab-2025.7.post1-cp311-cp311-manylinux_2_35_x86_64.whl",
-"./wheels/pymeshlab-2025.7.post1+btc1-cp311-cp311-win_amd64.whl",
+"./wheels/pymeshlab-2025.7.post1-cp313-cp313-macosx_11_0_arm64.whl",
+"./wheels/pymeshlab-2025.7.post1-cp313-cp313-manylinux_2_35_x86_64.whl",
+"./wheels/pymeshlab-2025.7.post1+btc1-cp313-cp313-win_amd64.whl",
 ]
 
 # NOTE: paths_exclude_pattern is only honored inside the [build] table.
