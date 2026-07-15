@@ -1,6 +1,6 @@
 bl_info = {
     "name": "Tissue Cartography (V2)",
-    "blender": (4, 2, 0),
+    "blender": (5, 2, 0),
     "category": "Scene",
 }
 

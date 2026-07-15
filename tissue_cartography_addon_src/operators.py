@@ -646,8 +646,9 @@ class VertexShaderOperator(Operator):
             return {'CANCELLED'}
 
         offset = context.scene.tissue_cartography_vertex_shader_offset
+        transform_matrix = box.matrix_world.inverted() @ obj.matrix_world
         positions = np.array([
-            box.matrix_world.inverted() @ obj.matrix_world @ (v.co + offset * v.normal)
+            transform_matrix @ (v.co + offset * v.normal)
             for v in obj.data.vertices
         ])
 

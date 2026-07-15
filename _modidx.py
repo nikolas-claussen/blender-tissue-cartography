@@ -424,6 +424,7 @@ d = { 'settings': {'branch': 'main', 'doc_baseurl': '/', 'doc_host': '', 'git_ur
             'blender-tissue-cartography.nbs.tutorials.drosophila_example.MorphoGraphX': {},
             'blender-tissue-cartography.pymeshlab_addon_src.mesh_utils': {},
             'blender-tissue-cartography.pymeshlab_addon_src.operators': {},
+            'blender-tissue-cartography.pymeshlab_addon_src.patch_windows_wheel': {},
             'blender-tissue-cartography.pymeshlab_addon_src.pymeshlab_runtime': {},
             'blender-tissue-cartography.pymeshlab_addon_src.reload_script': {},
             'blender-tissue-cartography.pymeshlab_addon_src.ux': {},

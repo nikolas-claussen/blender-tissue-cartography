@@ -68,8 +68,9 @@ computer has a GPU.
 
 ### Blender add-on
 
-1.  Install [Blender 4.5](https://www.blender.org/) (pre-4.2 version
-    will *not* work)
+1.  Install [Blender 5.2
+    LTS](https://www.blender.org/download/releases/5-2-lts/). The add-on
+    will *not* work with previous versions of Blender!
 
     - Optional: install [Fiji](https://fiji.sc/) (for looking at 3D
       `.tif`s) and [Ilastik](https://www.ilastik.org/) (for 3D
@@ -87,8 +88,9 @@ computer has a GPU.
 
 3.  [Install the
     add-on](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html):
-    Click “Edit -\> Preferences -\> Add-ons -\> Add-on Settings -\>
-    Install from disk” and select the `.zip` file you just downloaded.
+    Click “Edit -\> Preferences -\> Get Extensions -\> Dropdown menu in
+    top right corner -\> Install from disk” and select the `.zip` file
+    you just downloaded.
 
 4.  Restart Blender. The add-on is under “Scene -\> Tissue Cartography”.
 

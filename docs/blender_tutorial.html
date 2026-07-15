@@ -371,8 +371,8 @@ window.Quarto = {
   <li><a href="#polygonal-meshes" id="toc-polygonal-meshes" class="nav-link" data-scroll-target="#polygonal-meshes">Polygonal meshes</a></li>
   <li><a href="#navigation" id="toc-navigation" class="nav-link" data-scroll-target="#navigation">Navigation</a></li>
   <li><a href="#workspaces" id="toc-workspaces" class="nav-link" data-scroll-target="#workspaces">Workspaces</a></li>
-  <li><a href="#installing-add-ons" id="toc-installing-add-ons" class="nav-link" data-scroll-target="#installing-add-ons">Installing add-ons</a></li>
   </ul></li>
+  <li><a href="#installing-the-add-on" id="toc-installing-the-add-on" class="nav-link" data-scroll-target="#installing-the-add-on">Installing the add-on</a></li>
   <li><a href="#data-loading-and-visualization" id="toc-data-loading-and-visualization" class="nav-link" data-scroll-target="#data-loading-and-visualization">Data loading and visualization</a>
   <ul class="collapse">
   <li><a href="#data-loading" id="toc-data-loading" class="nav-link" data-scroll-target="#data-loading">Data loading</a></li>
@@ -436,7 +436,7 @@ window.Quarto = {
 <section id="installation" class="level3">
 <h3 class="anchored" data-anchor-id="installation">Installation</h3>
 <ol type="1">
-<li><p><a href="https://www.blender.org/download/lts/4-5/">Install Blender</a>. We recommend the LTS version 4.5.</p></li>
+<li><p><a href="https://www.blender.org/download/releases/5-2-lts/">Install Blender 5.2 LTS</a>. The add-on will <em>not</em> work with previous versions of Blender!</p></li>
 <li><p>Download the add-on <code>.zip</code> from <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/releases">the GitHub releases page</a>. Choose the file that matches your operating system (e.g.&nbsp;<code>linux_x64</code>).</p>
 <ul>
 <li>If your OS is unavailable, download the <a href="https://github.com/nikolas-claussen/blender-tissue-cartography/tree/main/tissue_cartography_addon_src">add-on source code</a>, and install the python library <code>scikit-image</code> in Blender’s Python interface.</li>
@@ -520,10 +520,16 @@ window.Quarto = {
 </ol>
 </section>
 </section>
-<section id="installing-add-ons" class="level3">
-<h3 class="anchored" data-anchor-id="installing-add-ons">Installing add-ons</h3>
-<p>Now we <a href="https://docs.blender.org/manual/en/latest/editors/preferences/addons.html">install the add-on</a>: Click “Edit -&gt; Preferences -&gt; Add-ons -&gt; Add-on Settings -&gt; Install from disk” and select the file you just downloaded. You may need to restart Blender. The add-on can now be found under “Scene -&gt; Tissue Cartography (V2)”.</p>
 </section>
+<section id="installing-the-add-on" class="level2">
+<h2 class="anchored" data-anchor-id="installing-the-add-on">Installing the add-on</h2>
+<p>Now we <a href="https://docs.blender.org/manual/en/latest/editors/preferences/addons.html">install the add-on</a>: Click “Edit -&gt; Preferences -&gt; Get Extensions -&gt; Dropdown menu in top right corner -&gt; Install from disk” and select the file you just downloaded. You may need to restart Blender. The add-on can now be found under “Scene -&gt; Tissue Cartography (V2)”:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/screenshot_installation.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
 </section>
 <section id="data-loading-and-visualization" class="level2">
 <h2 class="anchored" data-anchor-id="data-loading-and-visualization">Data loading and visualization</h2>
