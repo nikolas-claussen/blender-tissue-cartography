@@ -112,7 +112,7 @@ class PoissonReconstructOperator(Operator):
         k = scene.pymeshlab_poisson_k
         depth = scene.pymeshlab_poisson_depth
         fulldepth = scene.pymeshlab_poisson_fulldepth
-
+        
         def apply_fn(ms):
             if compute_normals:
                 ms.compute_normal_for_point_clouds(k=k, smoothiter=2)
@@ -134,9 +134,11 @@ class AlphaWrapOperator(Operator):
         scene = context.scene
         alpha = scene.pymeshlab_alphawrap_alpha
         offset = scene.pymeshlab_alphawrap_offset
+        pymeshlab = get_pymeshlab()
 
         def apply_fn(ms):
-            ms.generate_alpha_wrap(alpha_fraction=alpha, offset_fraction=offset)
+            ms.generate_alpha_wrap(alpha=pymeshlab.PercentageValue(alpha),
+                                   offset=pymeshlab.PercentageValue(offset))
 
         return _run_pymeshlab(self, context, apply_fn, "_alphawrap")
 

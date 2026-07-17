@@ -73,14 +73,14 @@ def register():
     # --- Alpha Wrap ---
     bpy.types.Scene.pymeshlab_alphawrap_alpha = FloatProperty(
         name="Alpha",
-        default=0.02, min=0.001, max=0.5,
-        description="Ball size as fraction of bbox diagonal — smaller = more detail",
+        default=2, min=0.1, max=50,
+        description="Ball size as percent of bbox diagonal — smaller = more detail",
     )
     bpy.types.Scene.pymeshlab_alphawrap_offset = FloatProperty(
         name="Offset",
-        default=0.001, min=0.0001, max=0.1,
+        default=0.1, min=0.01, max=20,
         precision=4,
-        description="Surface offset as fraction of bbox diagonal",
+        description="Surface offset as percent of bbox diagonal",
     )
 
     # --- Mesh Cleanup ---

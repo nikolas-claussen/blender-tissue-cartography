@@ -37,7 +37,7 @@ From the `pymeshlab_remesh_addon/` directory:
 ./download_wheels.sh
 
 # 2. Build with Blender's extension tool
-/Applications/Blender.app/Contents/MacOS/Blender \
+/Applications/Blender\ 5.2.app/Contents/MacOS/Blender \
     --command extension build \
     --source-dir . \
     --output-dir ../blender_addon_download/ \
